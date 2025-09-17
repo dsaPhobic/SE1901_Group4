@@ -144,3 +144,4 @@ C:\IELTSWebApplication\WebAPI\WebAPI\obj\Debug\net8.0\refint\WebAPI.dll
 C:\IELTSWebApplication\WebAPI\WebAPI\obj\Debug\net8.0\WebAPI.pdb
 C:\IELTSWebApplication\WebAPI\WebAPI\obj\Debug\net8.0\WebAPI.genruntimeconfig.cache
 C:\IELTSWebApplication\WebAPI\WebAPI\obj\Debug\net8.0\ref\WebAPI.dll
+C:\IELTSWebApplication\WebAPI\WebAPI\obj\Debug\net8.0\WebAPI.sourcelink.json
