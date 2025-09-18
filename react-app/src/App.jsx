@@ -1,12 +1,10 @@
-import Login from './Components/Login'
+import React from 'react'
+import Login from './Pages/Authenciation/Login'
 
-export default function App() {
-
-
+const App = () => {
   return (
-    <div style={{ padding: 20 }}>
-     
-    
-    </div>
+    <Login />
   )
 }
+
+export default App
