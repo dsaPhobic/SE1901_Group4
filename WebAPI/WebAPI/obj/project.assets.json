@@ -4442,23 +4442,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\hmqua\\.nuget\\packages\\": {},
+    "C:\\Users\\hongq\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\IELTSWebApplication\\WebAPI\\WebAPI\\WebAPI.csproj",
+      "projectUniqueName": "C:\\Users\\hongq\\Documents\\prn212\\project\\SE19B01_Group4\\WebAPI\\WebAPI\\WebAPI.csproj",
       "projectName": "WebAPI",
-      "projectPath": "C:\\IELTSWebApplication\\WebAPI\\WebAPI\\WebAPI.csproj",
-      "packagesPath": "C:\\Users\\hmqua\\.nuget\\packages\\",
-      "outputPath": "C:\\IELTSWebApplication\\WebAPI\\WebAPI\\obj\\",
+      "projectPath": "C:\\Users\\hongq\\Documents\\prn212\\project\\SE19B01_Group4\\WebAPI\\WebAPI\\WebAPI.csproj",
+      "packagesPath": "C:\\Users\\hongq\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\hongq\\Documents\\prn212\\project\\SE19B01_Group4\\WebAPI\\WebAPI\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\hmqua\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\hongq\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -4529,7 +4529,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

@@ -1,5 +1,4 @@
 ﻿################################################################################
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
-/WebAPI/.vs/
-/WebAPI/WebAPI/WebAPI.csproj.user
+**/.vs/
