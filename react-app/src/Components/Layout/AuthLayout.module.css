@@ -1,0 +1,16 @@
+.container {
+  text-align: center;
+}
+
+.title {
+  font-size: 48px;       /* nhỏ hơn 60px để tránh xuống dòng */
+  color: #C1C242;
+  margin: 0 auto;        /* căn giữa */
+  padding: 0;
+  line-height: 1.2;      /* cho chữ gọn lại */
+  white-space: nowrap;   /* tránh xuống dòng */
+}
+
+.content {
+  margin-top: 20px;
+}

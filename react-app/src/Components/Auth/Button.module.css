@@ -1,0 +1,32 @@
+.btn {
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 60%;
+  margin-left: 12%;
+  font-size: 18px;
+}
+
+/* Nút vàng đầy */
+.yellow {
+  background-color: #a3a931;
+  color: #fff;
+  border: none;
+}
+
+.yellow:hover {
+  background-color: #8d931f;
+}
+
+/* Nút viền vàng */
+.outline {
+  background-color: #fff;
+  border: 2px solid #a3a931;
+  color: #a3a931;
+}
+
+.outline:hover {
+  background-color: #f6f6d8;
+}

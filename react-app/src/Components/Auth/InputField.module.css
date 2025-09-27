@@ -1,0 +1,37 @@
+.formGroup {
+  width: 100%;
+  margin-bottom: 18px;
+}
+
+.inputWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.input {
+  width: 100%;
+  padding: 12px 16px 12px 44px; /* chừa khoảng trống icon bên trái */
+  border: none;
+  border-radius: 8px;
+  background: #f3f4c2; /* vàng nhạt */
+  font-size: 1rem;
+  color: #333;
+  outline: none;
+  transition: box-shadow 0.2s;
+  height: 50px;
+}
+
+.input:focus {
+  box-shadow: 0 0 0 2px #a3a931;
+}

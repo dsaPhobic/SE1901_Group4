@@ -1,0 +1,17 @@
+.ifield {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f5f5c0;   /* vàng nhạt */
+  padding: 16px 20px;
+  border-radius: 12px;
+  font-size: 18px;
+}
+
+.ifield__icon {
+  font-size: 20px;
+}
+
+.ifield__label {
+  font-weight: 500;
+}
