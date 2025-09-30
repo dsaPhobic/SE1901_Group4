@@ -9,13 +9,13 @@ import StatsPanel from "../../Components/Dashboard/StatsPanel";
 import HistoryTable from "../../Components/Dashboard/HistoryTable";
 import BalanceRow from "../../Components/Dashboard/BalanceRow";
 
-export default function Home() {
+export default function Home({ onNavigate }) {
   return (
     <div className="home-container">
-      <Sidebar />
+      <Sidebar onNavigate={onNavigate} />
 
       <main className="main-content">
-        <HeaderBar />
+        <HeaderBar onNavigate={onNavigate} currentPage="home" />
 
         <div className="dashboard-content">
           <CalendarCard />

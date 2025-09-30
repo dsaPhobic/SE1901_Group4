@@ -1,6 +1,17 @@
 import React from "react";
 
-export default function Sidebar() {
+export default function Sidebar({ onNavigate }) {
+
+  const navItems = [
+    { page: "home", icon: "📊", label: "Overview" },
+    { page: "forum", icon: "💬", label: "General" },
+    { page: "reading", icon: "📖", label: "Reading" },
+    { page: "listening", icon: "🎧", label: "Listening" },
+    { page: "speaking", icon: "💬", label: "Speaking" },
+    { page: "writing", icon: "✍️", label: "Writing" },
+    { page: "settings", icon: "⚙️", label: "Settings" }
+  ];
+
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
@@ -11,12 +22,15 @@ export default function Sidebar() {
       </div>
 
       <nav className="sidebar-nav">
-        <div className="nav-item active">📊 Overview</div>
-        <div className="nav-item">📖 Reading</div>
-        <div className="nav-item">🎧 Listening</div>
-        <div className="nav-item">💬 Speaking</div>
-        <div className="nav-item">✍️ Writing</div>
-        <div className="nav-item">⚙️ Settings</div>
+        {navItems.map((item) => (
+          <div 
+            key={item.page}
+            className="nav-item"
+            onClick={() => onNavigate(item.page)}
+          >
+            {item.icon} {item.label}
+          </div>
+        ))}
       </nav>
 
       <div className="sidebar-footer">

@@ -28,6 +28,7 @@ namespace WebAPI.Data
         public virtual DbSet<Comment> Comment { get; set; }
         public virtual DbSet<Tag> Tag { get; set; }
         public virtual DbSet<PostLike> PostLike { get; set; }
+        public virtual DbSet<Post_Tag> Post_Tag { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -216,11 +217,18 @@ namespace WebAPI.Data
                 entity.ToTable("Post");
 
                 entity.Property(e => e.PostId).HasColumnName("post_id");
+                entity.Property(e => e.Title)
+                    .HasMaxLength(200)
+                    .HasColumnName("title");
                 entity.Property(e => e.Content).HasColumnName("content");
                 entity.Property(e => e.CreatedAt)
                     .HasPrecision(0)
                     .HasDefaultValueSql("(sysdatetime())")
                     .HasColumnName("created_at");
+                entity.Property(e => e.UpdatedAt)
+                    .HasPrecision(0)
+                    .HasColumnName("updated_at");
+                entity.Property(e => e.ViewCount).HasColumnName("view_count");
                 entity.Property(e => e.UserId).HasColumnName("user_id");
 
                 entity.HasOne(d => d.User).WithMany(p => p.Posts)

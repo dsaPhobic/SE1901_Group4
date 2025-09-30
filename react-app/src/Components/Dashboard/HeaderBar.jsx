@@ -1,10 +1,30 @@
 import React from "react";
+import "./HeaderBar.css";
 
-export default function HeaderBar() {
+export default function HeaderBar({ onNavigate, currentPage }) {
+  const getPageTitle = () => {
+    if (currentPage === "forum") return "Questions";
+    if (currentPage === "createPost") return "New Question";
+    if (currentPage === "postDetail") return "Open Question";
+    return "Summary of your hard work";
+  };
+
+  const showAskButton = () => {
+    return currentPage === "forum";
+  };
+
   return (
     <header className="main-header">
-      <h1 className="page-title">Summary of your hard work</h1>
+      <h1 className="page-title">{getPageTitle()}</h1>
       <div className="user-section">
+        {showAskButton() && (
+          <button 
+            className="ask-question-btn"
+            onClick={() => onNavigate('createPost')}
+          >
+            Ask a question
+          </button>
+        )}
         <div className="notification-icon">✉️</div>
         <div className="notification-icon bell">
           🔔<span className="notification-dot"></span>
