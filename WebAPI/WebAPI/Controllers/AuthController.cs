@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using WebAPI.DTOs;
@@ -12,12 +13,13 @@ namespace WebAPI.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IUserService _userService;
-        const string callbackPath = "";
+
         public AuthController(IUserService userService)
         {
             _userService = userService;
         }
 
+        // ========== REGISTER ==========
         [HttpPost("register")]
         public ActionResult<UserDTO> Register([FromBody] RegisterRequestDTO dto)
         {
@@ -26,7 +28,6 @@ namespace WebAPI.Controllers
             try
             {
                 var user = _userService.Register(dto);
-                HttpContext.Session.SetInt32("UserId", user.UserId);
                 return Created("", ToDto(user));
             }
             catch (InvalidOperationException ex)
@@ -35,30 +36,76 @@ namespace WebAPI.Controllers
             }
         }
 
+        // ========== LOGIN ==========
         [HttpPost("login")]
-        public ActionResult<UserDTO> Login([FromBody] LoginRequestDTO dto)
+        public async Task<ActionResult<UserDTO>> Login([FromBody] LoginRequestDTO dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var user = _userService.Authenticate(dto.Email, dto.Password);
             if (user == null) return Unauthorized("Invalid email or password");
 
-            HttpContext.Session.SetInt32("UserId", user.UserId);
+            // Tạo claims cho cookie auth
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Role, user.Role),
+                new Claim(ClaimTypes.Email, user.Email)
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                new AuthenticationProperties
+                {
+                    IsPersistent = true,
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(60)
+                });
+
             return Ok(ToDto(user));
         }
 
+        // ========== LOGOUT ==========
         [HttpPost("logout")]
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
-            HttpContext.Session.Remove("UserId");
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return Ok("Logged out successfully");
         }
 
-        // 👉 Nút login Google sẽ gọi thẳng vào đây
+        // ========== ME ==========
+        [HttpGet("me")]
+        public ActionResult<UserDTO> Me()
+        {
+            if (!User.Identity?.IsAuthenticated ?? true)
+                return Unauthorized();
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var user = _userService.GetById(int.Parse(userId));
+            if (user == null) return Unauthorized();
+
+            return Ok(new UserDTO
+            {
+                UserId = user.UserId,
+                Username = user.Username,
+                Email = user.Email,
+                Firstname = user.Firstname,
+                Lastname = user.Lastname,
+                Role = user.Role
+            });
+        }
+
+
+        // ========== GOOGLE LOGIN ==========
         [HttpGet("google/login")]
         public IActionResult GoogleLogin()
         {
-            // RedirectUri = action mình muốn chạy sau khi Google auth xong
             var redirectUrl = Url.Action("GoogleResponse", "Auth");
             var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
             return Challenge(properties, "Google");
@@ -67,55 +114,51 @@ namespace WebAPI.Controllers
         [HttpGet("google/response")]
         public async Task<IActionResult> GoogleResponse()
         {
-            var result = await HttpContext.AuthenticateAsync("Cookies");
+            var result = await HttpContext.AuthenticateAsync("Google");
             if (!result.Succeeded) return Unauthorized();
 
-            var claims = result.Principal.Identities.FirstOrDefault()?.Claims.ToList();
-            var email = claims?.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
-            var name = claims?.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+            var email = result.Principal.FindFirstValue(ClaimTypes.Email);
+            var name = result.Principal.FindFirstValue(ClaimTypes.Name);
 
             if (email == null) return BadRequest("Google did not return email");
 
             var user = _userService.GetByEmail(email);
             if (user == null)
             {
-                user = new User
+                user = _userService.Register(new RegisterRequestDTO
                 {
                     Username = email.Split('@')[0],
                     Email = email,
-                    Firstname = name ?? "",
-                    Role = "user",
-                    CreatedAt = DateTime.UtcNow
-                };
-                _userService.Register(new RegisterRequestDTO
-                {
-                    Username = user.Username,
-                    Email = user.Email,
                     Password = Guid.NewGuid().ToString(),
-                    Firstname = user.Firstname,
-                    Lastname = user.Lastname
+                    Firstname = name ?? "",
+                    Lastname = ""
                 });
-                user = _userService.GetByEmail(email)!;
             }
 
-            HttpContext.Session.SetInt32("UserId", user.UserId);
+            // Đăng nhập với cookie
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Role, user.Role),
+                new Claim(ClaimTypes.Email, user.Email)
+            };
 
-            // redirect lại FE
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                new AuthenticationProperties
+                {
+                    IsPersistent = true,
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(60)
+                });
+
             return Redirect($"http://localhost:5173?login=success&email={user.Email}&username={user.Username}");
         }
 
-        [HttpGet("me")]
-        public ActionResult<UserDTO> Me()
-        {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return Unauthorized();
-
-            var user = _userService.GetById(userId.Value);
-            if (user == null) return Unauthorized();
-
-            return Ok(ToDto(user));
-        }
-
+        // ========== HELPER ==========
         private static UserDTO ToDto(User user) => new UserDTO
         {
             UserId = user.UserId,

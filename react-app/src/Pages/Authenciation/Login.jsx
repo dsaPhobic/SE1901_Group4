@@ -8,8 +8,10 @@ import lock from "../../assets/auth_lock.png";
 import google from "../../assets/google.png";
 import BrandPanel from "../../Components/Layout/BrandPanel.jsx";
 import "./Login.css";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [mode, setMode] = useState("login");
   const [form, setForm] = useState({ email: "", password: "", username: "" });
 
@@ -23,6 +25,9 @@ const Login = () => {
       if (mode === "login") {
         const res = await login({ email: form.email, password: form.password });
         console.log("Login success:", res.data);
+
+        // 👉 điều hướng sang Home
+        navigate("/home");
       } else if (mode === "register") {
         const res = await register({
           username: form.username,
@@ -30,7 +35,13 @@ const Login = () => {
           password: form.password,
         });
         console.log("Register success:", res.data);
-        setMode("login");
+
+        // 👉 có 2 cách:
+        // 1. Chuyển thẳng sang Home luôn
+        navigate("/home");
+
+        // 2. Hoặc nếu muốn về màn Login sau khi đăng ký thì:
+        // setMode("login");
       } else if (mode === "forgot") {
         console.log("Send reset link to:", form.email);
       }
@@ -56,7 +67,11 @@ const Login = () => {
             {/* Social login */}
             {mode === "login" && (
               <div className="social-row">
-                <button type="button" className="google" onClick={loginWithGoogle}>
+                <button
+                  type="button"
+                  className="google"
+                  onClick={loginWithGoogle}
+                >
                   <img src={google} alt="Google" className="social-img" />
                 </button>
               </div>

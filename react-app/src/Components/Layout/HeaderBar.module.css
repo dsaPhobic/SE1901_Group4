@@ -1,0 +1,75 @@
+.mainHeader {
+  background-color: #fff;
+  padding: 15px 25px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+}
+
+.pageTitle {
+  font-size: var(--font-title);
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+  font-family: Georgia, serif;
+  display: flex;
+  text-align: center;
+}
+
+.userSection {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.notificationIcon {
+  font-size: clamp(16px, 1.2vw, 18px);
+  color: #6c757d;
+  cursor: pointer;
+  position: relative;
+}
+
+.notificationIcon:hover {
+  color: #1976d2;
+}
+
+.notificationDot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background-color: #dc3545;
+  border-radius: 50%;
+}
+
+.userAvatar {
+  width: 38px;
+  height: 38px;
+  background-color: #ffc107;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(16px, 1.2vw, 18px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.userName {
+  font-size: var(--font-body);
+  font-weight: 600;
+  color: #333;
+}
+
+.userRole {
+  font-size: clamp(18px, 1vw, 20px);
+  color: #6c757d;
+}

@@ -12,43 +12,36 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// ====== Session ======
-builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession(options =>
-{
-    var timeout = builder.Configuration.GetValue<int>("Session:IdleTimeoutMinutes", 60);
-    options.IdleTimeout = TimeSpan.FromMinutes(timeout);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-
-    // Ensure SameSite and Secure settings are correct
-    options.Cookie.SameSite = SameSiteMode.Lax; // Use Lax for OAuth state handling
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Ensure cookies are sent over HTTPS
-});
-builder.Services.AddHttpContextAccessor();
-
 // ====== Database + DI ======
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 
-// ====== Authentication ======
-builder.Services.AddAuthentication(options =>
+// ====== Authentication (Cookie-based) ======
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.Cookie.Name = ".MyApp.Auth";                // tên cookie rõ ràng
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // yêu c?u HTTPS
+        options.Cookie.SameSite = SameSiteMode.None;             // cho phép cross-site
+        options.SlidingExpiration = true;
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+        options.LoginPath = "/api/auth/login";              // optional
+        options.LogoutPath = "/api/auth/logout";            // optional
+    });
+
+// ====== CORS ======
+builder.Services.AddCors(options =>
 {
-    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = "Google";
-})
-.AddCookie(options =>
-{
-    options.Cookie.SameSite = SameSiteMode.None;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-})
-.AddGoogle("Google", options =>
-{
-    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-    options.CallbackPath = "/signin-google";
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") // React app
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
 });
 
 // ====== Logging ======
@@ -68,7 +61,8 @@ app.UseHttpsRedirection();
 
 app.UseRouting();
 
-app.UseSession();
+app.UseCors("AllowFrontend");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
