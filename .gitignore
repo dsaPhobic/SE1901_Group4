@@ -55,7 +55,8 @@ yarn-error.log*
 *.db-wal
 *.cache
 *.log
-WebAPI/react-app/package-lock.json
-WebAPI/react-app/package.json
-WebAPI/WebAPI/package-lock.json
-WebAPI/WebAPI/package.json
+react-app/package-lock.json
+react-app/package.json
+WebAPI/package-lock.json
+WebAPI/package.json
+FORUM_SETUP.md
