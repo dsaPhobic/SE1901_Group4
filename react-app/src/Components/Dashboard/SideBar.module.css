@@ -1,0 +1,84 @@
+.sidebar {
+  width: 240px;
+  background-color: #fff;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: 100%;
+  left: 0;
+  top: 0;
+  font-size: clamp(14px, 1vw, 16px);
+}
+
+.sidebarHeader {
+  padding: 20px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logoIcon {
+  font-size: clamp(18px, 1.5vw, 20px);
+}
+
+.logoText {
+  font-size: clamp(16px, 1.2vw, 18px);
+  font-weight: 600;
+  color: #333;
+}
+
+.sidebarNav {
+  flex: 1;
+  padding: 20px 0;
+  text-decoration: none;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #6c757d;
+  font-size: clamp(14px, 1vw, 15px);
+    text-decoration: none;
+
+}
+
+.navItem:hover {
+  background-color: #f1f3f5;
+  color: #1976d2;
+}
+
+.active {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  border-right: 3px solid #1976d2;
+}
+
+.sidebarFooter {
+  padding: 20px;
+  border-top: 1px solid #e9ecef;
+  text-align: center;
+}
+
+.footerText {
+  font-size: clamp(12px, 0.9vw, 14px);
+  color: #6c757d;
+  margin: 0;
+}
+
+.cloudIcon {
+  font-size: clamp(20px, 1.5vw, 22px);
+}
+
+.moneySymbols {
+  margin: 6px 0;
+  font-size: clamp(12px, 1vw, 14px);
+}
