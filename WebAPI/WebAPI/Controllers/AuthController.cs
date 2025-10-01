@@ -54,11 +54,9 @@ namespace WebAPI.Controllers
             return Ok("Logged out successfully");
         }
 
-        // 👉 Nút login Google sẽ gọi thẳng vào đây
         [HttpGet("google/login")]
         public IActionResult GoogleLogin()
         {
-            // RedirectUri = action mình muốn chạy sau khi Google auth xong
             var redirectUrl = Url.Action("GoogleResponse", "Auth");
             var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
             return Challenge(properties, "Google");
@@ -100,7 +98,6 @@ namespace WebAPI.Controllers
 
             HttpContext.Session.SetInt32("UserId", user.UserId);
 
-            // redirect lại FE
             return Redirect($"http://localhost:5173?login=success&email={user.Email}&username={user.Username}");
         }
 

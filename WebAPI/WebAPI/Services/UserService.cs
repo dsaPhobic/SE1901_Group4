@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using WebAPI.Data;
 using WebAPI.DTOs;
 using WebAPI.Models;
 using WebAPI.Repositories;
@@ -8,8 +9,13 @@ namespace WebAPI.Services
 {
     public class UserService : IUserService
     {
+        private readonly ApplicationDbContext _db;
+
         private readonly IUserRepository _repo;
-        public UserService(IUserRepository repo) => _repo = repo;
+        public UserService(IUserRepository repo, ApplicationDbContext db) {
+            _repo = repo;
+            _db = db;
+        } 
 
         public User? GetById(int id) => _repo.GetById(id);
 
@@ -95,5 +101,9 @@ namespace WebAPI.Services
             _repo.Delete(user);
             _repo.SaveChanges();
         }
+
+        public bool Exists(int userId) => _db.User.Any(u => u.UserId == userId);
+
+
     }
 }

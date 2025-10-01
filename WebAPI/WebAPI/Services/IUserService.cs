@@ -11,5 +11,6 @@ namespace WebAPI.Services
         User? Authenticate(string email, string password);
         void Update(int id, UpdateUserDTO dto, int currentUserId);
         void Delete(int id, int currentUserId);
+        bool Exists(int userId);
     }
 }

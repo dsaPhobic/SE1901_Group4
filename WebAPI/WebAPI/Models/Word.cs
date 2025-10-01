@@ -7,7 +7,7 @@ public partial class Word
 {
     public int WordId { get; set; }
 
-    public string Word1 { get; set; } = null!;
+    public string Term { get; set; } = null!;
 
     public string? Meaning { get; set; }
 

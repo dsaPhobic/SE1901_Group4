@@ -1,9 +1,10 @@
-using Microsoft.EntityFrameworkCore;
-using WebAPI.Data;
-using WebAPI.Repositories;
-using WebAPI.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using WebAPI.Data;
+using WebAPI.ExternalServices;
+using WebAPI.Repositories;
+using WebAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddHttpClient<DictionaryApiClient>();
+builder.Services.AddScoped<IWordRepository, WordRepository>();
+builder.Services.AddScoped<IWordService, WordService>();
+builder.Services.AddScoped<IVocabGroupRepository, VocabGroupRepository>();
+builder.Services.AddScoped<IVocabGroupService, VocabGroupService>();
 
 // ====== Authentication ======
 builder.Services.AddAuthentication(options =>

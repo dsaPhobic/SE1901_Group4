@@ -439,30 +439,29 @@ namespace WebAPI.Data
                     .HasColumnName("groupname");
                 entity.Property(e => e.UserId).HasColumnName("user_id");
 
-                entity.HasOne(d => d.User).WithMany(p => p.VocabGroups)
-                    .HasForeignKey(d => d.UserId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__VocabGrou__user___571DF1D5");
-
                 entity.HasMany(d => d.Words).WithMany(p => p.Groups)
                     .UsingEntity<Dictionary<string, object>>(
-                        "VocabGroupWord",
+                        "VocabGroup_Word",
                         r => r.HasOne<Word>().WithMany()
-                            .HasForeignKey("WordId")
-                            .OnDelete(DeleteBehavior.ClientSetNull)
+                            .HasForeignKey("word_id")
+                            .OnDelete(DeleteBehavior.Cascade)
                             .HasConstraintName("FK__VocabGrou__word___5DCAEF64"),
                         l => l.HasOne<VocabGroup>().WithMany()
-                            .HasForeignKey("GroupId")
-                            .OnDelete(DeleteBehavior.ClientSetNull)
+                            .HasForeignKey("group_id")
+                            .OnDelete(DeleteBehavior.Cascade)
                             .HasConstraintName("FK__VocabGrou__group__5CD6CB2B"),
                         j =>
                         {
-                            j.HasKey("GroupId", "WordId").HasName("PK__VocabGro__C2883474CEDF8177");
+                            j.HasKey("group_id", "word_id")
+                             .HasName("PK__VocabGro__C2883474CEDF8177");
+
                             j.ToTable("VocabGroup_Word");
-                            j.IndexerProperty<int>("GroupId").HasColumnName("group_id");
-                            j.IndexerProperty<int>("WordId").HasColumnName("word_id");
+
+                            j.IndexerProperty<int>("group_id").HasColumnName("group_id");
+                            j.IndexerProperty<int>("word_id").HasColumnName("word_id");
                         });
             });
+
 
             modelBuilder.Entity<Word>(entity =>
             {
@@ -470,7 +469,7 @@ namespace WebAPI.Data
 
                 entity.ToTable("Word");
 
-                entity.Property(e => e.WordId).HasColumnName("word_id");
+                entity.Property(e => e.WordId).HasColumnName("word_id").ValueGeneratedOnAdd();
                 entity.Property(e => e.Audio)
                     .HasMaxLength(512)
                     .HasColumnName("audio");
@@ -478,7 +477,7 @@ namespace WebAPI.Data
                 entity.Property(e => e.Meaning)
                     .HasMaxLength(255)
                     .HasColumnName("meaning");
-                entity.Property(e => e.Word1)
+                entity.Property(e => e.Term)
                     .HasMaxLength(100)
                     .HasColumnName("word");
             });

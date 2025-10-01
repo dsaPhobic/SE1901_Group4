@@ -13,7 +13,5 @@ public partial class VocabGroup
 
     public DateTime? CreatedAt { get; set; }
 
-    public virtual User User { get; set; } = null!;
-
     public virtual ICollection<Word> Words { get; set; } = new List<Word>();
 }
