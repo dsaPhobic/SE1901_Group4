@@ -22,3 +22,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+react-app/package-lock.json
+react-app/package.json
