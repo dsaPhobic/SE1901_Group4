@@ -1,12 +1,12 @@
 .dashboardContent {
-  padding: 20px;
+  padding: 10px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-areas:
     "calendar goals"
     "history goals"
     "history balance";
-  gap: 40px;
+  gap: 5px;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -30,6 +30,11 @@
 .calendarWeekday,
 .calendarDay {
   font-size: clamp(20px, 0.9vw, 22px);
+}
+.submitted {
+  background: #28a745;
+  color: #fff;
+  font-weight: 700;
 }
 
 /* Card Generic */
@@ -104,18 +109,12 @@
   background: #f1f3f5;
 }
 
-.selected {
-  background: #28a745;
-  color: #fff;
-  font-weight: 700;
-}
-
 /* Goals + Stats */
 .goalsWrapper {
   grid-area: goals;
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 5px;
 }
 
 .goalsCards {
@@ -134,7 +133,7 @@
 }
 
 .sectionTitle {
-  margin: 0 0 12px;
+  margin: 0 0 0px;
 }
 
 /* Stats */
@@ -165,7 +164,7 @@
 .historyRow {
   display: grid;
   grid-template-columns: 40px 1fr 80px 120px 60px;
-  padding: 12px 15px;
+  padding: 5px 5px;
   border-bottom: 1px solid #f1f3f5;
   align-items: center;
 }
@@ -190,7 +189,7 @@
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  padding: 20px;
+  padding: 5px;
 }
 
 .userAvatars {

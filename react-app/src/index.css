@@ -1,0 +1,18 @@
+/* index.css hoặc App.css */
+
+:root {
+  /* font size tối thiểu 20px */
+  --font-body: clamp(20px, 1.2vw, 24px);
+  --font-title: clamp(24px, 2vw, 32px);
+  --font-bigtitle: clamp(32px, 3vw, 40px);
+}
+
+body {
+  font-family: "Dongle", sans-serif; /* hoặc font bạn muốn */
+  font-size: var(--font-body);
+  line-height: 1.6;
+  color: #333;
+  margin: 0;
+  padding: 0;
+  background: #f8f9fa;
+}
