@@ -1,0 +1,116 @@
+.home-container {
+  display: flex;
+  height: 100vh;
+  background: #f9fafb;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* Tabs */
+.topic-tabs {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 8px;
+}
+
+.topic-tab {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #f1f5f9;
+  cursor: pointer;
+  font-weight: 500;
+  color: #374151;
+  transition: 0.2s;
+}
+
+.topic-tab.active {
+  background: #2563eb;
+  color: white;
+}
+
+.topic-add {
+  padding: 8px 14px;
+  border-radius: 50%;
+  border: none;
+  background: #10b981;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.topic-add:hover {
+  background: #059669;
+}
+
+/* Table */
+.dictionary-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.dictionary-table thead {
+  background: #f3f4f6;
+}
+
+.dictionary-table th,
+.dictionary-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.dictionary-table th {
+  font-weight: 600;
+  color: #374151;
+}
+
+.dictionary-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+/* Status */
+.status {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.status.done {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status.learning {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+/* Buttons */
+.sound-btn,
+.delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  transition: 0.2s;
+}
+
+.sound-btn:hover {
+  color: #2563eb;
+}
+
+.delete-btn:hover {
+  color: #dc2626;
+}

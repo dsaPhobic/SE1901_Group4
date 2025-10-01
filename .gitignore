@@ -57,11 +57,3 @@ yarn-error.log*
 *.log
 /react-app/package.json
 /react-app/package-lock.json
-/react-app/src/assets/dictionary/dictionary.png
-/react-app/src/assets/dictionary/dictionary_logo.png
-/react-app/src/Components/Dashboard/Sidebar.jsx
-/react-app/src/Components/Dashboard/SideBar.module.css
-/react-app/src/Components/Dashboard/StatsPanel.jsx
-/react-app/src/Pages/Authenciation/Login.jsx
-/react-app/src/Pages/Home/Home.jsx
-/WebAPI/WebAPI/appsettings.Development.json

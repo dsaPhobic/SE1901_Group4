@@ -3,4 +3,5 @@ import DashboardUser from "../../Components/Dashboard/DashboardUser";
 
 export default function Home() {
   return <DashboardUser />;
+
 }
