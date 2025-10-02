@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./Forum.css";
 import Sidebar from "../../Components/Dashboard/Sidebar";
-import HeaderBar from "../../Components/Dashboard/HeaderBar";
+import HeaderBar from "../../Components/Layout/HeaderBar";
 import PostList from "../../Components/Forum/PostList";
 import RightSidebar from "../../Components/Forum/RightSidebar";
 import { getPosts, getPostsByFilter } from "../../Services/ForumApi";

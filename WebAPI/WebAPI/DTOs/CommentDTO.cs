@@ -1,83 +1,29 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace WebAPI.DTOs
 {
-    public class CommentDTO : Controller
+    public class CommentDTO
     {
-        // GET: CommentDTO
-        public ActionResult Index()
-        {
-            return View();
-        }
+        public int CommentId { get; set; }
+        public string Content { get; set; } = null!;
+        public DateTime CreatedAt { get; set; }
+        public int LikeNumber { get; set; }
+        public int? ParentCommentId { get; set; }
+        public UserDTO User { get; set; } = null!;
+        public List<CommentDTO> Replies { get; set; } = new List<CommentDTO>();
+    }
 
-        // GET: CommentDTO/Details/5
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
+    public class CreateCommentDTO
+    {
+        [Required]
+        public string Content { get; set; } = null!;
 
-        // GET: CommentDTO/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
+        public int? ParentCommentId { get; set; }
+    }
 
-        // POST: CommentDTO/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: CommentDTO/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
-
-        // POST: CommentDTO/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: CommentDTO/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: CommentDTO/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
+    public class UpdateCommentDTO
+    {
+        [Required]
+        public string Content { get; set; } = null!;
     }
 }

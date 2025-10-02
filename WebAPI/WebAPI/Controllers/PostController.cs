@@ -1,82 +1,177 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using WebAPI.DTOs;
+using WebAPI.Services;
 
 namespace WebAPI.Controllers
 {
-    public class PostController : Controller
+    [ApiController]
+    [Route("api/forum/posts")]
+    public class PostController : ControllerBase
     {
-        // GET: PostController
-        public ActionResult Index()
+        private readonly IPostService _postService;
+
+        public PostController(IPostService postService)
         {
-            return View();
+            _postService = postService;
         }
 
-        // GET: PostController/Details/5
-        public ActionResult Details(int id)
+        [HttpGet]
+        public ActionResult<IEnumerable<PostDTO>> GetPosts(
+            [FromQuery] int page = 1,
+            [FromQuery] int limit = 10)
         {
-            return View();
+            var posts = _postService.GetPosts(page, limit);
+            return Ok(posts);
         }
 
-        // GET: PostController/Create
-        public ActionResult Create()
+        [HttpGet("filter/{filter}")]
+        public ActionResult<IEnumerable<PostDTO>> GetPostsByFilter(
+            string filter,
+            [FromQuery] int page = 1,
+            [FromQuery] int limit = 10)
         {
-            return View();
+            var posts = _postService.GetPostsByFilter(filter, page, limit);
+            return Ok(posts);
         }
 
-        // POST: PostController/Create
+        [HttpGet("{id}")]
+        public ActionResult<PostDTO> GetPost(int id)
+        {
+            var post = _postService.GetPostById(id);
+            if (post == null) return NotFound("Post not found");
+
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId.HasValue)
+            {
+                post.IsVoted = _postService.IsPostVotedByUser(id, userId.Value);
+            }
+
+            return Ok(post);
+        }
+
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public ActionResult<PostDTO> CreatePost([FromBody] CreatePostDTO dto)
         {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return Unauthorized("Please login to create posts");
+
             try
             {
-                return RedirectToAction(nameof(Index));
+                var post = _postService.CreatePost(dto, userId.Value);
+                return CreatedAtAction(nameof(GetPost), new { id = post.PostId }, post);
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                return BadRequest(ex.Message);
             }
         }
 
-        // GET: PostController/Edit/5
-        public ActionResult Edit(int id)
+        [HttpPut("{id}")]
+        public IActionResult UpdatePost(int id, [FromBody] UpdatePostDTO dto)
         {
-            return View();
-        }
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return Unauthorized("Please login to update posts");
 
-        // POST: PostController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
             try
             {
-                return RedirectToAction(nameof(Index));
+                _postService.UpdatePost(id, dto, userId.Value);
+                return NoContent();
             }
-            catch
+            catch (KeyNotFoundException)
             {
-                return View();
+                return NotFound("Post not found");
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid("You don't have permission to update this post");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
 
-        // GET: PostController/Delete/5
-        public ActionResult Delete(int id)
+        [HttpDelete("{id}")]
+        public IActionResult DeletePost(int id)
         {
-            return View();
-        }
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return Unauthorized("Please login to delete posts");
 
-        // POST: PostController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
             try
             {
-                return RedirectToAction(nameof(Index));
+                _postService.DeletePost(id, userId.Value);
+                return NoContent();
             }
-            catch
+            catch (KeyNotFoundException)
             {
-                return View();
+                return NotFound("Post not found");
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid("You don't have permission to delete this post");
+            }
+        }
+
+        [HttpPost("{id}/vote")]
+        public IActionResult VotePost(int id)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return Unauthorized("Please login to vote");
+
+            try
+            {
+                _postService.VotePost(id, userId.Value);
+                return Ok("Post voted successfully");
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound("Post not found");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete("{id}/vote")]
+        public IActionResult UnvotePost(int id)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return Unauthorized("Please login to unvote");
+
+            try
+            {
+                _postService.UnvotePost(id, userId.Value);
+                return Ok("Post unvoted successfully");
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound("Post not found");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("{id}/report")]
+        public IActionResult ReportPost(int id, [FromBody] ReportPostDTO dto)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return Unauthorized("Please login to report posts");
+
+            try
+            {
+                _postService.ReportPost(id, dto.Reason, userId.Value);
+                return Ok("Post reported successfully");
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound("Post not found");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
     }
