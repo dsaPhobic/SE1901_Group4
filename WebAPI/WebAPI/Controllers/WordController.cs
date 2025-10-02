@@ -57,7 +57,6 @@ namespace WebAPI.Controllers
                 Meaning = dto.Meaning,
                 Audio = dto.Audio,
                 Example = dto.Example,
-                // chỉ cần gắn FK, không tạo entity mới
                 Groups = dto.GroupIds.Select(id => new VocabGroup { GroupId = id }).ToList()
             };
 
@@ -104,15 +103,16 @@ namespace WebAPI.Controllers
             return Ok(ToDto(word));
         }
 
-        // helper mapper
-        private static object ToDto(Word word) => new
-        {
-            WordId = word.WordId,
-            word.Term,
-            word.Meaning,
-            word.Audio,
-            word.Example,
-            GroupIds = word.Groups.Select(g => g.GroupId).ToList()
-        };
+        // ===== Helper mapper =====
+        private static WordDto ToDto(Word word) =>
+            new WordDto
+            {
+                WordId = word.WordId,
+                Term = word.Term,
+                Meaning = word.Meaning,
+                Audio = word.Audio,
+                Example = word.Example,
+                GroupIds = word.Groups?.Select(g => g.GroupId).ToList() ?? new List<int>()
+            };
     }
 }

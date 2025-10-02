@@ -14,35 +14,43 @@ const Login = () => {
   const [mode, setMode] = useState("login");
   const [form, setForm] = useState({ email: "", password: "", username: "" });
 
-  const navigate = useNavigate(); // 
+  const navigate = useNavigate();
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  async function handleSubmit(e) {
+  function handleSubmit(e) {
     e.preventDefault();
-    try {
-      if (mode === "login") {
-        const res = await login({ email: form.email, password: form.password });
-        console.log("Login success:", res.data);
 
-        localStorage.setItem("user", JSON.stringify(res.data));
+    if (mode === "login") {
+      login({ email: form.email, password: form.password })
+        .then((res) => {
+          console.log("Login success:", res.data);
 
-        navigate("/home");
-      } else if (mode === "register") {
-        const res = await register({
-          username: form.username,
-          email: form.email,
-          password: form.password,
+          // lưu full user vào localStorage
+          localStorage.setItem("user", JSON.stringify(res.data));
+
+          navigate("/home");
+        })
+        .catch((err) => {
+          console.error("Auth error:", err.response?.data || err.message);
         });
-        console.log("Register success:", res.data);
-        setMode("login");
-      } else if (mode === "forgot") {
-        console.log("Send reset link to:", form.email);
-      }
-    } catch (err) {
-      console.error("Auth error:", err.response?.data || err.message);
+    } else if (mode === "register") {
+      register({
+        username: form.username,
+        email: form.email,
+        password: form.password,
+      })
+        .then((res) => {
+          console.log("Register success:", res.data);
+          setMode("login");
+        })
+        .catch((err) => {
+          console.error("Auth error:", err.response?.data || err.message);
+        });
+    } else if (mode === "forgot") {
+      console.log("Send reset link to:", form.email);
     }
   }
 

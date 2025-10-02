@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Tạo instance riêng cho word API
 const API = axios.create({
-  baseURL: "/api/word",
+  baseURL: "/api/words",
   withCredentials: true,
 });
 
@@ -35,8 +35,7 @@ export function update(id, data) {
 export function remove(id) {
   return API.delete(`/${id}`);
 }
-
 // GET api/word/lookup/{term}
 export function lookup(term) {
-  return API.get(`/lookup/${encodeURIComponent(term)}`);
+  return API.get(`/${encodeURIComponent(term)}/lookup`);
 }
