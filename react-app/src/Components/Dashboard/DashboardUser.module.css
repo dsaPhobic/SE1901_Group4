@@ -125,11 +125,21 @@
 .goalCard {
   flex: 1;
   text-align: center;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.1),
+    -6px -6px 12px rgba(255, 255, 255, 0.8);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-
+.goalCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.15),
+    -10px -10px 20px rgba(255, 255, 255, 1);
+}
 .overall {
-  background: #28a745;
+  background: linear-gradient(135deg, #00ff66, #00e65c);
   color: #fff;
+  box-shadow: 0 6px 15px rgba(0, 255, 102, 0.4);
 }
 
 .sectionTitle {
@@ -144,16 +154,45 @@
   background: #fff;
   border-radius: 10px;
   padding: 15px;
-  margin-bottom: 12px;
+  margin-bottom: 11px;
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
 }
+.iconBox {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
+.readingBg {
+  background-color: #ffe5d0; /* cam nhạt */
+}
+
+.listeningBg {
+  background-color: #d6f5df; /* xanh lá nhạt */
+}
+
+.overallBg {
+  background-color: #d9ecff; /* xanh dương nhạt */
+}
+
+/* thanh nền */
 .progressBar {
   flex: 1;
-  height: 8px;
+  height: 12px;
   background: #e9ecef;
-  border-radius: 4px;
+  border-radius: 6px;
   overflow: hidden;
+  position: relative;
+}
+
+/* thanh tiến trình chạy */
+.progressFill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.4s ease; /* hiệu ứng mượt */
 }
 
 /* History */
@@ -183,99 +222,99 @@
 
 .balanceSection {
   flex: 2;
-  display: flex;
-  flex-direction: column;
-  min-height: 200px;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  padding: 5px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.balanceHeader h3 {
+  margin-bottom: 15px;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .userAvatars {
   display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.avatarItem {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: #333;
+  gap: 12px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
 }
 
 .avatar {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  background: #e9ecef;
+  background: #f1f3f5;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   margin-bottom: 5px;
 }
 
+.avatarItem span {
+  font-size: 12px;
+  color: #555;
+}
+
 .add {
-  background: #ffc107;
+  background: #ff9500;
   color: #fff;
-  font-size: 24px;
 }
 
 .balanceInputSection {
   display: flex;
   gap: 10px;
-  align-items: center;
 }
 
 .balanceInput {
   flex: 1;
-  padding: 12px 16px;
+  padding: 10px;
   border: 2px solid #e9ecef;
   border-radius: 8px;
-  font-size: clamp(20px, 1.5vw, 24px);
+  font-size: 18px;
   font-weight: 700;
   text-align: center;
-  color: #333;
 }
 
 .transferButton {
-  background: #ffc107;
+  background: #ffae00;
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 8px;
   border: none;
-  padding: 12px 20px;
-  border-radius: 30px;
-  font-size: clamp(20px, 1vw, 22px);
   font-weight: 600;
-  color: #333;
   cursor: pointer;
   transition: 0.2s;
 }
 
 .transferButton:hover {
-  background: #e0a800;
+  background: #0056b3;
 }
 
-/* Enjoy */
 .enjoyCard {
   flex: 1;
   min-height: 200px;
-  background: linear-gradient(135deg, #ff6b35, #f7931e);
   border-radius: 12px;
+  background: linear-gradient(135deg, #fe784f, #fecb00);
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   color: #fff;
-  text-align: center;
+  padding: 20px;
 }
 
 .enjoyIcons {
-  font-size: clamp(20px, 1vw, 24px);
-  margin-bottom: 6px;
+  font-size: 28px;
+  margin-bottom: 10px;
 }
 
 .enjoyText {
+  font-size: 16px;
   font-weight: 600;
 }
