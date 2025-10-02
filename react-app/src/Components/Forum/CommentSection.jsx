@@ -13,37 +13,41 @@ export default function CommentSection({ postId }) {
     loadComments();
   }, [postId]);
 
-  const loadComments = async () => {
-    try {
-      setLoading(true);
-      const response = await getComments(postId);
-      setComments(response.data);
-    } catch (error) {
-      console.error("Error loading comments:", error);
-    } finally {
-      setLoading(false);
-    }
+  const loadComments = () => {
+    setLoading(true);
+    getComments(postId)
+      .then((response) => {
+        setComments(response.data);
+      })
+      .catch((error) => {
+        console.error("Error loading comments:", error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (!newComment.trim() || submitting) return;
 
-    try {
-      setSubmitting(true);
-      const response = await createComment(postId, newComment);
-      setComments(prev => [response.data, ...prev]);
-      setNewComment("");
-    } catch (error) {
-      console.error("Error creating comment:", error);
-      alert("Error creating comment. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
+    setSubmitting(true);
+    createComment(postId, newComment)
+      .then((response) => {
+        setComments((prev) => [response.data, ...prev]);
+        setNewComment("");
+      })
+      .catch((error) => {
+        console.error("Error creating comment:", error);
+        alert("Error creating comment. Please try again.");
+      })
+      .finally(() => {
+        setSubmitting(false);
+      });
   };
 
   const handleCommentCreated = (newComment) => {
-    setComments(prev => [newComment, ...prev]);
+    setComments((prev) => [newComment, ...prev]);
   };
 
   if (loading) {
@@ -67,15 +71,15 @@ export default function CommentSection({ postId }) {
             required
           />
           <div className="comment-actions">
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="btn btn-secondary"
               onClick={() => setNewComment("")}
             >
               Cancel
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="btn btn-primary"
               disabled={submitting || !newComment.trim()}
             >
@@ -87,11 +91,13 @@ export default function CommentSection({ postId }) {
 
       <div className="comments-list">
         {comments.length === 0 ? (
-          <div className="no-comments">No suggestions yet. Be the first to suggest!</div>
+          <div className="no-comments">
+            No suggestions yet. Be the first to suggest!
+          </div>
         ) : (
-          comments.map(comment => (
-            <CommentItem 
-              key={comment.commentId} 
+          comments.map((comment) => (
+            <CommentItem
+              key={comment.commentId}
               comment={comment}
               onReply={handleCommentCreated}
             />

@@ -17,60 +17,69 @@ export default function PostDetail({ postId, onNavigate }) {
     loadPost();
   }, [postId]);
 
-  const loadPost = async () => {
-    try {
-      setLoading(true);
-      const response = await getPost(postId);
-      setPost(response.data);
-      setIsVoted(response.data.isVoted || false);
-      setVoteCount(response.data.voteCount || 0);
-    } catch (error) {
-      console.error("Error loading post:", error);
-    } finally {
-      setLoading(false);
-    }
+  const loadPost = () => {
+    setLoading(true);
+    getPost(postId)
+      .then(response => {
+        setPost(response.data);
+        setIsVoted(response.data.isVoted || false);
+        setVoteCount(response.data.voteCount || 0);
+      })
+      .catch(error => {
+        console.error("Error loading post:", error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
-  const handleVote = async () => {
+  const handleVote = () => {
     if (!post) return;
 
-    try {
-      if (isVoted) {
-        await unvotePost(post.postId);
-        setIsVoted(false);
-        setVoteCount(prev => prev - 1);
-      } else {
-        await votePost(post.postId);
-        setIsVoted(true);
-        setVoteCount(prev => prev + 1);
-      }
-    } catch (error) {
-      console.error("Error voting:", error);
+    if (isVoted) {
+      unvotePost(post.postId)
+        .then(() => {
+          setIsVoted(false);
+          setVoteCount(prev => prev - 1);
+        })
+        .catch(error => {
+          console.error("Error unvoting:", error);
+        });
+    } else {
+      votePost(post.postId)
+        .then(() => {
+          setIsVoted(true);
+          setVoteCount(prev => prev + 1);
+        })
+        .catch(error => {
+          console.error("Error voting:", error);
+        });
     }
   };
 
-  const handleReport = async () => {
+  const handleReport = () => {
     if (!reportReason.trim()) return;
 
-    try {
-      await reportPost(post.postId, reportReason);
-      setShowReportModal(false);
-      setReportReason("");
-      alert("Post reported successfully");
-    } catch (error) {
-      console.error("Error reporting post:", error);
-      alert("Error reporting post");
-    }
+    reportPost(post.postId, reportReason)
+      .then(() => {
+        setShowReportModal(false);
+        setReportReason("");
+        alert("Post reported successfully");
+      })
+      .catch(error => {
+        console.error("Error reporting post:", error);
+        alert("Error reporting post");
+      });
   };
 
   const formatTime = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -101,25 +110,20 @@ export default function PostDetail({ postId, onNavigate }) {
   return (
     <div className="post-detail-container">
       <Sidebar onNavigate={onNavigate} />
-      
       <main className="main-content">
         <HeaderBar onNavigate={onNavigate} currentPage="postDetail" />
-        
         <div className="post-detail-content">
           <div className="post-detail-main">
             <div className="post-detail-header">
-              <button 
-                className="back-btn"
-                onClick={() => onNavigate('forum')}
-              >
+              <button className="back-btn" onClick={() => onNavigate("forum")}>
                 ← Back to Forum
               </button>
             </div>
-            
+
             <div className="post-detail-card">
               <div className="post-header">
-                <img 
-                  src={post.user?.avatar || "/default-avatar.png"} 
+                <img
+                  src={post.user?.avatar || "/default-avatar.png"}
                   alt={post.user?.username}
                   className="post-avatar"
                 />
@@ -128,7 +132,7 @@ export default function PostDetail({ postId, onNavigate }) {
                   <p className="post-time">{formatTime(post.createdAt)}</p>
                 </div>
                 <div className="post-actions">
-                  <button 
+                  <button
                     className="post-action-btn"
                     onClick={() => setShowReportModal(true)}
                   >
@@ -136,14 +140,12 @@ export default function PostDetail({ postId, onNavigate }) {
                   </button>
                 </div>
               </div>
-              
+
               <div className="post-content">
                 <h1 className="post-title">{post.title}</h1>
-                <div className="post-body">
-                  {post.content}
-                </div>
+                <div className="post-body">{post.content}</div>
               </div>
-              
+
               {post.tags && post.tags.length > 0 && (
                 <div className="post-tags">
                   {post.tags.map((tag, index) => (
@@ -153,7 +155,7 @@ export default function PostDetail({ postId, onNavigate }) {
                   ))}
                 </div>
               )}
-              
+
               <div className="post-stats">
                 <div className="post-stat">
                   <span className="post-stat-icon">👁️</span>
@@ -163,8 +165,8 @@ export default function PostDetail({ postId, onNavigate }) {
                   <span className="post-stat-icon">💬</span>
                   <span>{post.commentCount || 0}</span>
                 </div>
-                <button 
-                  className={`vote-btn ${isVoted ? 'voted' : ''}`}
+                <button
+                  className={`vote-btn ${isVoted ? "voted" : ""}`}
                   onClick={handleVote}
                 >
                   <span>↑</span>
@@ -172,13 +174,12 @@ export default function PostDetail({ postId, onNavigate }) {
                 </button>
               </div>
             </div>
-            
+
             <CommentSection postId={postId} />
           </div>
         </div>
       </main>
-      
-      {/* Report Modal */}
+
       {showReportModal && (
         <div className="modal-overlay">
           <div className="modal">
@@ -190,13 +191,13 @@ export default function PostDetail({ postId, onNavigate }) {
               rows={4}
             />
             <div className="modal-actions">
-              <button 
+              <button
                 className="btn btn-secondary"
                 onClick={() => setShowReportModal(false)}
               >
                 Cancel
               </button>
-              <button 
+              <button
                 className="btn btn-primary"
                 onClick={handleReport}
                 disabled={!reportReason.trim()}

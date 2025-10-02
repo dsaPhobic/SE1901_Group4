@@ -30,7 +30,6 @@ export function AuthProvider({ children }) {
   );
 }
 
-// custom hook để xài gọn hơn
 export function useAuth() {
   return useContext(AuthContext);
 }

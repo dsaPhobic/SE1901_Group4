@@ -210,7 +210,7 @@ namespace WebAPI.Services
             var report = new Report
             {
                 UserId = userId,
-                PostId = id, // fixed missing relation
+                PostId = id, 
                 Content = reason,
                 Status = "Pending",
                 CreatedAt = DateTime.UtcNow
