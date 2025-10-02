@@ -2,6 +2,7 @@
 {
     public class WordDto
     {
+        public int WordId { get; set; }
         public string Term { get; set; } = null!;
         public string? Meaning { get; set; }
         public string? Audio { get; set; }
