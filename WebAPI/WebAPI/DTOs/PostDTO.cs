@@ -1,83 +1,57 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace WebAPI.DTOs
 {
-    public class PostDTO : Controller
+    public class PostDTO
     {
-        // GET: PostDTO
-        public ActionResult Index()
-        {
-            return View();
-        }
+        public int PostId { get; set; }
+        public string Title { get; set; } = null!;
+        public string Content { get; set; } = null!;
+        public string Category { get; set; } = null!;
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public int ViewCount { get; set; }
+        public int CommentCount { get; set; }
+        public int VoteCount { get; set; }
+        public bool IsVoted { get; set; }
+        public UserDTO User { get; set; } = null!;
+        public List<TagDTO> Tags { get; set; } = new List<TagDTO>();
+    }
 
-        // GET: PostDTO/Details/5
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
+    public class CreatePostDTO
+    {
+        [Required]
+        [StringLength(200)]
+        public string Title { get; set; } = null!;
 
-        // GET: PostDTO/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
+        [Required]
+        public string Content { get; set; } = null!;
 
-        // POST: PostDTO/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
+        [Required]
+        [StringLength(50)]
+        public string Category { get; set; } = null!;
 
-        // GET: PostDTO/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
+        public List<string> TagNames { get; set; } = new List<string>();
+    }
 
-        // POST: PostDTO/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
+    public class UpdatePostDTO
+    {
+        [StringLength(200)]
+        public string? Title { get; set; }
 
-        // GET: PostDTO/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
+        public string? Content { get; set; }
 
-        // POST: PostDTO/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
+        [StringLength(50)]
+        public string? Category { get; set; }
+
+        public List<string>? TagNames { get; set; }
+    }
+
+    public class ReportPostDTO
+    {
+        [Required]
+        [StringLength(500)]
+        public string Reason { get; set; } = null!;
     }
 }
+
