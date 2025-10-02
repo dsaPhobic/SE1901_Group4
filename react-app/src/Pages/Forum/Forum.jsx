@@ -4,7 +4,7 @@ import Sidebar from "../../Components/Dashboard/Sidebar";
 import HeaderBar from "../../Components/Layout/HeaderBar";
 import PostList from "../../Components/Forum/PostList";
 import RightSidebar from "../../Components/Forum/RightSidebar";
-import { getPosts, getPostsByFilter } from "../../Services/ForumApi";
+import { getPostsByFilter } from "../../Services/ForumApi";
 
 export default function Forum({ onNavigate }) {
   const [posts, setPosts] = useState([]);
@@ -24,34 +24,38 @@ export default function Forum({ onNavigate }) {
     loadPosts();
   }, [activeFilter]);
 
-  const loadPosts = async () => {
-    try {
-      setLoading(true);
-      const response = await getPostsByFilter(activeFilter, 1);
-      setPosts(response.data);
-      setCurrentPage(1);
-      setHasMore(response.data.length === 10);
-    } catch (error) {
-      console.error("Error loading posts:", error);
-    } finally {
-      setLoading(false);
-    }
+  const loadPosts = () => {
+    setLoading(true);
+    getPostsByFilter(activeFilter, 1)
+      .then((response) => {
+        setPosts(response.data);
+        setCurrentPage(1);
+        setHasMore(response.data.length === 10);
+      })
+      .catch((error) => {
+        console.error("Error loading posts:", error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
-  const loadMorePosts = async () => {
+  const loadMorePosts = () => {
     if (!hasMore || loading) return;
-    
-    try {
-      setLoading(true);
-      const response = await getPostsByFilter(activeFilter, currentPage + 1);
-      setPosts(prev => [...prev, ...response.data]);
-      setCurrentPage(prev => prev + 1);
-      setHasMore(response.data.length === 10);
-    } catch (error) {
-      console.error("Error loading more posts:", error);
-    } finally {
-      setLoading(false);
-    }
+
+    setLoading(true);
+    getPostsByFilter(activeFilter, currentPage + 1)
+      .then((response) => {
+        setPosts((prev) => [...prev, ...response.data]);
+        setCurrentPage((prev) => prev + 1);
+        setHasMore(response.data.length === 10);
+      })
+      .catch((error) => {
+        console.error("Error loading more posts:", error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   const handleFilterChange = (filter) => {
@@ -59,7 +63,7 @@ export default function Forum({ onNavigate }) {
   };
 
   const handlePostCreated = (newPost) => {
-    setPosts(prev => [newPost, ...prev]);
+    setPosts((prev) => [newPost, ...prev]);
   };
 
   return (
@@ -76,10 +80,10 @@ export default function Forum({ onNavigate }) {
             </div>
             
             <div className="forum-filters">
-              {filters.map(filter => (
+              {filters.map((filter) => (
                 <button
                   key={filter.key}
-                  className={`filter-btn ${activeFilter === filter.key ? 'active' : ''}`}
+                  className={`filter-btn ${activeFilter === filter.key ? "active" : ""}`}
                   onClick={() => handleFilterChange(filter.key)}
                 >
                   {filter.label}
