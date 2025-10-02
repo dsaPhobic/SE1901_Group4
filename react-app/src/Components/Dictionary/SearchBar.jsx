@@ -1,8 +1,14 @@
 import React from "react";
 import { Search } from "lucide-react";
-import styles from "./SearchBar.module.css";
+import styles from "./search.module.css";
 
-export default function SearchBar({ value, onChange, onSubmit, placeholder }) {
+export default function SearchBar({
+  value,
+  onChange,
+  onSubmit,
+  placeholder,
+  showButton = true, 
+}) {
   return (
     <form className={styles.searchBar} onSubmit={onSubmit}>
       <input
@@ -12,9 +18,11 @@ export default function SearchBar({ value, onChange, onSubmit, placeholder }) {
         onChange={(e) => onChange(e.target.value)}
         className={styles.input}
       />
-      <button type="submit" className={styles.button}>
-        <Search size={16} /> Search
-      </button>
+      {showButton && (
+        <button type="submit" className={styles.button}>
+          <Search size={16} /> Search
+        </button>
+      )}
     </form>
   );
 }

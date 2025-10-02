@@ -2,11 +2,19 @@ import React, { useMemo, useState } from "react";
 import "./Dictionary.css";
 import Sidebar from "../../Components/Dashboard/Sidebar";
 import HeaderBar from "../../Components/Layout/HeaderBar";
-import { Trash2, Volume2, PlusCircle, XCircle, FolderPlus, X } from "lucide-react";
+import {
+  Trash2,
+  Volume2,
+  PlusCircle,
+  XCircle,
+  FolderPlus,
+  X,
+} from "lucide-react";
 import { useDictionary } from "../../Hook/UseDictionary";
 import * as VocabGroupApi from "../../Services/VocabGroupApi";
 import SearchBar from "../../Components/Dictionary/SearchBar";
 import Popup from "../../Components/Dictionary/PopUp";
+
 export default function Dictionary() {
   const user = JSON.parse(localStorage.getItem("user"));
   const {
@@ -32,6 +40,7 @@ export default function Dictionary() {
   const [newGroupName, setNewGroupName] = useState("");
   const [showCreateGroup, setShowCreateGroup] = useState(false);
 
+  // 🔤 Filter + sort
   const filteredWords = useMemo(() => {
     return words
       .filter((w) =>
@@ -40,6 +49,7 @@ export default function Dictionary() {
       .sort((a, b) => a.term.localeCompare(b.term));
   }, [words, groupSearchTerm]);
 
+  // ✅ Tạo group mới
   const handleCreateGroup = () => {
     if (!newGroupName.trim()) {
       alert("Group name is required!");
@@ -60,6 +70,8 @@ export default function Dictionary() {
         alert("Failed to create group");
       });
   };
+
+  // ✅ Xoá group
   const handleDeleteGroup = (g) => {
     if (window.confirm(`Delete group "${g.groupname}"?`)) {
       VocabGroupApi.remove(g.groupId)
@@ -85,11 +97,13 @@ export default function Dictionary() {
         <div className="dictionary-container">
           <h2>Vocabulary Notebook</h2>
 
+          {/* ✅ Global Search (có nút) */}
           <SearchBar
             value={searchTerm}
             onChange={setSearchTerm}
             onSubmit={handleSearch}
             placeholder="Search vocabulary..."
+            showButton={true}
           />
 
           {/* Tabs for groups */}
@@ -97,7 +111,9 @@ export default function Dictionary() {
             {groups.map((g) => (
               <div key={g.groupId} className="tab-wrapper">
                 <button
-                  className={`tab ${activeGroup?.groupId === g.groupId ? "active" : ""}`}
+                  className={`tab ${
+                    activeGroup?.groupId === g.groupId ? "active" : ""
+                  }`}
                   onClick={() => setActiveGroup(g)}
                 >
                   {g.groupname} ({g.wordIds.length})
@@ -110,16 +126,20 @@ export default function Dictionary() {
                 </button>
               </div>
             ))}
-            <button className="tab create" onClick={() => setShowCreateGroup(true)}>
+            <button
+              className="tab create"
+              onClick={() => setShowCreateGroup(true)}
+            >
               <FolderPlus size={16} /> New Group
             </button>
           </div>
 
+          {/* ✅ Group Search (không nút, lọc realtime) */}
           <SearchBar
             value={groupSearchTerm}
             onChange={setGroupSearchTerm}
-            onSubmit={(e) => e.preventDefault()}
             placeholder="Search in this group..."
+            showButton={false}
           />
 
           {/* Words table */}
@@ -141,10 +161,15 @@ export default function Dictionary() {
                   <td>{w.example || "-"}</td>
                   <td>
                     {w.audio ? (
-                      <button className="icon-btn" onClick={() => new Audio(w.audio).play()}>
+                      <button
+                        className="icon-btn"
+                        onClick={() => new Audio(w.audio).play()}
+                      >
                         <Volume2 size={18} />
                       </button>
-                    ) : "-"}
+                    ) : (
+                      "-"
+                    )}
                   </td>
                   <td>
                     <button
@@ -170,7 +195,10 @@ export default function Dictionary() {
                 <button onClick={handleCreateGroup}>
                   <PlusCircle size={18} /> Create
                 </button>
-                <button className="cancel" onClick={() => setShowCreateGroup(false)}>
+                <button
+                  className="cancel"
+                  onClick={() => setShowCreateGroup(false)}
+                >
                   <XCircle size={18} /> Cancel
                 </button>
               </>
@@ -205,9 +233,15 @@ export default function Dictionary() {
               <p className="error">{errorMessage}</p>
             ) : (
               <>
-                <div><strong>Term:</strong> {searchResult.term}</div>
-                <div><strong>Meaning:</strong> {searchResult.meaning || "-"}</div>
-                <div><strong>Example:</strong> {searchResult.example || "-"}</div>
+                <div>
+                  <strong>Term:</strong> {searchResult.term}
+                </div>
+                <div>
+                  <strong>Meaning:</strong> {searchResult.meaning || "-"}
+                </div>
+                <div>
+                  <strong>Example:</strong> {searchResult.example || "-"}
+                </div>
                 <div>
                   <strong>Audio:</strong>{" "}
                   {searchResult.audio ? (
@@ -217,7 +251,9 @@ export default function Dictionary() {
                     >
                       <Volume2 size={18} />
                     </button>
-                  ) : "Not available"}
+                  ) : (
+                    "Not available"
+                  )}
                 </div>
                 <select
                   value={selectedGroupId || ""}

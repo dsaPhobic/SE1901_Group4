@@ -27,7 +27,6 @@ export function useDictionary(user) {
     });
   }, [user?.userId, refreshGroups]); 
 
-  // Load words of active group
   useEffect(() => {
     if (!activeGroup) return;
     VocabGroupApi.getWordsInGroup(activeGroup.groupId)
