@@ -26,29 +26,31 @@ export default function CreatePost({ onNavigate }) {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.title.trim() || !formData.content.trim()) {
       alert("Please fill in all required fields");
       return;
     }
 
-      try {
-        setLoading(true);
-        const response = await createPost(formData);
-        onNavigate('postDetail', response.data.postId);
-      } catch (error) {
-      console.error("Error creating post:", error);
-      alert("Error creating post. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+    createPost(formData)
+      .then((response) => {
+        onNavigate("postDetail", response.data.postId);
+      })
+      .catch((error) => {
+        console.error("Error creating post:", error);
+        alert("Error creating post. Please try again.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   const handleSaveDraft = () => {
@@ -80,7 +82,7 @@ export default function CreatePost({ onNavigate }) {
                   required
                 >
                   <option value="">Select a category</option>
-                  {categories.map(category => (
+                  {categories.map((category) => (
                     <option key={category} value={category}>
                       {category}
                     </option>
@@ -118,7 +120,7 @@ export default function CreatePost({ onNavigate }) {
                 <button 
                   type="button" 
                   className="btn btn-secondary"
-                  onClick={() => onNavigate('forum')}
+                  onClick={() => onNavigate("forum")}
                 >
                   Cancel
                 </button>
