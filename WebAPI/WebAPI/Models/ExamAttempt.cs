@@ -11,13 +11,15 @@ public partial class ExamAttempt
 
     public int UserId { get; set; }
 
+    public string? AnswerText { get; set; }
+
+    public decimal? Score { get; set; }
+
     public DateTime StartedAt { get; set; }
 
     public DateTime? SubmittedAt { get; set; }
 
     public virtual Exam Exam { get; set; } = null!;
-
-    public virtual ICollection<ExamAnswer> ExamAnswers { get; set; } = new List<ExamAnswer>();
 
     public virtual User User { get; set; } = null!;
 }
