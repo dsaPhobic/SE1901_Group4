@@ -78,8 +78,3 @@ export function getTags() {
 export function createTag(tagName) {
   return API.post("/tags", { tagName });
 }
-
-// Categories API
-export function getCategories() {
-  return API.get("/categories");
-}
