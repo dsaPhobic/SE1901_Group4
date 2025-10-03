@@ -22,7 +22,6 @@ namespace WebAPI.Controllers
             var attempts = _context.ExamAttempt
                 .Where(a => a.UserId == userId)
                 .Include(a => a.Exam)
-                .Include(a => a.ExamAnswers)
                 .Select(a => new
                 {
                     a.AttemptId,
@@ -31,21 +30,20 @@ namespace WebAPI.Controllers
                     a.ExamId,
                     ExamName = a.Exam.ExamName,
                     ExamType = a.Exam.ExamType,
-                    TotalScore = a.ExamAnswers.Sum(ans => (decimal?)(ans.Score) ?? 0)
+                    a.Score,
+                    a.AnswerText
                 })
                 .ToList();
 
             return Ok(attempts);
         }
 
-        // Lấy chi tiết 1 attempt theo AttemptId
         [HttpGet("{attemptId}")]
-        public ActionResult<object> GetExamAttemptDetail(int attemptId)
+        public ActionResult<object> GetExamAttemptDetail(long attemptId)
         {
             var attempt = _context.ExamAttempt
                 .Where(a => a.AttemptId == attemptId)
                 .Include(a => a.Exam)
-                .Include(a => a.ExamAnswers)
                 .Select(a => new
                 {
                     a.AttemptId,
@@ -54,15 +52,8 @@ namespace WebAPI.Controllers
                     a.ExamId,
                     ExamName = a.Exam.ExamName,
                     ExamType = a.Exam.ExamType,
-                    TotalScore = a.ExamAnswers.Sum(ans => (decimal?)(ans.Score) ?? 0),
-                    Answers = a.ExamAnswers.Select(ans => new
-                    {
-                        ans.AnswerId,
-                        ans.ItemId,
-                        ans.AnswerText,
-                        ans.Score,
-                        ans.IsCorrect
-                    }).ToList()
+                    a.Score,
+                    a.AnswerText
                 })
                 .FirstOrDefault();
 
@@ -70,5 +61,7 @@ namespace WebAPI.Controllers
 
             return Ok(attempt);
         }
+
+
     }
 }
