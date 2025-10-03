@@ -12,9 +12,7 @@ namespace WebAPI.Data
         }
         public virtual DbSet<User> User { get; set; }
         public virtual DbSet<Exam> Exam { get; set; }
-        public virtual DbSet<ExamItem> ExamItem { get; set; }
         public virtual DbSet<ExamAttempt> ExamAttempt { get; set; }
-        public virtual DbSet<ExamAnswer> ExamAnswer { get; set; }
         public virtual DbSet<Reading> Reading { get; set; }
         public virtual DbSet<Listening> Listening { get; set; }
         public virtual DbSet<Writing> Writing { get; set; }
@@ -65,7 +63,7 @@ namespace WebAPI.Data
 
             modelBuilder.Entity<Exam>(entity =>
             {
-                entity.HasKey(e => e.ExamId).HasName("PK__Exam__9C8C7BE9C702D48D");
+                entity.HasKey(e => e.ExamId).HasName("PK__Exam__9C8C7BE95200C68D");
 
                 entity.ToTable("Exam");
 
@@ -82,49 +80,18 @@ namespace WebAPI.Data
                     .HasColumnName("exam_type");
             });
 
-            modelBuilder.Entity<ExamAnswer>(entity =>
-            {
-                entity.HasKey(e => e.AnswerId).HasName("PK__ExamAnsw__33724318BE69D9A4");
-
-                entity.ToTable("ExamAnswer");
-
-                entity.HasIndex(e => new { e.AttemptId, e.ItemId }, "UX_ExamAnswer").IsUnique();
-
-                entity.Property(e => e.AnswerId).HasColumnName("answer_id");
-                entity.Property(e => e.AnswerBlob)
-                    .HasMaxLength(512)
-                    .HasColumnName("answer_blob");
-                entity.Property(e => e.AnswerText).HasColumnName("answer_text");
-                entity.Property(e => e.AttemptId).HasColumnName("attempt_id");
-                entity.Property(e => e.CreatedAt)
-                    .HasPrecision(0)
-                    .HasDefaultValueSql("(sysdatetime())")
-                    .HasColumnName("created_at");
-                entity.Property(e => e.IsCorrect).HasColumnName("is_correct");
-                entity.Property(e => e.ItemId).HasColumnName("item_id");
-                entity.Property(e => e.Score)
-                    .HasColumnType("decimal(5, 2)")
-                    .HasColumnName("score");
-
-                entity.HasOne(d => d.Attempt).WithMany(p => p.ExamAnswers)
-                    .HasForeignKey(d => d.AttemptId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__ExamAnswe__attem__49C3F6B7");
-
-                entity.HasOne(d => d.Item).WithMany(p => p.ExamAnswers)
-                    .HasForeignKey(d => d.ItemId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__ExamAnswe__item___4AB81AF0");
-            });
-
             modelBuilder.Entity<ExamAttempt>(entity =>
             {
-                entity.HasKey(e => e.AttemptId).HasName("PK__ExamAtte__5621F949E731502E");
+                entity.HasKey(e => e.AttemptId).HasName("PK__ExamAtte__5621F94951E1EFD0");
 
                 entity.ToTable("ExamAttempt");
 
                 entity.Property(e => e.AttemptId).HasColumnName("attempt_id");
+                entity.Property(e => e.AnswerText).HasColumnName("answer_text");
                 entity.Property(e => e.ExamId).HasColumnName("exam_id");
+                entity.Property(e => e.Score)
+                    .HasColumnType("decimal(5, 2)")
+                    .HasColumnName("score");
                 entity.Property(e => e.StartedAt)
                     .HasPrecision(0)
                     .HasDefaultValueSql("(sysdatetime())")
@@ -137,52 +104,37 @@ namespace WebAPI.Data
                 entity.HasOne(d => d.Exam).WithMany(p => p.ExamAttempts)
                     .HasForeignKey(d => d.ExamId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__ExamAttem__exam___440B1D61");
+                    .HasConstraintName("FK__ExamAttem__exam___534D60F1");
 
                 entity.HasOne(d => d.User).WithMany(p => p.ExamAttempts)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__ExamAttem__user___44FF419A");
+                    .HasConstraintName("FK__ExamAttem__user___5441852A");
             });
 
-            modelBuilder.Entity<ExamItem>(entity =>
+            modelBuilder.Entity<Listening>(entity =>
             {
-                entity.HasKey(e => e.ItemId).HasName("PK__ExamItem__52020FDD4B58908D");
+                entity.HasKey(e => e.ListeningId).HasName("PK__Listenin__91F7AA8D2027FE10");
 
-                entity.ToTable("ExamItem");
+                entity.ToTable("Listening");
 
-                entity.HasIndex(e => new { e.ExamId, e.DisplayOrder }, "IX_ExamItem_exam");
-
-                entity.Property(e => e.ItemId).HasColumnName("item_id");
+                entity.Property(e => e.ListeningId).HasColumnName("listening_id");
                 entity.Property(e => e.CreatedAt)
                     .HasPrecision(0)
                     .HasDefaultValueSql("(sysdatetime())")
                     .HasColumnName("created_at");
                 entity.Property(e => e.DisplayOrder).HasColumnName("display_order");
                 entity.Property(e => e.ExamId).HasColumnName("exam_id");
-                entity.Property(e => e.RefId).HasColumnName("ref_id");
-                entity.Property(e => e.RefTable)
-                    .HasMaxLength(20)
-                    .HasColumnName("ref_table");
-
-                entity.HasOne(d => d.Exam).WithMany(p => p.ExamItems)
-                    .HasForeignKey(d => d.ExamId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__ExamItem__exam_i__403A8C7D");
-            });
-
-            modelBuilder.Entity<Listening>(entity =>
-            {
-                entity.HasKey(e => e.ListeningId).HasName("PK__Listenin__91F7AA8D0A88C3A8");
-
-                entity.ToTable("Listening");
-
-                entity.Property(e => e.ListeningId).HasColumnName("listening_id");
                 entity.Property(e => e.ListeningContent).HasColumnName("listening_content");
                 entity.Property(e => e.ListeningQuestion).HasColumnName("listening_question");
                 entity.Property(e => e.ListeningType)
                     .HasMaxLength(50)
                     .HasColumnName("listening_type");
+
+                entity.HasOne(d => d.Exam).WithMany(p => p.Listenings)
+                    .HasForeignKey(d => d.ExamId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__Listening__exam___5BE2A6F2");
             });
 
             modelBuilder.Entity<Notification>(entity =>
@@ -274,16 +226,27 @@ namespace WebAPI.Data
 
             modelBuilder.Entity<Reading>(entity =>
             {
-                entity.HasKey(e => e.ReadingId).HasName("PK__Reading__8091F95A2F1FB203");
+                entity.HasKey(e => e.ReadingId).HasName("PK__Reading__8091F95AEE19033B");
 
                 entity.ToTable("Reading");
 
                 entity.Property(e => e.ReadingId).HasColumnName("reading_id");
+                entity.Property(e => e.CreatedAt)
+                    .HasPrecision(0)
+                    .HasDefaultValueSql("(sysdatetime())")
+                    .HasColumnName("created_at");
+                entity.Property(e => e.DisplayOrder).HasColumnName("display_order");
+                entity.Property(e => e.ExamId).HasColumnName("exam_id");
                 entity.Property(e => e.ReadingContent).HasColumnName("reading_content");
                 entity.Property(e => e.ReadingQuestion).HasColumnName("reading_question");
                 entity.Property(e => e.ReadingType)
                     .HasMaxLength(50)
                     .HasColumnName("reading_type");
+
+                entity.HasOne(d => d.Exam).WithMany(p => p.Readings)
+                    .HasForeignKey(d => d.ExamId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__Reading__exam_id__5812160E");
             });
 
             modelBuilder.Entity<Report>(entity =>
@@ -312,15 +275,26 @@ namespace WebAPI.Data
 
             modelBuilder.Entity<Speaking>(entity =>
             {
-                entity.HasKey(e => e.SpeakingId).HasName("PK__Speaking__598C6973C5D9136A");
+                entity.HasKey(e => e.SpeakingId).HasName("PK__Speaking__598C697379CF1670");
 
                 entity.ToTable("Speaking");
 
                 entity.Property(e => e.SpeakingId).HasColumnName("speaking_id");
+                entity.Property(e => e.CreatedAt)
+                    .HasPrecision(0)
+                    .HasDefaultValueSql("(sysdatetime())")
+                    .HasColumnName("created_at");
+                entity.Property(e => e.DisplayOrder).HasColumnName("display_order");
+                entity.Property(e => e.ExamId).HasColumnName("exam_id");
                 entity.Property(e => e.SpeakingQuestion).HasColumnName("speaking_question");
                 entity.Property(e => e.SpeakingType)
                     .HasMaxLength(50)
                     .HasColumnName("speaking_type");
+
+                entity.HasOne(d => d.Exam).WithMany(p => p.Speakings)
+                    .HasForeignKey(d => d.ExamId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__Speaking__exam_i__6383C8BA");
             });
 
             modelBuilder.Entity<Tag>(entity =>
@@ -462,7 +436,6 @@ namespace WebAPI.Data
                         });
             });
 
-
             modelBuilder.Entity<Word>(entity =>
             {
                 entity.HasKey(e => e.WordId).HasName("PK__Word__7FFA1D4039C4B1A6");
@@ -484,15 +457,26 @@ namespace WebAPI.Data
 
             modelBuilder.Entity<Writing>(entity =>
             {
-                entity.HasKey(e => e.WritingId).HasName("PK__Writing__4AE2633EE8B92172");
+                entity.HasKey(e => e.WritingId).HasName("PK__Writing__4AE2633E2FDA5C2C");
 
                 entity.ToTable("Writing");
 
                 entity.Property(e => e.WritingId).HasColumnName("writing_id");
+                entity.Property(e => e.CreatedAt)
+                    .HasPrecision(0)
+                    .HasDefaultValueSql("(sysdatetime())")
+                    .HasColumnName("created_at");
+                entity.Property(e => e.DisplayOrder).HasColumnName("display_order");
+                entity.Property(e => e.ExamId).HasColumnName("exam_id");
                 entity.Property(e => e.WritingQuestion).HasColumnName("writing_question");
                 entity.Property(e => e.WritingType)
                     .HasMaxLength(50)
                     .HasColumnName("writing_type");
+
+                entity.HasOne(d => d.Exam).WithMany(p => p.Writings)
+                    .HasForeignKey(d => d.ExamId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__Writing__exam_id__5FB337D6");
             });
 
             OnModelCreatingPartial(modelBuilder);

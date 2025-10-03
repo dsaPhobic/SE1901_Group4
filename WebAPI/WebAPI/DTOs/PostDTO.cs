@@ -7,7 +7,6 @@ namespace WebAPI.DTOs
         public int PostId { get; set; }
         public string Title { get; set; } = null!;
         public string Content { get; set; } = null!;
-        public string Category { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public int ViewCount { get; set; }
@@ -27,10 +26,6 @@ namespace WebAPI.DTOs
         [Required]
         public string Content { get; set; } = null!;
 
-        [Required]
-        [StringLength(50)]
-        public string Category { get; set; } = null!;
-
         public List<string> TagNames { get; set; } = new List<string>();
     }
 
@@ -40,9 +35,6 @@ namespace WebAPI.DTOs
         public string? Title { get; set; }
 
         public string? Content { get; set; }
-
-        [StringLength(50)]
-        public string? Category { get; set; }
 
         public List<string>? TagNames { get; set; }
     }

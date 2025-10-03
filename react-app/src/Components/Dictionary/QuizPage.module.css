@@ -1,0 +1,156 @@
+.quizContainer {
+  max-width: 760px;
+  margin: 36px auto;
+  padding: 28px;
+  background: #ffffff;
+  border: 1px solid #eef2f7;
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(20, 32, 80, 0.06);
+  font-size: 24px; /* mặc định */
+}
+
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-size: 24px;
+}
+
+.backLink {
+  background: transparent;
+  border: none;
+  color: #475569;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 26px;
+}
+.backLink:hover {
+  color: #111827;
+}
+
+.counter {
+  font-size: 24px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.question {
+  font-size: 42px;     
+  font-weight: 800;
+  color: #0f172a;
+  margin: 30px 0;
+  text-align: center;
+}
+
+.optionsGrid {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.optionBtn {
+  width: 100%;
+  height: 150px;          
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+
+  font-size: 24px;       
+  line-height: 1.3;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  word-wrap: break-word;
+  white-space: normal;
+  overflow: hidden;
+}
+
+
+.optionBtn:hover:not(:disabled) {
+  background: #eaf2ff;
+  transform: translateY(-2px);
+}
+
+.optionBtn:disabled {
+  opacity: 0.9;
+  cursor: default;
+}
+
+.correct {
+  background: #48bb78 !important;
+  border-color: #48bb78 !important;
+  color: white !important;
+  animation: pop 0.4s ease;
+}
+
+.wrong {
+  background: #f56565 !important;
+  border-color: #f56565 !important;
+  color: white !important;
+  animation: shake 0.4s ease;
+}
+
+@keyframes pop {
+  0% { transform: scale(0.95); }
+  60% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+.progressWrap {
+  height: 18px;
+  background: #eef2f7;
+  border-radius: 999px;
+  overflow: hidden;
+  display: flex;
+  margin-top: 16px;
+}
+
+.progressBarCorrect {
+  height: 100%;
+  background: #48bb78;
+  transition: width 0.35s ease;
+}
+
+.progressBarWrong {
+  height: 100%;
+  background: #f56565;
+  transition: width 0.35s ease;
+}
+
+.meta {
+  margin-top: 12px;
+  font-size: 20px;
+  color: #64748b;
+  text-align: right;
+}
+
+.backBtn {
+  margin-top: 24px;
+  padding: 16px 28px;
+  border: none;
+  border-radius: 10px;
+  background: #48bb78;
+  color: white;
+  font-weight: 700;
+  font-size: 26px;
+  cursor: pointer;
+}
+.backBtn:hover {
+  background: #38a169;
+}

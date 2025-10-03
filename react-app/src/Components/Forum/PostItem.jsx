@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { votePost, unvotePost } from "../../Services/ForumApi";
 
-export default function PostItem({ post, onNavigate }) {
+export default function PostItem({ post }) {
+  const navigate = useNavigate();
   const [isVoted, setIsVoted] = useState(post.isVoted || false);
   const [voteCount, setVoteCount] = useState(post.voteCount || 0);
   const [loading, setLoading] = useState(false);
@@ -40,7 +42,7 @@ export default function PostItem({ post, onNavigate }) {
   };
 
   const handlePostClick = () => {
-    onNavigate("postDetail", post.postId);
+    navigate(`/post/${post.postId}`);
   };
 
   const formatTime = (dateString) => {
@@ -62,21 +64,29 @@ export default function PostItem({ post, onNavigate }) {
 
   return (
     <div className="post-item" onClick={handlePostClick}>
+      {/* Header Section */}
       <div className="post-header">
-        <img
-          src={post.user?.avatar || "/default-avatar.png"}
-          alt={post.user?.username}
-          className="post-avatar"
-        />
-        <div className="post-user-info">
-          <p className="post-username">@{post.user?.username}</p>
-          <p className="post-time">{formatTime(post.createdAt)}</p>
+        <div className="post-user-section">
+          <img
+            src={post.user?.avatar || "/default-avatar.png"}
+            alt={post.user?.username}
+            className="post-avatar"
+          />
+          <div className="post-user-info">
+            <p className="post-username">{post.user?.username}</p>
+            <p className="post-time">{formatTime(post.createdAt)}</p>
+          </div>
         </div>
-        <div className="post-actions">
-          <button className="post-action-btn">⋯</button>
-        </div>
+        <button className="post-menu-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="1"/>
+            <circle cx="12" cy="5" r="1"/>
+            <circle cx="12" cy="19" r="1"/>
+          </svg>
+        </button>
       </div>
 
+      {/* Content Section */}
       <div className="post-content">
         <h3 className="post-title">{post.title}</h3>
         <p className="post-description">
@@ -86,6 +96,7 @@ export default function PostItem({ post, onNavigate }) {
         </p>
       </div>
 
+      {/* Tags Section */}
       {post.tags && post.tags.length > 0 && (
         <div className="post-tags">
           {post.tags.map((tag, index) => (
@@ -96,13 +107,19 @@ export default function PostItem({ post, onNavigate }) {
         </div>
       )}
 
+      {/* Stats Section */}
       <div className="post-stats">
         <div className="post-stat">
-          <span className="post-stat-icon">👁️</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
           <span>{post.viewCount || 0}</span>
         </div>
         <div className="post-stat">
-          <span className="post-stat-icon">💬</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
           <span>{post.commentCount || 0}</span>
         </div>
         <button
@@ -110,7 +127,10 @@ export default function PostItem({ post, onNavigate }) {
           onClick={handleVote}
           disabled={loading}
         >
-          <span>↑</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M7 13l3 3 7-7"/>
+            <path d="M7 6l3 3 7-7"/>
+          </svg>
           <span>{voteCount}</span>
         </button>
       </div>

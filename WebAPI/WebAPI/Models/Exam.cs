@@ -15,5 +15,11 @@ public partial class Exam
 
     public virtual ICollection<ExamAttempt> ExamAttempts { get; set; } = new List<ExamAttempt>();
 
-    public virtual ICollection<ExamItem> ExamItems { get; set; } = new List<ExamItem>();
+    public virtual ICollection<Listening> Listenings { get; set; } = new List<Listening>();
+
+    public virtual ICollection<Reading> Readings { get; set; } = new List<Reading>();
+
+    public virtual ICollection<Speaking> Speakings { get; set; } = new List<Speaking>();
+
+    public virtual ICollection<Writing> Writings { get; set; } = new List<Writing>();
 }

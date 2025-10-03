@@ -70,6 +70,18 @@ export function unlikeComment(commentId) {
   return API.delete(`/comments/${commentId}/like`);
 }
 
+export function voteComment(commentId) {
+  return API.post(`/comments/${commentId}/vote`);
+}
+
+export function unvoteComment(commentId) {
+  return API.delete(`/comments/${commentId}/vote`);
+}
+
+export function createReply(commentId, content) {
+  return API.post(`/comments/${commentId}/replies`, { content });
+}
+
 // Tags API
 export function getTags() {
   return API.get("/tags");
@@ -77,9 +89,4 @@ export function getTags() {
 
 export function createTag(tagName) {
   return API.post("/tags", { tagName });
-}
-
-// Categories API
-export function getCategories() {
-  return API.get("/categories");
 }

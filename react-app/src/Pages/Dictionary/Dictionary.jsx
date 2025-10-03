@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import "./Dictionary.css";
-import Sidebar from "../../Components/Dashboard/Sidebar";
+import Sidebar from "../../Components/Layout/Sidebar";
 import HeaderBar from "../../Components/Layout/HeaderBar";
 import {
   Trash2,
@@ -14,6 +14,7 @@ import { useDictionary } from "../../Hook/UseDictionary";
 import * as VocabGroupApi from "../../Services/VocabGroupApi";
 import SearchBar from "../../Components/Dictionary/SearchBar";
 import Popup from "../../Components/Dictionary/PopUp";
+import QuizPage from "../../Components/Dictionary/QuizPage";
 
 export default function Dictionary() {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -39,8 +40,8 @@ export default function Dictionary() {
   const [groupSearchTerm, setGroupSearchTerm] = useState("");
   const [newGroupName, setNewGroupName] = useState("");
   const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [showQuiz, setShowQuiz] = useState(false);
 
-  // 🔤 Filter + sort
   const filteredWords = useMemo(() => {
     return words
       .filter((w) =>
@@ -49,7 +50,11 @@ export default function Dictionary() {
       .sort((a, b) => a.term.localeCompare(b.term));
   }, [words, groupSearchTerm]);
 
-  // ✅ Tạo group mới
+  const groupWords = useMemo(() => {
+    if (!activeGroup) return [];
+    return words.filter((w) => activeGroup.wordIds.includes(w.wordId));
+  }, [words, activeGroup]);
+
   const handleCreateGroup = () => {
     if (!newGroupName.trim()) {
       alert("Group name is required!");
@@ -71,7 +76,6 @@ export default function Dictionary() {
       });
   };
 
-  // ✅ Xoá group
   const handleDeleteGroup = (g) => {
     if (window.confirm(`Delete group "${g.groupname}"?`)) {
       VocabGroupApi.remove(g.groupId)
@@ -94,98 +98,113 @@ export default function Dictionary() {
       <main className="main-content">
         <HeaderBar />
 
-        <div className="dictionary-container">
-          <h2>Vocabulary Notebook</h2>
+        {!showQuiz ? (
+          <div className="dictionary-container">
+            <h2>Vocabulary Notebook</h2>
 
-          {/* ✅ Global Search (có nút) */}
-          <SearchBar
-            value={searchTerm}
-            onChange={setSearchTerm}
-            onSubmit={handleSearch}
-            placeholder="Search vocabulary..."
-            showButton={true}
-          />
+            {/* Search row with Quiz button */}
+            <div className="search-row">
+              <SearchBar
+                value={searchTerm}
+                onChange={setSearchTerm}
+                onSubmit={handleSearch}
+                placeholder="Search vocabulary..."
+                showButton={true}
+              />
 
-          {/* Tabs for groups */}
-          <div className="tabs">
-            {groups.map((g) => (
-              <div key={g.groupId} className="tab-wrapper">
+              {activeGroup && (
                 <button
-                  className={`tab ${
-                    activeGroup?.groupId === g.groupId ? "active" : ""
-                  }`}
-                  onClick={() => setActiveGroup(g)}
+                  className="start-quiz-btn"
+                  onClick={() => setShowQuiz(true)}
                 >
-                  {g.groupname} ({g.wordIds.length})
+                  Start Quiz
                 </button>
-                <button
-                  className="delete-group-btn"
-                  onClick={() => handleDeleteGroup(g)}
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            ))}
-            <button
-              className="tab create"
-              onClick={() => setShowCreateGroup(true)}
-            >
-              <FolderPlus size={16} /> New Group
-            </button>
-          </div>
+              )}
+            </div>
 
-          {/* ✅ Group Search (không nút, lọc realtime) */}
-          <SearchBar
-            value={groupSearchTerm}
-            onChange={setGroupSearchTerm}
-            placeholder="Search in this group..."
-            showButton={false}
-          />
-
-          {/* Words table */}
-          <table className="dictionary-table">
-            <thead>
-              <tr>
-                <th>Term</th>
-                <th>Meaning</th>
-                <th>Example</th>
-                <th>Audio</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredWords.map((w) => (
-                <tr key={w.wordId}>
-                  <td>{w.term}</td>
-                  <td>{w.meaning || "-"}</td>
-                  <td>{w.example || "-"}</td>
-                  <td>
-                    {w.audio ? (
-                      <button
-                        className="icon-btn"
-                        onClick={() => new Audio(w.audio).play()}
-                      >
-                        <Volume2 size={18} />
-                      </button>
-                    ) : (
-                      "-"
-                    )}
-                  </td>
-                  <td>
-                    <button
-                      className="icon-btn delete"
-                      onClick={() => handleRemoveWord(w.wordId)}
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </td>
-                </tr>
+            {/* Tabs for groups */}
+            <div className="tabs">
+              {groups.map((g) => (
+                <div key={g.groupId} className="tab-wrapper">
+                  <button
+                    className={`tab ${activeGroup?.groupId === g.groupId ? "active" : ""
+                      }`}
+                    onClick={() => setActiveGroup(g)}
+                  >
+                    {g.groupname} ({g.wordIds.length})
+                  </button>
+                  <button
+                    className="delete-group-btn"
+                    onClick={() => handleDeleteGroup(g)}
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
               ))}
-            </tbody>
-          </table>
-        </div>
+              <button
+                className="tab create"
+                onClick={() => setShowCreateGroup(true)}
+              >
+                <FolderPlus size={16} /> New Group
+              </button>
+            </div>
 
-        {/* Popup tạo group */}
+            {/* Group search bar */}
+            {activeGroup && (
+              <SearchBar
+                value={groupSearchTerm}
+                onChange={setGroupSearchTerm}
+                placeholder="Search in this group..."
+                showButton={false}
+              />
+            )}
+
+            {/* Dictionary table */}
+            <table className="dictionary-table">
+              <thead>
+                <tr>
+                  <th>Term</th>
+                  <th>Meaning</th>
+                  <th>Example</th>
+                  <th>Audio</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredWords.map((w) => (
+                  <tr key={w.wordId}>
+                    <td>{w.term}</td>
+                    <td>{w.meaning || "-"}</td>
+                    <td>{w.example || "-"}</td>
+                    <td>
+                      {w.audio ? (
+                        <button
+                          className="icon-btn"
+                          onClick={() => new Audio(w.audio).play()}
+                        >
+                          <Volume2 size={18} />
+                        </button>
+                      ) : (
+                        "-"
+                      )}
+                    </td>
+                    <td>
+                      <button
+                        className="icon-btn delete"
+                        onClick={() => handleRemoveWord(w.wordId)}
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <QuizPage groupWords={groupWords} onBack={() => setShowQuiz(false)} />
+        )}
+
         {showCreateGroup && (
           <Popup
             title="Create New Group"
@@ -212,17 +231,19 @@ export default function Dictionary() {
             />
           </Popup>
         )}
-
-        {/* Popup search result */}
         {showPopup && (
           <Popup
             title="Search Result"
             onClose={() => setShowPopup(false)}
             actions={
               <>
-                <button onClick={handleAddToGroup}>
-                  <PlusCircle size={18} /> Add to Group
-                </button>
+                {/* chỉ cho Add khi có searchResult hợp lệ */}
+                {searchResult && searchResult.term ? (
+                  <button onClick={handleAddToGroup} disabled={!selectedGroupId}>
+                    <PlusCircle size={18} /> Add to Group
+                  </button>
+                ) : null}
+
                 <button className="cancel" onClick={() => setShowPopup(false)}>
                   <XCircle size={18} /> Close
                 </button>
@@ -231,7 +252,7 @@ export default function Dictionary() {
           >
             {errorMessage ? (
               <p className="error">{errorMessage}</p>
-            ) : (
+            ) : searchResult && searchResult.term ? (
               <>
                 <div>
                   <strong>Term:</strong> {searchResult.term}
@@ -259,7 +280,7 @@ export default function Dictionary() {
                   value={selectedGroupId || ""}
                   onChange={(e) => setSelectedGroupId(Number(e.target.value))}
                 >
-                  <option value="">-- Select group --</option>
+                  <option value="" className="select-group">-- Select group --</option>
                   {groups.map((g) => (
                     <option key={g.groupId} value={g.groupId}>
                       {g.groupname}
@@ -267,10 +288,14 @@ export default function Dictionary() {
                   ))}
                 </select>
               </>
+            ) : (
+              <p style={{ color: "gray" }}>❌ No word found to add.</p>
             )}
           </Popup>
         )}
-      </main>
-    </div>
+
+    
+    </main>
+    </div >
   );
 }

@@ -30,11 +30,10 @@ namespace WebAPI.Services
 
             foreach (var post in posts)
             {
-                var postTags = _context.Set<Post_Tag>()
-                    .Where(pt => pt.PostId == post.PostId)
-                    .Include(pt => pt.Tag)
+                var postTags = _context.Entry(post)
+                    .Collection(p => p.Tags)
+                    .Query()
                     .ToList();
-                post.Tags = postTags.Select(pt => pt.Tag).ToList();
             }
 
             return posts.Select(ToDTO);
@@ -64,11 +63,10 @@ namespace WebAPI.Services
 
             foreach (var post in posts)
             {
-                var postTags = _context.Set<Post_Tag>()
-                    .Where(pt => pt.PostId == post.PostId)
-                    .Include(pt => pt.Tag)
+                var postTags = _context.Entry(post)
+                    .Collection(p => p.Tags)
+                    .Query()
                     .ToList();
-                post.Tags = postTags.Select(pt => pt.Tag).ToList();
             }
 
             return posts.Select(ToDTO);
@@ -84,11 +82,10 @@ namespace WebAPI.Services
 
             if (post == null) return null;
 
-            var postTags = _context.Set<Post_Tag>()
-                .Where(pt => pt.PostId == post.PostId)
-                .Include(pt => pt.Tag)
+            var postTags = _context.Entry(post)
+                .Collection(p => p.Tags)
+                .Query()
                 .ToList();
-            post.Tags = postTags.Select(pt => pt.Tag).ToList();
 
             post.ViewCount = (post.ViewCount ?? 0) + 1;
             _context.SaveChanges();
@@ -142,10 +139,9 @@ namespace WebAPI.Services
 
             if (dto.TagNames != null && dto.TagNames.Any())
             {
-                var existingTags = _context.Set<Post_Tag>()
-                    .Where(pt => pt.PostId == id)
-                    .ToList();
-                _context.Set<Post_Tag>().RemoveRange(existingTags);
+                // Clear existing tags
+                post.Tags.Clear();
+                _context.SaveChanges();
 
                 AddTagsToPost(id, dto.TagNames);
             }
@@ -210,7 +206,7 @@ namespace WebAPI.Services
             var report = new Report
             {
                 UserId = userId,
-                PostId = id, 
+                PostId = id, // fixed missing relation
                 Content = reason,
                 Status = "Pending",
                 CreatedAt = DateTime.UtcNow
@@ -222,6 +218,9 @@ namespace WebAPI.Services
 
         private void AddTagsToPost(int postId, List<string> tagNames)
         {
+            var post = _context.Post.Find(postId);
+            if (post == null) return;
+
             foreach (var tagName in tagNames)
             {
                 var tag = _context.Tag.FirstOrDefault(t => t.TagName == tagName);
@@ -233,13 +232,8 @@ namespace WebAPI.Services
                     _context.SaveChanges();
                 }
 
-                var postTag = new Post_Tag
-                {
-                    PostId = postId,
-                    TagId = tag.TagId
-                };
-
-                _context.Set<Post_Tag>().Add(postTag);
+                // Add tag to post's Tags collection
+                post.Tags.Add(tag);
             }
 
             _context.SaveChanges();
@@ -258,7 +252,6 @@ namespace WebAPI.Services
                 PostId = post.PostId,
                 Title = post.Title,
                 Content = post.Content,
-                Category = "General",
                 CreatedAt = post.CreatedAt,
                 UpdatedAt = post.UpdatedAt,
                 ViewCount = post.ViewCount ?? 0,

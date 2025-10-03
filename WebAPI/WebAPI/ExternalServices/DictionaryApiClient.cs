@@ -4,16 +4,19 @@ using WebAPI.Models;
 
 namespace WebAPI.ExternalServices
 {
-    public  class DictionaryApiClient
+    public class DictionaryApiClient
     {
         const string BaseUrl = "https://api.dictionaryapi.dev/api/v2/entries/en/";
-        private  readonly HttpClient _httpClient;
+        private readonly HttpClient _httpClient;
+
+                
         public DictionaryApiClient(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _httpClient.BaseAddress = new Uri(BaseUrl); 
+            _httpClient.BaseAddress = new Uri(BaseUrl);
         }
-        public  Word? GetWord(string term)
+
+        public Word? GetWord(string term)
         {
             var url = BaseUrl + term;
             var response = _httpClient.GetAsync(url).Result;
@@ -28,10 +31,9 @@ namespace WebAPI.ExternalServices
                 return null;
 
             var entry = root[0];
-
             string wordText = entry.GetProperty("word").GetString() ?? term;
 
-            List<string> allMeanings = new List<string>();
+            string? meaning = null;
             string? example = null;
 
             if (entry.TryGetProperty("meanings", out var meanings) && meanings.GetArrayLength() > 0)
@@ -40,19 +42,22 @@ namespace WebAPI.ExternalServices
                 {
                     if (meaningBlock.TryGetProperty("definitions", out var definitions) && definitions.GetArrayLength() > 0)
                     {
-                        foreach (var def in definitions.EnumerateArray())
-                        {
-                            if (def.TryGetProperty("definition", out var defProp))
-                                allMeanings.Add(defProp.GetString());
+                        var def = definitions[0];
 
-                            if (example == null && def.TryGetProperty("example", out var exProp))
-                                example = exProp.GetString();
+                        if (def.TryGetProperty("definition", out var defProp))
+                        {
+                            meaning = defProp.GetString();
                         }
+
+                        if (def.TryGetProperty("example", out var exProp))
+                        {
+                            example = exProp.GetString();
+                        }
+
+                        break; // ✅ dừng luôn sau khi lấy được nghĩa đầu tiên
                     }
                 }
             }
-
-            string? meaning = allMeanings.Count > 0 ? string.Join("; ", allMeanings) : null;
 
             string? audio = null;
             if (entry.TryGetProperty("phonetics", out var phonetics) && phonetics.GetArrayLength() > 0)
@@ -75,7 +80,5 @@ namespace WebAPI.ExternalServices
                 Audio = audio
             };
         }
-
-
     }
 }

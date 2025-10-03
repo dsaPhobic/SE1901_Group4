@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import AppLayout from "../Layout/AppLayout";
 import styles from "./DashboardUser.module.css";
+import { Book, Headphones, BarChart2, Cloud, Wallet } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+import * as AuthApi from "../../Services/AuthApi";
+import * as DashBoardApi from "../../Services/DashBoardApi";
 
 export default function DashboardUser() {
+  const navigate = useNavigate();
+
   // ===== Calendar logic =====
   const today = new Date();
   const year = today.getFullYear();
@@ -17,28 +23,75 @@ export default function DashboardUser() {
   const days = Array.from({ length: startOffset }, () => null).concat(
     Array.from({ length: daysInMonth }, (_, i) => i + 1)
   );
-
   const weeks = [];
   for (let i = 0; i < days.length; i += 7) weeks.push(days.slice(i, i + 7));
 
-  // ===== Submitted days từ API =====
+  // ===== State =====
+  const [userId, setUserId] = useState(null);
   const [submittedDays, setSubmittedDays] = useState([]);
+  const [historyData, setHistoryData] = useState([]);
+  const [stats, setStats] = useState({ Reading: 0, Listening: 0, Overall: 0 });
 
+  // ===== Get current user =====
   useEffect(() => {
-    async function fetchSubmitted() {
-      try {
-        const res = await axios.get(
-          "https://localhost:7264/api/exam/submitted-days",
-          { withCredentials: true }
-        );
-        setSubmittedDays(res.data);
-        // ví dụ API trả: ["2025-09-01", "2025-09-05"]
-      } catch (err) {
-        console.error("Failed to fetch submitted days:", err);
-      }
-    }
-    fetchSubmitted();
+    AuthApi.getMe()
+      .then((meRes) => {
+        setUserId(meRes.data.userId);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch user:", err);
+      });
   }, []);
+
+  // ===== Submitted days =====
+  useEffect(() => {
+    if (!userId) return;
+    DashBoardApi.getSubmittedDays(userId)
+      .then((days) => {
+        setSubmittedDays(days); // ví dụ ["2025-09-01","2025-09-05"]
+      })
+      .catch((err) => {
+        console.error("Failed to fetch submitted days:", err);
+      });
+  }, [userId]);
+
+  // ===== History + Stats =====
+  useEffect(() => {
+    if (!userId) return;
+    DashBoardApi.getExamAttemptsByUser(userId)
+      .then((res) => {
+        // History rows
+        const rows = res.data.map((a) => [
+          "☑️",
+          a.examName,
+          a.examType,
+          new Date(a.submittedAt).toLocaleDateString("en-GB"),
+          a.totalScore?.toFixed(1) ?? "-",
+        ]);
+        setHistoryData(rows);
+
+        // Stats từ dữ liệu
+        const grouped = res.data.reduce(
+          (acc, a) => {
+            if (a.examType === "Reading") acc.Reading += a.totalScore ?? 0;
+            if (a.examType === "Listening") acc.Listening += a.totalScore ?? 0;
+            acc.count++;
+            acc.Overall += a.totalScore ?? 0;
+            return acc;
+          },
+          { Reading: 0, Listening: 0, Overall: 0, count: 0 }
+        );
+        const avg = grouped.count > 0 ? grouped.Overall / grouped.count : 0;
+        setStats({
+          Reading: grouped.Reading,
+          Listening: grouped.Listening,
+          Overall: avg,
+        });
+      })
+      .catch((err) => {
+        console.error("Failed to fetch history & stats:", err);
+      });
+  }, [userId]);
 
   // check ngày có trong submittedDays không
   function isSubmitted(day) {
@@ -97,6 +150,7 @@ export default function DashboardUser() {
 
         {/* Goals + Stats */}
         <div className={styles.goalsWrapper}>
+          {/* Goals */}
           <div className={styles.goalsSection}>
             <h3 className={styles.sectionTitle}>Goals</h3>
             <div className={styles.goalsCards}>
@@ -115,28 +169,65 @@ export default function DashboardUser() {
             </div>
           </div>
 
+          {/* Stats */}
           <div className={styles.statsSection}>
             <h3 className={styles.sectionTitle}>Outcome Statistics</h3>
+
             <div className={styles.statItem}>
-              <span>🛒 Reading</span>
-              <div className={styles.progressBar}>
-                <div style={{ width: "55%", background: "#fd7e14" }}></div>
+              <div className={`${styles.iconBox} ${styles.readingBg}`}>
+                <Book size={18} color="#fd7e14" />
               </div>
-              <span>5.0/9</span>
+              <span className={styles.statLabel}>Reading</span>
+              <div className={styles.progressBar}>
+                <div
+                  className={styles.progressFill}
+                  style={{
+                    width: `${(stats.Reading / 9) * 100}%`,
+                    background: "#fd7e14",
+                  }}
+                ></div>
+              </div>
+              <span className={styles.statValue}>
+                {stats.Reading.toFixed(1)}/9
+              </span>
             </div>
+
             <div className={styles.statItem}>
-              <span>🚚 Listening</span>
-              <div className={styles.progressBar}>
-                <div style={{ width: "22%", background: "#28a745" }}></div>
+              <div className={`${styles.iconBox} ${styles.listeningBg}`}>
+                <Headphones size={18} color="#28a745" />
               </div>
-              <span>2.0/9</span>
+              <span className={styles.statLabel}>Listening</span>
+              <div className={styles.progressBar}>
+                <div
+                  className={styles.progressFill}
+                  style={{
+                    width: `${(stats.Listening / 9) * 100}%`,
+                    background: "#28a745",
+                  }}
+                ></div>
+              </div>
+              <span className={styles.statValue}>
+                {stats.Listening.toFixed(1)}/9
+              </span>
             </div>
+
             <div className={styles.statItem}>
-              <span>✈️ Overall</span>
-              <div className={styles.progressBar}>
-                <div style={{ width: "39%", background: "#007bff" }}></div>
+              <div className={`${styles.iconBox} ${styles.overallBg}`}>
+                <BarChart2 size={18} color="#007bff" />
               </div>
-              <span>3.5/9</span>
+              <span className={styles.statLabel}>Overall</span>
+              <div className={styles.progressBar}>
+                <div
+                  className={styles.progressFill}
+                  style={{
+                    width: `${(stats.Overall / 9) * 100}%`,
+                    background: "#007bff",
+                  }}
+                ></div>
+              </div>
+              <span className={styles.statValue}>
+                {stats.Overall.toFixed(1)}/9
+              </span>
             </div>
           </div>
         </div>
@@ -145,21 +236,29 @@ export default function DashboardUser() {
         <div className={styles.historySection}>
           <h3 className={styles.sectionTitle}>Practice History</h3>
           <div className={styles.historyTable}>
-            {[
-              ["☑️", "IELTS Academic 2025", "Reading", "13 Dec 2020", "6.5"],
-              ["", "IELTS Academic 2025", "Listening", "14 Dec 2020", "7.0"],
-              ["", "IELTS Academic 2025", "Speaking", "07 Dec 2020", "8.5"],
-              ["", "IELTS Academic 2025", "Writing", "06 Dec 2020", "6.0"],
-              ["", "IELTS Academic 2024", "Writing", "31 Nov 2020", "6.5"],
-            ].map((r, i) => (
-              <div className={styles.historyRow} key={i}>
-                <div>{r[0]}</div>
-                <div>{r[1]}</div>
-                <div>{r[2]}</div>
-                <div>{r[3]}</div>
-                <div>{r[4]}</div>
+            <div className={`${styles.historyRow} ${styles.historyHeader}`}>
+              <div>Status</div>
+              <div>Exam Name</div>
+              <div>Type</div>
+              <div>Date</div>
+              <div>Score</div>
+            </div>
+
+            {historyData.length > 0 ? (
+              historyData.map((r, i) => (
+                <div className={styles.historyRow} key={i}>
+                  <div>{r[0]}</div>
+                  <div>{r[1]}</div>
+                  <div>{r[2]}</div>
+                  <div>{r[3]}</div>
+                  <div>{r[4]}</div>
+                </div>
+              ))
+            ) : (
+              <div className={styles.historyRow}>
+                <div colSpan={5}>No history available</div>
               </div>
-            ))}
+            )}
           </div>
         </div>
 
@@ -182,7 +281,10 @@ export default function DashboardUser() {
               </div>
               <div className={styles.balanceInputSection}>
                 <input className={styles.balanceInput} value="1997" readOnly />
-                <button className={styles.transferButton}>
+                <button
+                  className={styles.transferButton}
+                  onClick={() => navigate("/transction")}
+                >
                   Send the transfer
                 </button>
               </div>
@@ -190,7 +292,9 @@ export default function DashboardUser() {
           </div>
 
           <div className={styles.enjoyCard}>
-            <div className={styles.enjoyIcons}>☁️ 💰</div>
+            <div className={styles.enjoyIcons}>
+              <Cloud size={20} /> <Wallet size={20} />
+            </div>
             <div className={styles.enjoyText}>Enjoy your learning</div>
           </div>
         </div>
