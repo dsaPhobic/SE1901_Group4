@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./Pages/Authenciation/Login.jsx";
 import Home from "./Pages/Home/Home.jsx";
 import Dictionary from "./Pages/Dictionary/Dictionary.jsx"
+import Forum from "./Pages/Forum/Forum.jsx"
+import CreatePost from "./Pages/Forum/CreatePost.jsx"
 function App() {
   return (
     <BrowserRouter>
@@ -10,6 +12,8 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/home" element={<Home />} />
         <Route path="/dictionary" element={<Dictionary />} /> 
+        <Route path="/forum" element={<Forum />} /> 
+        <Route path="/create-post" element={<CreatePost />} />
       </Routes>
     </BrowserRouter>
   );

@@ -5,6 +5,7 @@ import HeaderBar from "../../Components/Layout/HeaderBar";
 import PostList from "../../Components/Forum/PostList";
 import RightSidebar from "../../Components/Forum/RightSidebar";
 import { getPostsByFilter } from "../../Services/ForumApi";
+import { useNavigate } from "react-router-dom";
 
 export default function Forum({ onNavigate }) {
   const [posts, setPosts] = useState([]);
@@ -12,6 +13,8 @@ export default function Forum({ onNavigate }) {
   const [activeFilter, setActiveFilter] = useState("new");
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+
+  const navigate = useNavigate();
 
   const filters = [
     { key: "new", label: "New" },
@@ -23,6 +26,10 @@ export default function Forum({ onNavigate }) {
   useEffect(() => {
     loadPosts();
   }, [activeFilter]);
+
+  useEffect(() => {
+    loadPosts();
+  }, []);
 
   const loadPosts = () => {
     setLoading(true);
@@ -76,7 +83,14 @@ export default function Forum({ onNavigate }) {
         <div className="forum-content">
           <div className="forum-main">
             <div className="forum-header">
-              <h1>Questions</h1>
+              <h1>FORUM</h1>
+              <button 
+                className="ask-question-btn"
+                onClick={() => navigate('/create-post')}
+              >
+                <span className="plus-icon">+</span>
+                Create a post
+              </button>
             </div>
             
             <div className="forum-filters">
