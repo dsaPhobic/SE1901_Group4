@@ -61,7 +61,6 @@ export default function CommentSection({ postId }) {
   return (
     <div className="comment-section">
       <div className="comment-form">
-        <h3>Suggestions</h3>
         <form onSubmit={handleSubmit}>
           <textarea
             value={newComment}
@@ -92,7 +91,7 @@ export default function CommentSection({ postId }) {
       <div className="comments-list">
         {comments.length === 0 ? (
           <div className="no-comments">
-            No suggestions yet. Be the first to suggest!
+            No comments yet. Be the first to comment!
           </div>
         ) : (
           comments.map((comment) => (

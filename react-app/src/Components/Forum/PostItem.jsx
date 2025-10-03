@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { votePost, unvotePost } from "../../Services/ForumApi";
 
-export default function PostItem({ post, onNavigate }) {
+export default function PostItem({ post }) {
+  const navigate = useNavigate();
   const [isVoted, setIsVoted] = useState(post.isVoted || false);
   const [voteCount, setVoteCount] = useState(post.voteCount || 0);
   const [loading, setLoading] = useState(false);
@@ -40,7 +42,7 @@ export default function PostItem({ post, onNavigate }) {
   };
 
   const handlePostClick = () => {
-    onNavigate("postDetail", post.postId);
+    navigate(`/post/${post.postId}`);
   };
 
   const formatTime = (dateString) => {

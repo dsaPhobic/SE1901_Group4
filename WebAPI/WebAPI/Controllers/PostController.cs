@@ -9,10 +9,12 @@ namespace WebAPI.Controllers
     public class PostController : ControllerBase
     {
         private readonly IPostService _postService;
+        private readonly ICommentService _commentService;
 
-        public PostController(IPostService postService)
+        public PostController(IPostService postService, ICommentService commentService)
         {
             _postService = postService;
+            _commentService = commentService;
         }
 
         [HttpGet]
@@ -168,6 +170,35 @@ namespace WebAPI.Controllers
             catch (KeyNotFoundException)
             {
                 return NotFound("Post not found");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        // Comment endpoints
+        [HttpGet("{id}/comments")]
+        public ActionResult<IEnumerable<CommentDTO>> GetCommentsByPostId(int id)
+        {
+            var comments = _commentService.GetCommentsByPostId(id);
+            return Ok(comments);
+        }
+
+        [HttpPost("{id}/comments")]
+        public ActionResult<CommentDTO> CreateComment(int id, [FromBody] CreateCommentDTO dto)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return Unauthorized("Please login to create comments");
+
+            try
+            {
+                var comment = _commentService.CreateComment(id, dto, userId.Value);
+                return CreatedAtAction(nameof(GetCommentsByPostId), new { id }, comment);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
             }
             catch (Exception ex)
             {
