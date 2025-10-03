@@ -42,7 +42,6 @@ namespace WebAPI.ExternalServices
                 {
                     if (meaningBlock.TryGetProperty("definitions", out var definitions) && definitions.GetArrayLength() > 0)
                     {
-                        // 🔹 Chỉ lấy nghĩa đầu tiên
                         var def = definitions[0];
 
                         if (def.TryGetProperty("definition", out var defProp))

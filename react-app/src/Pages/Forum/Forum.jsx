@@ -110,7 +110,6 @@ export default function Forum({ onNavigate }) {
               loading={loading}
               onLoadMore={loadMorePosts}
               hasMore={hasMore}
-              onNavigate={onNavigate}
             />
           </div>
           

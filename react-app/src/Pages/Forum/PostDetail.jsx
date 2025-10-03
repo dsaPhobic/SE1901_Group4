@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import "./PostDetail.css";
-import Sidebar from "../../Components/Dashboard/Sidebar";
-import HeaderBar from "../../Components/Dashboard/HeaderBar";
+import Sidebar from "../../Components/Layout/Sidebar";
+import HeaderBar from "../../Components/Layout/HeaderBar";
 import CommentSection from "../../Components/Forum/CommentSection";
 import { getPost, votePost, unvotePost, reportPost } from "../../Services/ForumApi";
 
-export default function PostDetail({ postId, onNavigate }) {
+export default function PostDetail() {
+  const { postId } = useParams();
+  const navigate = useNavigate();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isVoted, setIsVoted] = useState(false);
@@ -109,13 +112,13 @@ export default function PostDetail({ postId, onNavigate }) {
 
   return (
     <div className="post-detail-container">
-      <Sidebar onNavigate={onNavigate} />
+      <Sidebar />
       <main className="main-content">
-        <HeaderBar onNavigate={onNavigate} currentPage="postDetail" />
+        <HeaderBar />
         <div className="post-detail-content">
           <div className="post-detail-main">
             <div className="post-detail-header">
-              <button className="back-btn" onClick={() => onNavigate("forum")}>
+              <button className="back-btn" onClick={() => navigate("/forum")}>
                 ← Back to Forum
               </button>
             </div>
@@ -132,11 +135,12 @@ export default function PostDetail({ postId, onNavigate }) {
                   <p className="post-time">{formatTime(post.createdAt)}</p>
                 </div>
                 <div className="post-actions">
-                  <button
-                    className="post-action-btn"
-                    onClick={() => setShowReportModal(true)}
-                  >
-                    Report
+                  <button className="post-menu-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="1"/>
+                      <circle cx="12" cy="5" r="1"/>
+                      <circle cx="12" cy="19" r="1"/>
+                    </svg>
                   </button>
                 </div>
               </div>
@@ -157,25 +161,52 @@ export default function PostDetail({ postId, onNavigate }) {
               )}
 
               <div className="post-stats">
-                <div className="post-stat">
-                  <span className="post-stat-icon">👁️</span>
-                  <span>{post.viewCount || 0}</span>
-                </div>
-                <div className="post-stat">
-                  <span className="post-stat-icon">💬</span>
-                  <span>{post.commentCount || 0}</span>
-                </div>
                 <button
                   className={`vote-btn ${isVoted ? "voted" : ""}`}
                   onClick={handleVote}
                 >
-                  <span>↑</span>
-                  <span>{voteCount}</span>
+                  <span>+</span>
+                  <span>Vote</span>
                 </button>
               </div>
             </div>
 
             <CommentSection postId={postId} />
+          </div>
+
+          <div className="post-detail-sidebar">
+            <div className="user-profile-card">
+              <img
+                src={post.user?.avatar || "/default-avatar.png"}
+                alt={post.user?.username}
+                className="profile-avatar"
+              />
+              <h3 className="profile-username">@{post.user?.username}</h3>
+              <div className="profile-stats">
+                <span className="profile-votes">125 [8]</span>
+              </div>
+              <div className="profile-actions">
+                <button className="profile-action-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                  </svg>
+                </button>
+                <button className="profile-action-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21,15 16,10 5,21"/>
+                  </svg>
+                </button>
+                <button className="profile-action-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                    <polyline points="16,6 12,2 8,6"/>
+                    <line x1="12" y1="2" x2="12" y2="15"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </main>
