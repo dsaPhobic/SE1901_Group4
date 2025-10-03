@@ -27,7 +27,7 @@
 }
 
 .logoText {
-  font-size: clamp(16px, 1.2vw, 18px);
+  font-size: 44px;
   font-weight: 600;
   color: #333;
 }
@@ -45,7 +45,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   color: #6c757d;
-  font-size: clamp(14px, 1vw, 15px);
+  font-size: 30px;
 }
 
 .navItem:hover {
