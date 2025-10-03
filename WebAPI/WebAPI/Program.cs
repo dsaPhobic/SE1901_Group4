@@ -40,6 +40,8 @@ builder.Services.AddScoped<IVocabGroupRepository, VocabGroupRepository>();
 builder.Services.AddScoped<IVocabGroupService, VocabGroupService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<IExamRepository, ExamRepository>();
+builder.Services.AddScoped<IExamService, ExamService>();
 
 // ====== Authentication ======
 builder.Services.AddAuthentication(options =>
