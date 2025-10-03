@@ -91,6 +91,10 @@ export default function Dictionary() {
         });
     }
   };
+  const handleStartQuiz = () => {
+    reloadGroups();
+    setShowQuiz(true);
+  };
 
   return (
     <div className="home-container">
@@ -115,7 +119,7 @@ export default function Dictionary() {
               {activeGroup && (
                 <button
                   className="start-quiz-btn"
-                  onClick={() => setShowQuiz(true)}
+                  onClick={handleStartQuiz}
                 >
                   Start Quiz
                 </button>
@@ -294,8 +298,8 @@ export default function Dictionary() {
           </Popup>
         )}
 
-    
-    </main>
+
+      </main>
     </div >
   );
 }

@@ -28,7 +28,7 @@ export default function Sidebar() {
     { icon: <MessageSquare size={20} />, label: "Speaking", path: "/speaking" },
     { icon: <Pencil size={20} />, label: "Writing", path: "/writing" },
     { icon: <Settings size={20} />, label: "Settings", path: "/settings" },
-    { icon: <MessageCircle size={20} />, label: "General", path: "/general" },
+    { icon: <MessageCircle size={20} />, label: "General", path: "/forum" },
     { icon: <Library size={20} />, label: "Dictionary", path: "/dictionary" },
    
     {

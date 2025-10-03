@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./CreatePost.css";
-import Sidebar from "../../Components/Dashboard/Sidebar";
+import Sidebar from "../../Components/Layout/Sidebar";
 import HeaderBar from "../../Components/Layout/HeaderBar";
 import RightSidebar from "../../Components/Forum/RightSidebar";
 import { createPost } from "../../Services/ForumApi";
