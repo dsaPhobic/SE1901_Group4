@@ -48,7 +48,7 @@ export default function DashboardUser() {
     if (!userId) return;
     DashBoardApi.getSubmittedDays(userId)
       .then((days) => {
-        setSubmittedDays(days); // ví dụ ["2025-09-01","2025-09-05"]
+        setSubmittedDays(days);
       })
       .catch((err) => {
         console.error("Failed to fetch submitted days:", err);
@@ -117,7 +117,7 @@ export default function DashboardUser() {
 
           <div className={styles.calendar}>
             <div className={styles.calendarHeader}>
-              <h4>
+              <h4 className={styles.monthYear}>
                 {monthName} {year}
               </h4>
             </div>
@@ -155,16 +155,16 @@ export default function DashboardUser() {
             <h3 className={styles.sectionTitle}>Goals</h3>
             <div className={styles.goalsCards}>
               <div className={styles.goalCard}>
-                <div className={styles.goalScore}>9.0</div>
                 <div className={styles.goalLabel}>Reading</div>
+                <div className={styles.goalScore}>9.0</div>
               </div>
               <div className={styles.goalCard}>
-                <div className={styles.goalScore}>9.0</div>
                 <div className={styles.goalLabel}>Listening</div>
+                <div className={styles.goalScore}>9.0</div>
               </div>
               <div className={`${styles.goalCard} ${styles.overall}`}>
-                <div className={styles.goalScore}>9.0</div>
                 <div className={styles.goalLabel}>Overall</div>
+                <div className={styles.goalScore}>9.0</div>
               </div>
             </div>
           </div>
@@ -255,8 +255,22 @@ export default function DashboardUser() {
                 </div>
               ))
             ) : (
-              <div className={styles.historyRow}>
-                <div colSpan={5}>No history available</div>
+              <div className={styles.emptyState}>
+                <img
+                  src="../../src/assets/sad-bean.png"
+                  alt="No history"
+                  className={styles.emptyImage}
+                />
+                <p>
+                  Bạn hiện chưa làm bài tập nào! Hãy chọn dạng phù hợp và luyện
+                  tập ngay nào!
+                </p>
+                <button
+                  className={styles.emptyButton}
+                  onClick={() => navigate("/reading")}
+                >
+                  Tiến hành làm bài tập ngay
+                </button>
               </div>
             )}
           </div>

@@ -7,6 +7,20 @@
   align-items: center;
   z-index: 10;
 }
+/* HeaderBar.module.css */
+.signInBtn {
+  background-color: #f44336; /* đỏ */
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.signInBtn:hover {
+  background-color: #d32f2f;
+}
 
 .pageTitle {
   font-size: 50px;
@@ -60,6 +74,20 @@
   display: flex;
   flex-direction: column;
   line-height: 1.2;
+}
+
+.userAvatar,
+.userInfo {
+  cursor: pointer; /* làm thành clickable */
+}
+
+.userAvatar:hover {
+  background-color: #ffb300; /* highlight khi hover */
+  transition: 0.2s;
+}
+
+.userInfo:hover .userName {
+  color: #1976d2;
 }
 
 .userName {
