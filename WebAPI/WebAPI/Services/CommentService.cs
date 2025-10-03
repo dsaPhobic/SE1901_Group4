@@ -116,6 +116,27 @@ namespace WebAPI.Services
             }
         }
 
+        public void VoteComment(int id, int userId)
+        {
+            var comment = _context.Comment.Find(id);
+            if (comment == null) throw new KeyNotFoundException("Comment not found");
+
+            comment.LikeNumber++;
+            _context.SaveChanges();
+        }
+
+        public void UnvoteComment(int id, int userId)
+        {
+            var comment = _context.Comment.Find(id);
+            if (comment == null) throw new KeyNotFoundException("Comment not found");
+
+            if (comment.LikeNumber > 0)
+            {
+                comment.LikeNumber--;
+                _context.SaveChanges();
+            }
+        }
+
         private CommentDTO ToDTO(Comment comment)
         {
             return new CommentDTO
@@ -124,6 +145,8 @@ namespace WebAPI.Services
                 Content = comment.Content,
                 CreatedAt = comment.CreatedAt,
                 LikeNumber = comment.LikeNumber,
+                VoteCount = comment.LikeNumber,
+                IsVoted = false, // This would need to be set based on current user
                 ParentCommentId = comment.ParentCommentId,
                 User = new UserDTO
                 {

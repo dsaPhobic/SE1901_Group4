@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Forum.css";
-import Sidebar from "../../Components/Dashboard/Sidebar";
+import Sidebar from "../../Components/Layout/Sidebar";
 import HeaderBar from "../../Components/Layout/HeaderBar";
 import PostList from "../../Components/Forum/PostList";
 import RightSidebar from "../../Components/Forum/RightSidebar";
@@ -110,7 +110,6 @@ export default function Forum({ onNavigate }) {
               loading={loading}
               onLoadMore={loadMorePosts}
               hasMore={hasMore}
-              onNavigate={onNavigate}
             />
           </div>
           

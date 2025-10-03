@@ -39,6 +39,7 @@ builder.Services.AddScoped<IWordService, WordService>();
 builder.Services.AddScoped<IVocabGroupRepository, VocabGroupRepository>();
 builder.Services.AddScoped<IVocabGroupService, VocabGroupService>();
 builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<ICommentService, CommentService>();
 
 // ====== Authentication ======
 builder.Services.AddAuthentication(options =>

@@ -11,5 +11,7 @@ namespace WebAPI.Services
         void DeleteComment(int id, int userId);
         void LikeComment(int id, int userId);
         void UnlikeComment(int id, int userId);
+        void VoteComment(int id, int userId);
+        void UnvoteComment(int id, int userId);
     }
 }
