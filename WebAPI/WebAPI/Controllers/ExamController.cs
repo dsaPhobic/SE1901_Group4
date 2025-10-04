@@ -58,7 +58,7 @@ namespace WebAPI.Controllers
             return Ok(attempts);
         }
 
-        [HttpGet("{attemptId}")]
+        [HttpGet("attempt/{attemptId}")]
         public ActionResult<ExamAttemptDTO> GetExamAttemptDetail(long attemptId)
         {
             var attempt = _examService.GetExamAttemptDetail(attemptId);

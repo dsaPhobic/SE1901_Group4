@@ -9,11 +9,11 @@ public partial class Post
 
     public int UserId { get; set; }
 
-    public string Title { get; set; } = null!;
-
     public string Content { get; set; } = null!;
 
     public DateTime CreatedAt { get; set; }
+
+    public string Title { get; set; } = null!;
 
     public DateTime? UpdatedAt { get; set; }
 
@@ -22,6 +22,8 @@ public partial class Post
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
     public virtual ICollection<PostLike> PostLikes { get; set; } = new List<PostLike>();
+
+    public virtual ICollection<Report> Reports { get; set; } = new List<Report>();
 
     public virtual User User { get; set; } = null!;
 

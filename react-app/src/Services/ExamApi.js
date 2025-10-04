@@ -33,7 +33,7 @@ export function getExamAttemptsByUser(userId) {
 
 // Lấy chi tiết 1 attempt
 export function getExamAttemptDetail(attemptId) {
-  return API.get(`/${attemptId}`);
+  return API.get(`attempt/${attemptId}`);
 }
 
 // Lấy danh sách ngày đã submit (chỉ trả về yyyy-MM-dd)
