@@ -8,41 +8,38 @@ namespace WebAPI.Services
     public class ExamService : IExamService
     {
         private readonly IExamRepository _repo;
-        private readonly ApplicationDbContext _db;
 
-        public ExamService(IExamRepository repo, ApplicationDbContext db)
+        public ExamService(IExamRepository repo)
         {
             _repo = repo;
-            _db = db;
         }
 
+        // ===== Exams =====
         public Exam? GetById(int id) => _repo.GetById(id);
-
         public List<Exam> GetAll() => _repo.GetAll();
 
-        public List<Exam> GetByUser(int userId) =>
-            _db.Exam.Where(e => _db.ExamAttempt.Any(a => a.UserId == userId && a.ExamId == e.ExamId))
-                    .ToList();
-
-        public Exam Create(CreateExamDTO exam)
+        public Exam Create(CreateExamDTO dto)
         {
-            Exam newExam = new Exam()
+            var exam = new Exam
             {
-                ExamName=exam.ExamName,
-                ExamType=exam.ExamType,
+                ExamName = dto.ExamName,
+                ExamType = dto.ExamType
             };
-            _repo.Add(newExam);
+
+            _repo.Add(exam);
             _repo.SaveChanges();
-            return newExam;
+            return exam;
         }
 
-        public Exam? Update(int id, UpdateExamDTO exam)
+        public Exam? Update(int id, UpdateExamDTO dto)
         {
             var existing = _repo.GetById(id);
             if (existing == null) return null;
 
-            if (!string.IsNullOrWhiteSpace(exam.ExamName)) existing.ExamName = exam.ExamName;
-            if (!string.IsNullOrWhiteSpace(exam.ExamType)) existing.ExamType = exam.ExamType;
+            if (!string.IsNullOrWhiteSpace(dto.ExamName))
+                existing.ExamName = dto.ExamName;
+            if (!string.IsNullOrWhiteSpace(dto.ExamType))
+                existing.ExamType = dto.ExamType;
 
             _repo.Update(existing);
             _repo.SaveChanges();
@@ -59,40 +56,33 @@ namespace WebAPI.Services
             return true;
         }
 
-        public ExamAttempt StartAttempt(int examId, int userId)
-        {
-            var exam = _repo.GetById(examId) ?? throw new KeyNotFoundException("Exam not found");
+        // ===== Attempts =====
 
+        public ExamAttempt SubmitAttempt(int examId, int userId, string answerText, DateTime startedAt)
+        {
+            var exam = _repo.GetById(examId)
+                ?? throw new KeyNotFoundException("Exam not found");
             var attempt = new ExamAttempt
             {
                 ExamId = examId,
                 UserId = userId,
-                StartedAt = DateTime.UtcNow
+                AnswerText = answerText,
+                StartedAt = startedAt,
+                SubmittedAt = DateTime.UtcNow
             };
-
             _repo.AddAttempt(attempt);
             _repo.SaveChanges();
             return attempt;
         }
 
-        public void SubmitAttempt(int attemptId)
-        {
-            var attempt = _db.ExamAttempt.FirstOrDefault(a => a.AttemptId == attemptId)
-                ?? throw new KeyNotFoundException("Attempt not found");
+        public ExamAttempt? GetAttemptById(long attemptId) => _repo.GetAttemptById(attemptId);
 
-            attempt.SubmittedAt = DateTime.UtcNow;
-            _db.ExamAttempt.Update(attempt);
-            _repo.SaveChanges();
-        }
+        public List<ExamAttemptSummaryDTO> GetExamAttemptsByUser(int userId) =>
+            _repo.GetExamAttemptsByUser(userId);
 
-        public List<ExamAttemptDTO> GetExamAttemptsByUser(int userId)
-        {
-            return _repo.GetExamAttemptsByUser(userId);
-        }
+        public ExamAttemptDTO? GetExamAttemptDetail(long attemptId) =>
+            _repo.GetExamAttemptDetail(attemptId);
 
-        public ExamAttemptDTO? GetExamAttemptDetail(long attemptId)
-        {
-            return _repo.GetExamAttemptDetail(attemptId);
-        }
+        public void Save() => _repo.SaveChanges();
     }
 }

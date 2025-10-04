@@ -17,7 +17,5 @@ public partial class Writing
 
     public DateTime CreatedAt { get; set; }
 
-    public string? CorrectAnswer { get; set; }
-
     public virtual Exam Exam { get; set; } = null!;
 }

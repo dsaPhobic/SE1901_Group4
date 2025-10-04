@@ -19,5 +19,9 @@ public partial class Reading
 
     public DateTime CreatedAt { get; set; }
 
+    public string? CorrectAnswer { get; set; }
+
+    public string? QuestionHtml { get; set; }
+
     public virtual Exam Exam { get; set; } = null!;
 }
