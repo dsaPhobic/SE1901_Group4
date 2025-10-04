@@ -119,6 +119,7 @@ namespace WebAPI.Data
                 entity.ToTable("Listening");
 
                 entity.Property(e => e.ListeningId).HasColumnName("listening_id");
+                entity.Property(e => e.CorrectAnswer).HasColumnName("correct_answer");
                 entity.Property(e => e.CreatedAt)
                     .HasPrecision(0)
                     .HasDefaultValueSql("(sysdatetime())")
@@ -130,6 +131,7 @@ namespace WebAPI.Data
                 entity.Property(e => e.ListeningType)
                     .HasMaxLength(50)
                     .HasColumnName("listening_type");
+                entity.Property(e => e.QuestionHtml).HasColumnName("question_html");
 
                 entity.HasOne(d => d.Exam).WithMany(p => p.Listenings)
                     .HasForeignKey(d => d.ExamId)
@@ -236,12 +238,14 @@ namespace WebAPI.Data
                 entity.ToTable("Reading");
 
                 entity.Property(e => e.ReadingId).HasColumnName("reading_id");
+                entity.Property(e => e.CorrectAnswer).HasColumnName("correct_answer");
                 entity.Property(e => e.CreatedAt)
                     .HasPrecision(0)
                     .HasDefaultValueSql("(sysdatetime())")
                     .HasColumnName("created_at");
                 entity.Property(e => e.DisplayOrder).HasColumnName("display_order");
                 entity.Property(e => e.ExamId).HasColumnName("exam_id");
+                entity.Property(e => e.QuestionHtml).HasColumnName("question_html");
                 entity.Property(e => e.ReadingContent).HasColumnName("reading_content");
                 entity.Property(e => e.ReadingQuestion).HasColumnName("reading_question");
                 entity.Property(e => e.ReadingType)

@@ -12,7 +12,13 @@ namespace WebAPI.Repositories
 
         // ===== Exam =====
         public Exam? GetById(int id) =>
-            _db.Exam.FirstOrDefault(e => e.ExamId == id);
+            _db.Exam
+               .Include(e => e.ExamAttempts)
+               .Include(e => e.Listenings)
+               .Include(e => e.Readings)
+               .Include(e => e.Speakings)
+               .Include(e => e.Writings)
+               .FirstOrDefault(e => e.ExamId == id);
 
         public List<Exam> GetAll() =>
             _db.Exam.ToList();
@@ -21,19 +27,21 @@ namespace WebAPI.Repositories
         public void Update(Exam exam) => _db.Exam.Update(exam);
         public void Delete(Exam exam) => _db.Exam.Remove(exam);
 
-
-        // ===== Attempt & Answer =====
+        // ===== Attempts =====
         public void AddAttempt(ExamAttempt attempt) => _db.ExamAttempt.Add(attempt);
+        public void UpdateAttempt(ExamAttempt attempt) => _db.ExamAttempt.Update(attempt);
 
-        // ===== Common =====
-        public void SaveChanges() => _db.SaveChanges();
+        public ExamAttempt? GetAttemptById(long attemptId) =>
+            _db.ExamAttempt.Include(a => a.Exam)
+                           .Include(a => a.User)
+                           .FirstOrDefault(a => a.AttemptId == attemptId);
 
-        public List<ExamAttemptDTO> GetExamAttemptsByUser(int userId)
+        public List<ExamAttemptSummaryDTO> GetExamAttemptsByUser(int userId)
         {
             return _db.ExamAttempt
                 .Where(a => a.UserId == userId)
                 .Include(a => a.Exam)
-                .Select(a => new ExamAttemptDTO
+                .Select(a => new ExamAttemptSummaryDTO
                 {
                     AttemptId = a.AttemptId,
                     StartedAt = a.StartedAt,
@@ -48,23 +56,25 @@ namespace WebAPI.Repositories
 
         public ExamAttemptDTO? GetExamAttemptDetail(long attemptId)
         {
-            var attempt = _db.ExamAttempt
-                .Where(a => a.AttemptId == attemptId)
+            var a = _db.ExamAttempt
                 .Include(a => a.Exam)
-                .FirstOrDefault();
+                .Include(a => a.User)
+                .FirstOrDefault(a => a.AttemptId == attemptId);
 
-            if (attempt == null) return null;
-
-            return new ExamAttemptDTO
+            return a == null ? null : new ExamAttemptDTO
             {
-                AttemptId = attempt.AttemptId,
-                StartedAt = attempt.StartedAt,
-                SubmittedAt = attempt.SubmittedAt,
-                ExamId = attempt.ExamId,
-                ExamName = attempt.Exam.ExamName,
-                ExamType = attempt.Exam.ExamType,
-                TotalScore = attempt.Score ?? 0
+                AttemptId = a.AttemptId,
+                StartedAt = a.StartedAt,
+                SubmittedAt = a.SubmittedAt,
+                ExamId = a.ExamId,
+                ExamName = a.Exam.ExamName,
+                ExamType = a.Exam.ExamType,
+                TotalScore = a.Score ?? 0,
+                AnswerText = a.AnswerText ?? string.Empty
             };
         }
+
+        // ===== Common =====
+        public void SaveChanges() => _db.SaveChanges();
     }
 }
