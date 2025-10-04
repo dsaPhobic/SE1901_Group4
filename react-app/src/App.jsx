@@ -7,6 +7,9 @@ import Forum from "./Pages/Forum/Forum.jsx";
 import CreatePost from "./Pages/Forum/CreatePost.jsx";
 import PostDetail from "./Pages/Forum/PostDetail.jsx";
 import Profile from "./Pages/Profile/Profile.jsx";
+import ExamManagement from "./Pages/Admin/ExamManagement.jsx";
+import AddReading from "./Pages/Admin/AddReading.jsx";
+
 function App() {
   return (
     <BrowserRouter>
@@ -18,6 +21,9 @@ function App() {
         <Route path="/create-post" element={<CreatePost />} />
         <Route path="/post/:postId" element={<PostDetail />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="admin/exam" element={<ExamManagement />} />
+        <Route path="admin/exam/add-reading" element={<AddReading />} />
+        
       </Routes>
     </BrowserRouter>
   );
