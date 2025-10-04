@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { voteComment, unvoteComment, createReply } from "../../Services/ForumApi";
 
-export default function CommentItem({ comment, onReply }) {
+export default function CommentItem({ comment, onReply, level = 0 }) {
   const [isVoted, setIsVoted] = useState(comment.isVoted || false);
   const [voteCount, setVoteCount] = useState(comment.voteCount || 0);
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [showReplies, setShowReplies] = useState(false);
+  const [showReplies, setShowReplies] = useState(true); // Mở replies mặc định cho tất cả levels
 
   const handleVote = (e) => {
     e.stopPropagation();
@@ -40,7 +40,12 @@ export default function CommentItem({ comment, onReply }) {
     setSubmitting(true);
     createReply(comment.commentId, replyText)
       .then((response) => {
-        onReply(response.data);
+        // Đảm bảo reply có parentCommentId đúng
+        const replyData = {
+          ...response.data,
+          parentCommentId: comment.commentId
+        };
+        onReply(replyData);
         setReplyText("");
         setShowReplyForm(false);
       })
@@ -65,13 +70,31 @@ export default function CommentItem({ comment, onReply }) {
   };
 
   const hasReplies = comment.replies && comment.replies.length > 0;
-  const replyCount = comment.replyCount || 0;
-
-  // Debug log to see what comment data we're getting
-  console.log('Comment data:', comment);
+  
+  // Đếm tất cả nested comments (bao gồm replies của replies)
+  const countAllNestedComments = (replies) => {
+    if (!replies || replies.length === 0) return 0;
+    
+    let total = replies.length;
+    replies.forEach(reply => {
+      total += countAllNestedComments(reply.replies);
+    });
+    return total;
+  };
+  
+  const replyCount = comment.replies ? countAllNestedComments(comment.replies) : 0;
+  
+  // Debug log để xem cấu trúc comment
+  console.log('Comment data:', {
+    commentId: comment.commentId,
+    content: comment.content,
+    replies: comment.replies,
+    replyCount: replyCount,
+    hasReplies: hasReplies
+  });
 
   return (
-    <div className="comment-item">
+    <div className={`comment-item ${level > 0 ? 'reply-item' : ''}`}>
       <div className="comment-header">
         <img
           src={comment.user?.avatar || "/default-avatar.png"}
@@ -98,23 +121,16 @@ export default function CommentItem({ comment, onReply }) {
           </svg>
           <span>{voteCount}</span>
         </button>
-        <button
-          className={`comment-action-btn vote-btn`}
-          onClick={handleVote}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/>
-          </svg>
-          <span>{Math.max(0, voteCount - 1)}</span>
-        </button>
+        
         {hasReplies && (
           <button
-            className="comment-action-btn"
+            className="comment-action-btn toggle-replies-btn"
             onClick={() => setShowReplies(!showReplies)}
           >
-            {showReplies ? `Hide All Replies (${replyCount})` : `Show All Replies (${replyCount})`}
+            {showReplies ? `Hide replies` : `Show replies (${replyCount})`}
           </button>
         )}
+        
         <button
           className="comment-action-btn"
           onClick={() => setShowReplyForm(!showReplyForm)}
@@ -154,16 +170,12 @@ export default function CommentItem({ comment, onReply }) {
       {showReplies && hasReplies && (
         <div className="replies">
           {comment.replies.map((reply) => (
-            <div key={reply.commentId} className="reply-item">
-              <div className="reply-content">
-                <span className="reply-mention">@{comment.user?.username}, </span>
-                {reply.content}
-                <span className="reply-author"> by @{reply.user?.username}</span>
-              </div>
-              <div className="reply-actions">
-                <button className="comment-action-btn">Reply</button>
-              </div>
-            </div>
+            <CommentItem 
+              key={reply.commentId} 
+              comment={reply} 
+              onReply={onReply}
+              level={level + 1}
+            />
           ))}
         </div>
       )}
