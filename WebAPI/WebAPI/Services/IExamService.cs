@@ -7,16 +7,15 @@ namespace WebAPI.Services
     {
         Exam? GetById(int id);
         List<Exam> GetAll();
-        List<Exam> GetByUser(int userId);
 
         Exam Create(CreateExamDTO exam);
         Exam? Update(int id, UpdateExamDTO exam);
         bool Delete(int id);
 
-        ExamAttempt StartAttempt(int examId, int userId);
-        void SubmitAttempt(int attemptId);
-
-        List<ExamAttemptDTO> GetExamAttemptsByUser(int userId);
+        ExamAttempt? GetAttemptById(long attemptId);
+        List<ExamAttemptSummaryDTO> GetExamAttemptsByUser(int userId);
         ExamAttemptDTO? GetExamAttemptDetail(long attemptId);
+        ExamAttempt SubmitAttempt(int examId, int userId, string answerText, DateTime startedAt);
+        void Save();
     }
 }

@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "/api/exams",
+  baseURL: "/api/exam",
   withCredentials: true,
 });
 
