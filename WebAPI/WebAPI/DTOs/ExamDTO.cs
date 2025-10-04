@@ -34,4 +34,14 @@ namespace WebAPI.DTOs
         public DateTime CreatedAt { get; set; }
         public List<CreateExamItemDTO> Items { get; set; } = new();
     }
+    public class ExamAttemptDTO
+    {
+        public long AttemptId { get; set; }
+        public DateTime StartedAt { get; set; }
+        public DateTime? SubmittedAt { get; set; }
+        public int ExamId { get; set; }
+        public string ExamName { get; set; } = string.Empty;
+        public string ExamType { get; set; } = string.Empty;
+        public decimal TotalScore { get; set; }
+    }
 }

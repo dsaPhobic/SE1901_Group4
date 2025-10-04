@@ -38,8 +38,6 @@ builder.Services.AddScoped<IWordRepository, WordRepository>();
 builder.Services.AddScoped<IWordService, WordService>();
 builder.Services.AddScoped<IVocabGroupRepository, VocabGroupRepository>();
 builder.Services.AddScoped<IVocabGroupService, VocabGroupService>();
-builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
-builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IExamRepository, ExamRepository>();

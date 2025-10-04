@@ -50,5 +50,22 @@ namespace WebAPI.Controllers
             return NoContent();
         }
 
+        // Lấy tất cả attempt của 1 user
+        [HttpGet("user/{userId}")]
+        public ActionResult<IEnumerable<ExamAttemptDTO>> GetExamAttemptsByUser(int userId)
+        {
+            var attempts = _examService.GetExamAttemptsByUser(userId);
+            return Ok(attempts);
+        }
+
+        [HttpGet("{attemptId}")]
+        public ActionResult<ExamAttemptDTO> GetExamAttemptDetail(long attemptId)
+        {
+            var attempt = _examService.GetExamAttemptDetail(attemptId);
+            if (attempt == null) return NotFound();
+
+            return Ok(attempt);
+        }
+
     }
 }

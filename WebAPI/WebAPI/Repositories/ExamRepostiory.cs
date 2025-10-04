@@ -1,4 +1,6 @@
-﻿using WebAPI.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using WebAPI.Data;
+using WebAPI.DTOs;
 using WebAPI.Models;
 
 namespace WebAPI.Repositories
@@ -25,5 +27,44 @@ namespace WebAPI.Repositories
 
         // ===== Common =====
         public void SaveChanges() => _db.SaveChanges();
+
+        public List<ExamAttemptDTO> GetExamAttemptsByUser(int userId)
+        {
+            return _db.ExamAttempt
+                .Where(a => a.UserId == userId)
+                .Include(a => a.Exam)
+                .Select(a => new ExamAttemptDTO
+                {
+                    AttemptId = a.AttemptId,
+                    StartedAt = a.StartedAt,
+                    SubmittedAt = a.SubmittedAt,
+                    ExamId = a.ExamId,
+                    ExamName = a.Exam.ExamName,
+                    ExamType = a.Exam.ExamType,
+                    TotalScore = a.Score ?? 0
+                })
+                .ToList();
+        }
+
+        public ExamAttemptDTO? GetExamAttemptDetail(long attemptId)
+        {
+            var attempt = _db.ExamAttempt
+                .Where(a => a.AttemptId == attemptId)
+                .Include(a => a.Exam)
+                .FirstOrDefault();
+
+            if (attempt == null) return null;
+
+            return new ExamAttemptDTO
+            {
+                AttemptId = attempt.AttemptId,
+                StartedAt = attempt.StartedAt,
+                SubmittedAt = attempt.SubmittedAt,
+                ExamId = attempt.ExamId,
+                ExamName = attempt.Exam.ExamName,
+                ExamType = attempt.Exam.ExamType,
+                TotalScore = attempt.Score ?? 0
+            };
+        }
     }
 }
