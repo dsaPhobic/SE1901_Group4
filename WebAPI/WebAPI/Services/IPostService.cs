@@ -14,5 +14,9 @@ namespace WebAPI.Services
         void UnvotePost(int id, int userId);
         void ReportPost(int id, string reason, int userId);
         bool IsPostVotedByUser(int postId, int userId);
+        void IncrementViewCount(int postId);
+        void PinPost(int postId);
+        void UnpinPost(int postId);
+        void HidePost(int postId);
     }
 }

@@ -19,14 +19,19 @@ namespace WebAPI.Services
 
         public IEnumerable<CommentDTO> GetCommentsByPostId(int postId)
         {
-            var comments = _context.Comment
+            // Load tất cả comments của post
+            var allComments = _context.Comment
                 .Include(c => c.User)
-                .Include(c => c.InverseParentComment)
-                .Where(c => c.PostId == postId && c.ParentCommentId == null)
+                .Where(c => c.PostId == postId)
+                .ToList();
+
+            // Chỉ lấy root comments
+            var rootComments = allComments
+                .Where(c => c.ParentCommentId == null)
                 .OrderBy(c => c.CreatedAt)
                 .ToList();
 
-            return comments.Select(ToDTO);
+            return rootComments.Select(c => ToDTOWithReplies(c, allComments));
         }
 
         public CommentDTO? GetCommentById(int id)
@@ -63,6 +68,30 @@ namespace WebAPI.Services
             _context.SaveChanges();
 
             return GetCommentById(comment.CommentId) ?? throw new InvalidOperationException("Failed to create comment");
+        }
+
+        public CommentDTO CreateReply(int parentCommentId, CreateCommentDTO dto, int userId)
+        {
+            var parentComment = _context.Comment.Find(parentCommentId);
+            if (parentComment == null) throw new KeyNotFoundException("Parent comment not found");
+
+            var user = _userRepository.GetById(userId);
+            if (user == null) throw new KeyNotFoundException("User not found");
+
+            var reply = new Comment
+            {
+                PostId = parentComment.PostId,
+                UserId = userId,
+                Content = dto.Content,
+                ParentCommentId = parentCommentId,
+                LikeNumber = 0,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Comment.Add(reply);
+            _context.SaveChanges();
+
+            return GetCommentById(reply.CommentId) ?? throw new InvalidOperationException("Failed to create reply");
         }
 
         public void UpdateComment(int id, UpdateCommentDTO dto, int userId)
@@ -158,6 +187,36 @@ namespace WebAPI.Services
                     Role = comment.User.Role
                 },
                 Replies = comment.InverseParentComment.Select(ToDTO).ToList()
+            };
+        }
+
+        private CommentDTO ToDTOWithReplies(Comment comment, List<Comment> allComments)
+        {
+            var replies = allComments
+                .Where(c => c.ParentCommentId == comment.CommentId)
+                .OrderBy(c => c.CreatedAt)
+                .Select(c => ToDTOWithReplies(c, allComments))
+                .ToList();
+
+            return new CommentDTO
+            {
+                CommentId = comment.CommentId,
+                Content = comment.Content,
+                CreatedAt = comment.CreatedAt,
+                LikeNumber = comment.LikeNumber,
+                VoteCount = comment.LikeNumber,
+                IsVoted = false,
+                ParentCommentId = comment.ParentCommentId,
+                User = new UserDTO
+                {
+                    UserId = comment.User.UserId,
+                    Username = comment.User.Username,
+                    Email = comment.User.Email,
+                    Firstname = comment.User.Firstname,
+                    Lastname = comment.User.Lastname,
+                    Role = comment.User.Role
+                },
+                Replies = replies
             };
         }
     }

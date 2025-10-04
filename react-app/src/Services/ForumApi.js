@@ -30,16 +30,28 @@ export function deletePost(postId) {
   return API.delete(`/posts/${postId}`);
 }
 
+export function pinPost(postId) {
+  return API.post(`/posts/${postId}/pin`);
+}
+
+export function unpinPost(postId) {
+  return API.post(`/posts/${postId}/unpin`);
+}
+
+export function hidePost(postId) {
+  return API.post(`/posts/${postId}/hide`);
+}
+
+export function reportPost(postId, reason) {
+  return API.post(`/posts/${postId}/report`, { reason });
+}
+
 export function votePost(postId) {
   return API.post(`/posts/${postId}/vote`);
 }
 
 export function unvotePost(postId) {
   return API.delete(`/posts/${postId}/vote`);
-}
-
-export function reportPost(postId, reason) {
-  return API.post(`/posts/${postId}/report`, { reason });
 }
 
 // Comments API

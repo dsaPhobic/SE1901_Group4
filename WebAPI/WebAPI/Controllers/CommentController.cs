@@ -51,6 +51,27 @@ namespace WebAPI.Controllers
             }
         }
 
+        [HttpPost("{parentCommentId}/replies")]
+        public ActionResult<CommentDTO> CreateReply(int parentCommentId, [FromBody] CreateCommentDTO dto)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return Unauthorized("Please login to create replies");
+
+            try
+            {
+                var comment = _commentService.CreateReply(parentCommentId, dto, userId.Value);
+                return CreatedAtAction(nameof(GetComment), new { id = comment.CommentId }, comment);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPut("{id}")]
         public IActionResult UpdateComment(int id, [FromBody] UpdateCommentDTO dto)
         {

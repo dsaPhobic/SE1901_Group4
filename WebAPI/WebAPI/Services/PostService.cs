@@ -23,7 +23,9 @@ namespace WebAPI.Services
                 .Include(p => p.User)
                 .Include(p => p.Comments)
                 .Include(p => p.PostLikes)
-                .OrderByDescending(p => p.CreatedAt)
+                .Where(p => !p.IsHidden) // Không hiển thị posts đã bị ẩn
+                .OrderByDescending(p => p.IsPinned) // Pinned posts lên đầu
+                .ThenByDescending(p => p.CreatedAt) // Sau đó sắp xếp theo thời gian
                 .Skip((page - 1) * limit)
                 .Take(limit)
                 .ToList();
@@ -45,15 +47,16 @@ namespace WebAPI.Services
                 .Include(p => p.User)
                 .Include(p => p.Comments)
                 .Include(p => p.PostLikes)
+                .Where(p => !p.IsHidden) // Không hiển thị posts đã bị ẩn
                 .AsQueryable();
 
             query = filter.ToLower() switch
             {
-                "new" => query.OrderByDescending(p => p.CreatedAt),
-                "top" => query.OrderByDescending(p => p.PostLikes.Count),
-                "hot" => query.OrderByDescending(p => p.Comments.Count + p.PostLikes.Count),
-                "closed" => query.Where(p => p.Comments.Any(c => c.Content.Contains("CLOSED"))),
-                _ => query.OrderByDescending(p => p.CreatedAt)
+                "new" => query.OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.CreatedAt),
+                "top" => query.OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.PostLikes.Count),
+                "hot" => query.OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.Comments.Count(c => c.ParentCommentId == null) + p.PostLikes.Count),
+                "closed" => query.Where(p => p.Comments.Any(c => c.Content.Contains("CLOSED") && c.ParentCommentId == null)).OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.CreatedAt),
+                _ => query.OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.CreatedAt)
             };
 
             var posts = query
@@ -86,9 +89,6 @@ namespace WebAPI.Services
                 .Collection(p => p.Tags)
                 .Query()
                 .ToList();
-
-            post.ViewCount = (post.ViewCount ?? 0) + 1;
-            _context.SaveChanges();
 
             return ToDTO(post);
         }
@@ -151,7 +151,13 @@ namespace WebAPI.Services
 
         public void DeletePost(int id, int userId)
         {
-            var post = _context.Post.Find(id);
+            var post = _context.Post
+                .Include(p => p.Comments)
+                .Include(p => p.PostLikes)
+                .Include(p => p.Reports)
+                .Include(p => p.Tags)
+                .FirstOrDefault(p => p.PostId == id);
+                
             if (post == null) throw new KeyNotFoundException("Post not found");
 
             var user = _userRepository.GetById(userId);
@@ -160,8 +166,32 @@ namespace WebAPI.Services
             if (post.UserId != userId && user.Role != "admin")
                 throw new UnauthorizedAccessException("You don't have permission to delete this post");
 
-            _context.Post.Remove(post);
-            _context.SaveChanges();
+            try
+            {
+                // Xóa các dữ liệu liên quan theo thứ tự đúng
+                // 1. Xóa tất cả comments của post (bao gồm nested comments)
+                var allComments = _context.Comment.Where(c => c.PostId == id).ToList();
+                _context.Comment.RemoveRange(allComments);
+                
+                // 2. Xóa tất cả likes của post
+                _context.PostLike.RemoveRange(post.PostLikes);
+                
+                // 3. Xóa tất cả reports của post
+                _context.Report.RemoveRange(post.Reports);
+                
+                // 4. Xóa Post_Tag relationships (many-to-many)
+                // Clear tags collection trước khi xóa post
+                post.Tags.Clear();
+                
+                // 5. Xóa post
+                _context.Post.Remove(post);
+                
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error deleting post: {ex.Message}", ex);
+            }
         }
 
         public void VotePost(int id, int userId)
@@ -206,7 +236,7 @@ namespace WebAPI.Services
             var report = new Report
             {
                 UserId = userId,
-                PostId = id, // fixed missing relation
+                PostId = id,
                 Content = reason,
                 Status = "Pending",
                 CreatedAt = DateTime.UtcNow
@@ -255,9 +285,10 @@ namespace WebAPI.Services
                 CreatedAt = post.CreatedAt,
                 UpdatedAt = post.UpdatedAt,
                 ViewCount = post.ViewCount ?? 0,
-                CommentCount = post.Comments.Count,
+                CommentCount = post.Comments.Count, // Đếm tất cả comments (bao gồm replies)
                 VoteCount = post.PostLikes.Count,
                 IsVoted = false,
+                IsPinned = post.IsPinned,
                 User = new UserDTO
                 {
                     UserId = post.User.UserId,
@@ -274,5 +305,42 @@ namespace WebAPI.Services
                 }).ToList()
             };
         }
+
+        public void IncrementViewCount(int postId)
+        {
+            var post = _context.Post.Find(postId);
+            if (post == null) return;
+
+            post.ViewCount = (post.ViewCount ?? 0) + 1;
+            _context.SaveChanges();
+        }
+
+        public void PinPost(int postId)
+        {
+            var post = _context.Post.Find(postId);
+            if (post == null) throw new KeyNotFoundException("Post not found");
+
+            post.IsPinned = true;
+            _context.SaveChanges();
+        }
+
+        public void UnpinPost(int postId)
+        {
+            var post = _context.Post.Find(postId);
+            if (post == null) throw new KeyNotFoundException("Post not found");
+
+            post.IsPinned = false;
+            _context.SaveChanges();
+        }
+
+        public void HidePost(int postId)
+        {
+            var post = _context.Post.Find(postId);
+            if (post == null) throw new KeyNotFoundException("Post not found");
+
+            post.IsHidden = true;
+            _context.SaveChanges();
+        }
+
     }
 }

@@ -44,11 +44,54 @@
   color: #666;
   line-height: 1.4;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
 }
 
 .sidebar-item:hover {
   background-color: #f8f9fa;
+}
+
+.sidebar-item.clickable {
+  cursor: pointer;
+  color: #007bff;
+  font-weight: 500;
+}
+
+.sidebar-item.clickable:hover {
+  background-color: #e3f2fd;
+  color: #0056b3;
+  transform: translateX(2px);
+}
+
+/* Pinned posts styling */
+.sidebar-item.pinned {
+  background-color: #fff3cd;
+  border-left: 3px solid #ffc107;
+  font-weight: 600;
+}
+
+.sidebar-item.pinned:hover {
+  background-color: #ffeaa7;
+  transform: translateX(2px);
+}
+
+.pin-icon {
+  margin-right: 8px;
+  font-size: 12px;
+}
+
+/* Post title and votes layout */
+.post-title {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.post-votes {
+  font-size: 11px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .sidebar-item:last-child {

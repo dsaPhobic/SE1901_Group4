@@ -1,7 +1,7 @@
 import React from "react";
 import PostItem from "./PostItem";
 
-export default function PostList({ posts, loading, onLoadMore, hasMore }) {
+export default function PostList({ posts, loading, onLoadMore, hasMore, onPostUpdated }) {
   if (loading && posts.length === 0) {
     return (
       <div className="loading">
@@ -21,7 +21,7 @@ export default function PostList({ posts, loading, onLoadMore, hasMore }) {
   return (
     <div className="posts-container">
       {posts.map((post) => (
-        <PostItem key={post.postId} post={post} />
+        <PostItem key={post.postId} post={post} onPostUpdated={onPostUpdated} />
       ))}
       
       {hasMore && (
