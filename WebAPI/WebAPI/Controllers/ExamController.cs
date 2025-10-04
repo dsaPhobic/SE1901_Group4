@@ -32,6 +32,13 @@ namespace WebAPI.Controllers
             return Ok(result);
         }
 
+        [HttpGet]
+        public ActionResult<IEnumerable<Exam>> GetAll()
+        {
+            var list = _examService.GetAll();
+            return Ok(list);
+        }
+
         // Update exam (admin only)
         [HttpPut("{id}")]
         public ActionResult<Exam> Update(int id, [FromBody] UpdateExamDTO exam)
