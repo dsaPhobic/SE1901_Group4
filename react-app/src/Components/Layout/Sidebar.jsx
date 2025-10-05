@@ -9,8 +9,9 @@ import {
   Settings,
   MessageCircle,
   Library,
-  FileQuestion,
   ShoppingBag,
+  Cloud,
+  Wallet,
 } from "lucide-react";
 import styles from "./Sidebar.module.css";
 
@@ -30,7 +31,7 @@ export default function Sidebar() {
     { icon: <Settings size={20} />, label: "Settings", path: "/settings" },
     { icon: <MessageCircle size={20} />, label: "General", path: "/forum" },
     { icon: <Library size={20} />, label: "Dictionary", path: "/dictionary" },
-   
+
     {
       icon: <ShoppingBag size={20} />,
       label: "Transaction",
@@ -63,8 +64,8 @@ export default function Sidebar() {
       </nav>
 
       <div className={styles.sidebarFooter}>
-        <div className={styles.cloudIcon}>☁️</div>
-        <div className={styles.moneySymbols}>💰💰💰</div>
+        <Cloud size={30} color="#6c757d" />
+        <Wallet size={28} color="#28a745" />
         <p className={styles.footerText}>
           Give your money awesome space in cloud
         </p>

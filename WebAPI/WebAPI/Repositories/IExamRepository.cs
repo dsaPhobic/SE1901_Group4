@@ -1,4 +1,5 @@
-﻿using WebAPI.Models;
+﻿using WebAPI.DTOs;
+using WebAPI.Models;
 
 namespace WebAPI.Repositories
 {
@@ -16,5 +17,7 @@ namespace WebAPI.Repositories
 
         // Save
         void SaveChanges();
+        List<ExamAttemptDTO> GetExamAttemptsByUser(int userId);
+        ExamAttemptDTO? GetExamAttemptDetail(long attemptId);
     }
 }

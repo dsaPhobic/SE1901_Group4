@@ -84,5 +84,15 @@ namespace WebAPI.Services
             _db.ExamAttempt.Update(attempt);
             _repo.SaveChanges();
         }
+
+        public List<ExamAttemptDTO> GetExamAttemptsByUser(int userId)
+        {
+            return _repo.GetExamAttemptsByUser(userId);
+        }
+
+        public ExamAttemptDTO? GetExamAttemptDetail(long attemptId)
+        {
+            return _repo.GetExamAttemptDetail(attemptId);
+        }
     }
 }
