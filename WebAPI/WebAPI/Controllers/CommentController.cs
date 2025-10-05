@@ -18,14 +18,16 @@ namespace WebAPI.Controllers
         [HttpGet("post/{postId}")]
         public ActionResult<IEnumerable<CommentDTO>> GetCommentsByPostId(int postId)
         {
-            var comments = _commentService.GetCommentsByPostId(postId);
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var comments = _commentService.GetCommentsByPostId(postId, userId);
             return Ok(comments);
         }
 
         [HttpGet("{id}")]
         public ActionResult<CommentDTO> GetComment(int id)
         {
-            var comment = _commentService.GetCommentById(id);
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var comment = _commentService.GetCommentById(id, userId);
             if (comment == null) return NotFound("Comment not found");
             return Ok(comment);
         }
@@ -160,46 +162,5 @@ namespace WebAPI.Controllers
             }
         }
 
-        [HttpPost("{id}/vote")]
-        public IActionResult VoteComment(int id)
-        {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return Unauthorized("Please login to vote on comments");
-
-            try
-            {
-                _commentService.VoteComment(id, userId.Value);
-                return Ok("Comment voted successfully");
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpDelete("{id}/vote")]
-        public IActionResult UnvoteComment(int id)
-        {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return Unauthorized("Please login to unvote comments");
-
-            try
-            {
-                _commentService.UnvoteComment(id, userId.Value);
-                return Ok("Comment unvoted successfully");
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
     }
 }

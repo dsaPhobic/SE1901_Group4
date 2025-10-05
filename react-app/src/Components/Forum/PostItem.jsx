@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { votePost, unvotePost, deletePost, pinPost, unpinPost, hidePost, reportPost } from "../../Services/ForumApi";
+import { votePost, unvotePost, deletePost, pinPost, unpinPost, hidePost, unhidePost, reportPost } from "../../Services/ForumApi";
 import useAuth from "../../Hook/UseAuth";
+import { MoreVertical, Trash2, Pin, EyeOff, Flag, Eye, MessageCircle, ThumbsUp, Edit } from "lucide-react";
 
-export default function PostItem({ post, onPostUpdated }) {
+export default function PostItem({ post, onPostUpdated, isInClosedSection = false }) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isVoted, setIsVoted] = useState(post.isVoted || false);
@@ -12,6 +13,13 @@ export default function PostItem({ post, onPostUpdated }) {
   const [showMenu, setShowMenu] = useState(false);
   const [isPinned, setIsPinned] = useState(post.isPinned || false);
   const menuRef = useRef(null);
+
+  // Sync state with props when component mounts or props change
+  useEffect(() => {
+    setIsVoted(post.isVoted || false);
+    setVoteCount(post.voteCount || 0);
+    setIsPinned(post.isPinned || false);
+  }, [post.isVoted, post.voteCount, post.isPinned]);
 
   const handleVote = (e) => {
     e.stopPropagation();
@@ -120,7 +128,9 @@ export default function PostItem({ post, onPostUpdated }) {
       hidePost(post.postId)
         .then(() => {
           alert("Bài viết đã được ẩn!");
-          window.location.reload(); // Reload để cập nhật danh sách
+          if (onPostUpdated) {
+            onPostUpdated();
+          }
         })
         .catch(error => {
           console.error("Error hiding post:", error);
@@ -128,6 +138,30 @@ export default function PostItem({ post, onPostUpdated }) {
         });
       setShowMenu(false);
     }
+  };
+
+  const handleUnhidePost = (e) => {
+    e.stopPropagation();
+    if (window.confirm("Bạn có chắc chắn muốn hiện lại bài viết này?")) {
+      unhidePost(post.postId)
+        .then(() => {
+          alert("Bài viết đã được hiện lại!");
+          if (onPostUpdated) {
+            onPostUpdated();
+          }
+        })
+        .catch(error => {
+          console.error("Error unhiding post:", error);
+          alert("Lỗi khi hiện lại bài viết. Vui lòng thử lại.");
+        });
+      setShowMenu(false);
+    }
+  };
+
+  const handleEditPost = (e) => {
+    e.stopPropagation();
+    navigate(`/edit-post/${post.postId}`);
+    setShowMenu(false);
   };
 
   const handleReportPost = (e) => {
@@ -182,11 +216,7 @@ export default function PostItem({ post, onPostUpdated }) {
         </div>
         <div className="post-menu-container" ref={menuRef}>
           <button className="post-menu-btn" onClick={handleMenuToggle}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="1"/>
-              <circle cx="12" cy="5" r="1"/>
-              <circle cx="12" cy="19" r="1"/>
-            </svg>
+            <MoreVertical size={16} />
           </button>
           
           {showMenu && (
@@ -194,41 +224,39 @@ export default function PostItem({ post, onPostUpdated }) {
               {isOwner ? (
                 // Menu for post owner
                 <>
+                  <button className="menu-item edit" onClick={handleEditPost}>
+                    <Edit size={16} />
+                    Chỉnh sửa bài viết
+                  </button>
                   <button className="menu-item delete" onClick={handleDeletePost}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polyline points="3,6 5,6 21,6"/>
-                      <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"/>
-                    </svg>
+                    <Trash2 size={16} />
                     Xóa bài viết
                   </button>
                   <button className="menu-item pin" onClick={handlePinPost}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
+                    <Pin size={16} />
                     {isPinned ? "Hủy ghim" : "Ghim bài viết"}
                   </button>
                 </>
               ) : (
                 // Menu for other users
                 <>
-                  <button className="menu-item hide" onClick={handleHidePost}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                      <line x1="1" y1="1" x2="23" y2="23"/>
-                    </svg>
-                    Ẩn bài viết
-                  </button>
+                  {isInClosedSection ? (
+                    <button className="menu-item unhide" onClick={handleUnhidePost}>
+                      <Eye size={16} />
+                      Hiện lại bài viết
+                    </button>
+                  ) : (
+                    <button className="menu-item hide" onClick={handleHidePost}>
+                      <EyeOff size={16} />
+                      Ẩn bài viết
+                    </button>
+                  )}
                   <button className="menu-item pin" onClick={handlePinPost}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
+                    <Pin size={16} />
                     {isPinned ? "Hủy ghim" : "Ghim bài viết"}
                   </button>
                   <button className="menu-item report" onClick={handleReportPost}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
-                      <line x1="4" y1="22" x2="4" y2="15"/>
-                    </svg>
+                    <Flag size={16} />
                     Tố cáo bài viết
                   </button>
                 </>
@@ -243,7 +271,7 @@ export default function PostItem({ post, onPostUpdated }) {
         <h3 className="post-title">
           {isPinned && (
             <span className="pinned-indicator" title="Bài viết đã được ghim">
-              📌 
+              <Pin size={16} />
             </span>
           )}
           {post.title}
@@ -269,16 +297,11 @@ export default function PostItem({ post, onPostUpdated }) {
       {/* Stats Section */}
       <div className="post-stats">
         <div className="post-stat">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-            <circle cx="12" cy="12" r="3"/>
-          </svg>
+          <Eye size={16} />
           <span>{post.viewCount || 0}</span>
         </div>
         <div className="post-stat">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
+          <MessageCircle size={16} />
           <span>{post.commentCount || 0}</span>
         </div>
         <button
@@ -286,11 +309,9 @@ export default function PostItem({ post, onPostUpdated }) {
           onClick={handleVote}
           disabled={loading}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M7 13l3 3 7-7"/>
-            <path d="M7 6l3 3 7-7"/>
-          </svg>
-          <span>{voteCount}</span>
+          <ThumbsUp size={16} />
+          <span>{isVoted ? "Unlike" : "Like"}</span>
+          <span className="vote-count">({voteCount})</span>
         </button>
       </div>
     </div>

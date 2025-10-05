@@ -1,34 +1,93 @@
-import React, { useState } from "react";
-import { voteComment, unvoteComment, createReply } from "../../Services/ForumApi";
+import React, { useState, useEffect } from "react";
+import { likeComment, unlikeComment, createComment, updateComment, deleteComment } from "../../Services/ForumApi";
+import { ThumbsUp, Edit, Trash2 } from "lucide-react";
+import useAuth from "../../Hook/UseAuth";
 
-export default function CommentItem({ comment, onReply, level = 0 }) {
+export default function CommentItem({ comment, onReply, level = 0, postId }) {
+  const { user } = useAuth();
   const [isVoted, setIsVoted] = useState(comment.isVoted || false);
   const [voteCount, setVoteCount] = useState(comment.voteCount || 0);
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showReplies, setShowReplies] = useState(true); // Mở replies mặc định cho tất cả levels
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState(comment.content);
+
+  // Sync state with props when component mounts or props change
+  useEffect(() => {
+    setIsVoted(comment.isVoted || false);
+    setVoteCount(comment.voteCount || comment.likeNumber || 0);
+  }, [comment.isVoted, comment.voteCount, comment.likeNumber]);
 
   const handleVote = (e) => {
     e.stopPropagation();
     
     if (isVoted) {
-      unvoteComment(comment.commentId)
+      unlikeComment(comment.commentId)
         .then(() => {
           setIsVoted(false);
           setVoteCount(prev => prev - 1);
         })
         .catch(error => {
-          console.error("Error unvoting comment:", error);
+          console.error("Error unliking comment:", error);
         });
     } else {
-      voteComment(comment.commentId)
+      likeComment(comment.commentId)
         .then(() => {
           setIsVoted(true);
           setVoteCount(prev => prev + 1);
         })
         .catch(error => {
-          console.error("Error voting comment:", error);
+          console.error("Error liking comment:", error);
+        });
+    }
+  };
+
+  const handleEditComment = () => {
+    setIsEditing(true);
+    setEditText(comment.content);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editText.trim()) return;
+    
+    setSubmitting(true);
+    updateComment(comment.commentId, editText.trim())
+      .then(() => {
+        comment.content = editText.trim();
+        setIsEditing(false);
+      })
+      .catch(error => {
+        console.error("Error updating comment:", error);
+        alert("Error updating comment. Please try again.");
+      })
+      .finally(() => {
+        setSubmitting(false);
+      });
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditText(comment.content);
+  };
+
+  const handleDeleteComment = () => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa comment này?")) {
+      setSubmitting(true);
+      deleteComment(comment.commentId)
+        .then(() => {
+          // Gọi callback để xóa comment khỏi danh sách
+          if (onReply) {
+            onReply({ action: 'delete', commentId: comment.commentId });
+          }
+        })
+        .catch(error => {
+          console.error("Error deleting comment:", error);
+          alert("Error deleting comment. Please try again.");
+        })
+        .finally(() => {
+          setSubmitting(false);
         });
     }
   };
@@ -38,7 +97,7 @@ export default function CommentItem({ comment, onReply, level = 0 }) {
     if (!replyText.trim() || submitting) return;
 
     setSubmitting(true);
-    createReply(comment.commentId, replyText)
+    createComment(postId, replyText, comment.commentId)
       .then((response) => {
         // Đảm bảo reply có parentCommentId đúng
         const replyData = {
@@ -88,6 +147,9 @@ export default function CommentItem({ comment, onReply, level = 0 }) {
   console.log('Comment data:', {
     commentId: comment.commentId,
     content: comment.content,
+    isVoted: comment.isVoted,
+    voteCount: comment.voteCount,
+    likeNumber: comment.likeNumber,
     replies: comment.replies,
     replyCount: replyCount,
     hasReplies: hasReplies
@@ -108,7 +170,34 @@ export default function CommentItem({ comment, onReply, level = 0 }) {
       </div>
 
       <div className="comment-content">
-        {comment.content}
+        {isEditing ? (
+          <div className="edit-comment-form">
+            <textarea
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+              className="edit-textarea"
+              rows={3}
+            />
+            <div className="edit-actions">
+              <button 
+                className="btn-save" 
+                onClick={handleSaveEdit}
+                disabled={submitting}
+              >
+                Save
+              </button>
+              <button 
+                className="btn-cancel" 
+                onClick={handleCancelEdit}
+                disabled={submitting}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          comment.content
+        )}
       </div>
 
       <div className="comment-actions">
@@ -116,10 +205,9 @@ export default function CommentItem({ comment, onReply, level = 0 }) {
           className={`comment-action-btn vote-btn ${isVoted ? "voted" : ""}`}
           onClick={handleVote}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
-          </svg>
-          <span>{voteCount}</span>
+          <ThumbsUp size={16} />
+          <span>{isVoted ? "Unlike" : "Like"}</span>
+          <span className="vote-count">({voteCount})</span>
         </button>
         
         {hasReplies && (
@@ -137,6 +225,28 @@ export default function CommentItem({ comment, onReply, level = 0 }) {
         >
           Reply
         </button>
+
+        {/* Edit và Delete buttons - chỉ hiện cho owner */}
+        {user && comment.user && user.userId === comment.user.userId && (
+          <>
+            <button
+              className="comment-action-btn edit-btn"
+              onClick={handleEditComment}
+              disabled={submitting}
+            >
+              <Edit size={16} />
+              Edit
+            </button>
+            <button
+              className="comment-action-btn delete-btn"
+              onClick={handleDeleteComment}
+              disabled={submitting}
+            >
+              <Trash2 size={16} />
+              Delete
+            </button>
+          </>
+        )}
       </div>
 
       {showReplyForm && (

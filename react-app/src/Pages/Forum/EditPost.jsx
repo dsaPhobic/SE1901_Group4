@@ -1,13 +1,14 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import "./CreatePost.css";
 import Sidebar from "../../Components/Layout/Sidebar";
 import HeaderBar from "../../Components/Layout/HeaderBar";
 import RightSidebar from "../../Components/Forum/RightSidebar";
-import { createPost } from "../../Services/ForumApi";
+import { getPost, updatePost } from "../../Services/ForumApi";
 import { Image, Send, X } from "lucide-react";
 
-export default function CreatePost({ onNavigate }) {
+export default function EditPost({ onNavigate }) {
+  const { postId } = useParams();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: "",
@@ -15,6 +16,31 @@ export default function CreatePost({ onNavigate }) {
     tagNames: []
   });
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+
+  useEffect(() => {
+    loadPost();
+  }, [postId]);
+
+  const loadPost = () => {
+    getPost(postId, false) // Không tăng view count khi edit
+      .then((response) => {
+        const post = response.data;
+        setFormData({
+          title: post.title || "",
+          content: post.content || "",
+          tagNames: post.tags ? post.tags.map(tag => tag.tagName) : []
+        });
+      })
+      .catch((error) => {
+        console.error("Error loading post:", error);
+        alert("Error loading post. Please try again.");
+        navigate("/forum");
+      })
+      .finally(() => {
+        setInitialLoading(false);
+      });
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -32,13 +58,13 @@ export default function CreatePost({ onNavigate }) {
     }
 
     setLoading(true);
-    createPost(formData)
+    updatePost(postId, formData)
       .then((response) => {
-        navigate("/forum");
+        navigate(`/post/${postId}`);
       })
       .catch((error) => {
-        console.error("Error creating post:", error);
-        alert("Error creating post. Please try again.");
+        console.error("Error updating post:", error);
+        alert("Error updating post. Please try again.");
       })
       .finally(() => {
         setLoading(false);
@@ -55,17 +81,31 @@ export default function CreatePost({ onNavigate }) {
     console.log("Add image clicked");
   };
 
+  if (initialLoading) {
+    return (
+      <div className="create-post-container">
+        <Sidebar onNavigate={onNavigate} />
+        <main className="main-content">
+          <HeaderBar onNavigate={onNavigate} currentPage="editPost" />
+          <div className="create-post-content">
+            <div className="loading">Loading post...</div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="create-post-container">
       <Sidebar onNavigate={onNavigate} />
       
       <main className="main-content">
-        <HeaderBar onNavigate={onNavigate} currentPage="createPost" />
+        <HeaderBar onNavigate={onNavigate} currentPage="editPost" />
         
         <div className="create-post-content">
           <div className="create-post-main">
             <div className="create-post-header">
-              <h1>New Post</h1>
+              <h1>Edit Post</h1>
             </div>
             
             <form onSubmit={handleSubmit} className="create-post-form">
@@ -118,13 +158,13 @@ export default function CreatePost({ onNavigate }) {
                     disabled={loading}
                   >
                     <Send size={16} />
-                    {loading ? "Publishing..." : "Publish"}
+                    {loading ? "Updating..." : "Update Post"}
                   </button>
                 </div>
                 <button 
                   type="button" 
                   className="btn btn-cancel"
-                  onClick={() => navigate("/forum")}
+                  onClick={() => navigate(`/post/${postId}`)}
                 >
                   <X size={16} />
                   Cancel
