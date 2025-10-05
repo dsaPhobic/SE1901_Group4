@@ -4,7 +4,7 @@ import * as readingService from "../../Services/ReadingApi";
 import ExamMarkdownRenderer, {
   renderMarkdownToHtmlAndAnswers,
 } from "../../Components/Exam/ExamMarkdownRenderer.jsx";
-import "./AddReading.css";
+import styles from "./AddReading.module.css";
 
 export default function AddReading() {
   const location = useLocation();
@@ -29,9 +29,7 @@ export default function AddReading() {
     setStatus("Processing...");
 
     try {
-      // Convert markdown into HTML + correct answers
       const { html, answers } = renderMarkdownToHtmlAndAnswers(readingQuestion);
-
       const payload = {
         examId: exam.examId,
         readingContent,
@@ -58,77 +56,78 @@ export default function AddReading() {
   };
 
   return (
-    <div className="dictionary-container">
-      <h2>
-        {skill
-          ? `Edit Reading for ${exam?.examName}`
-          : `Add Reading for ${exam?.examName}`}
-      </h2>
+    <div className={styles.container}>
+      <header className={styles.header}>
+        <h2>
+          {skill
+            ? `✏️ Edit Reading for ${exam?.examName}`
+            : `📝 Add Reading for ${exam?.examName}`}
+        </h2>
+      </header>
 
-      <div className="reading-grid">
-        {/* ===== Left: Input Form ===== */}
-        <form onSubmit={handleSubmit} className="exam-form">
-          <div className="form-group">
+      <div className={styles.grid}>
+        {/* ===== Left: Form ===== */}
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.group}>
             <label>Passage / Content</label>
             <textarea
               value={readingContent}
               onChange={(e) => setReadingContent(e.target.value)}
               rows={6}
+              placeholder="Write the reading passage here..."
             />
           </div>
 
-          <div className="form-group">
+          <div className={styles.group}>
             <label>Question (Markdown)</label>
             <textarea
               value={readingQuestion}
               onChange={(e) => setReadingQuestion(e.target.value)}
               rows={10}
+              placeholder="[!num] Question text here..."
             />
           </div>
 
-          <div className="button-row">
-            <button type="submit" className="start-quiz-btn">
+          <div className={styles.buttons}>
+            <button type="submit" className={styles.btnPrimary}>
               {skill ? "Update Question" : "Add Question"}
             </button>
-
             <button
               type="button"
-              className="start-quiz-btn"
-              style={{ backgroundColor: "#6b7280" }}
+              className={styles.btnSecondary}
               onClick={() => navigate(-1)}
             >
               Back
             </button>
           </div>
 
-          {status && <p className="status">{status}</p>}
+          {status && <p className={styles.status}>{status}</p>}
         </form>
 
-        {/* ===== Right: Live Preview ===== */}
-        <div className="preview-panel">
-          <div className="preview-header">
-            <h3>Preview</h3>
+        {/* ===== Right: Preview ===== */}
+        <div className={styles.preview}>
+          <div className={styles.previewHeader}>
+            <h3>Live Preview</h3>
             <button
               onClick={() => setShowAnswers((v) => !v)}
-              className="start-quiz-btn"
-              style={{
-                backgroundColor: showAnswers ? "#f97316" : "#10b981",
-                fontSize: "0.9rem",
-                padding: "0.5rem 0.8rem",
-              }}
+              className={`${styles.btnToggle} ${
+                showAnswers ? styles.show : styles.hide
+              }`}
             >
               {showAnswers ? "Hide Answers" : "Show Answers"}
             </button>
           </div>
 
-          <div className="preview-box">
+          <div className={styles.previewBox}>
             {readingQuestion ? (
               <ExamMarkdownRenderer
                 markdown={readingQuestion}
                 showAnswers={showAnswers}
               />
             ) : (
-              <p style={{ opacity: 0.6 }}>Type question to preview...</p>
+              <p className={styles.placeholder}>
+                Type markdown question to preview...
+              </p>
             )}
           </div>
         </div>
