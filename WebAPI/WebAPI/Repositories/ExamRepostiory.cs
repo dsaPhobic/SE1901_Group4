@@ -36,12 +36,12 @@ namespace WebAPI.Repositories
                            .Include(a => a.User)
                            .FirstOrDefault(a => a.AttemptId == attemptId);
 
-        public List<ExamAttemptSummaryDTO> GetExamAttemptsByUser(int userId)
+        public List<ExamAttemptSummaryDto> GetExamAttemptsByUser(int userId)
         {
             return _db.ExamAttempt
                 .Where(a => a.UserId == userId)
                 .Include(a => a.Exam)
-                .Select(a => new ExamAttemptSummaryDTO
+                .Select(a => new ExamAttemptSummaryDto
                 {
                     AttemptId = a.AttemptId,
                     StartedAt = a.StartedAt,
@@ -54,14 +54,14 @@ namespace WebAPI.Repositories
                 .ToList();
         }
 
-        public ExamAttemptDTO? GetExamAttemptDetail(long attemptId)
+        public ExamAttemptDto? GetExamAttemptDetail(long attemptId)
         {
             var a = _db.ExamAttempt
                 .Include(a => a.Exam)
                 .Include(a => a.User)
                 .FirstOrDefault(a => a.AttemptId == attemptId);
 
-            return a == null ? null : new ExamAttemptDTO
+            return a == null ? null : new ExamAttemptDto
             {
                 AttemptId = a.AttemptId,
                 StartedAt = a.StartedAt,

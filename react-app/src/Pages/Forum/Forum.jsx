@@ -6,6 +6,7 @@ import PostList from "../../Components/Forum/PostList";
 import RightSidebar from "../../Components/Forum/RightSidebar";
 import { getPostsByFilter } from "../../Services/ForumApi";
 import { useNavigate } from "react-router-dom";
+import { Plus } from "lucide-react";
 
 export default function Forum({ onNavigate }) {
   const [posts, setPosts] = useState([]);
@@ -73,6 +74,11 @@ export default function Forum({ onNavigate }) {
     setPosts((prev) => [newPost, ...prev]);
   };
 
+  const handlePostUpdated = () => {
+    // Reload posts khi có thay đổi (ghim, ẩn, etc.)
+    loadPosts();
+  };
+
   return (
     <div className="forum-container">
       <Sidebar onNavigate={onNavigate} />
@@ -88,7 +94,7 @@ export default function Forum({ onNavigate }) {
                 className="ask-question-btn"
                 onClick={() => navigate('/create-post')}
               >
-                <span className="plus-icon">+</span>
+                <Plus size={16} />
                 Create a post
               </button>
             </div>
@@ -110,7 +116,8 @@ export default function Forum({ onNavigate }) {
               loading={loading}
               onLoadMore={loadMorePosts}
               hasMore={hasMore}
-              onPostUpdated={loadPosts}
+              onPostUpdated={handlePostUpdated}
+              isInClosedSection={activeFilter === 'closed'}
             />
           </div>
           

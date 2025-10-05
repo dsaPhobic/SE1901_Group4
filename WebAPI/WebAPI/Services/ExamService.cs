@@ -18,7 +18,7 @@ namespace WebAPI.Services
         public Exam? GetById(int id) => _repo.GetById(id);
         public List<Exam> GetAll() => _repo.GetAll();
 
-        public Exam Create(CreateExamDTO dto)
+        public Exam Create(CreateExamDto dto)
         {
             var exam = new Exam
             {
@@ -31,7 +31,7 @@ namespace WebAPI.Services
             return exam;
         }
 
-        public Exam? Update(int id, UpdateExamDTO dto)
+        public Exam? Update(int id, UpdateExamDto dto)
         {
             var existing = _repo.GetById(id);
             if (existing == null) return null;
@@ -77,10 +77,10 @@ namespace WebAPI.Services
 
         public ExamAttempt? GetAttemptById(long attemptId) => _repo.GetAttemptById(attemptId);
 
-        public List<ExamAttemptSummaryDTO> GetExamAttemptsByUser(int userId) =>
+        public List<ExamAttemptSummaryDto> GetExamAttemptsByUser(int userId) =>
             _repo.GetExamAttemptsByUser(userId);
 
-        public ExamAttemptDTO? GetExamAttemptDetail(long attemptId) =>
+        public ExamAttemptDto? GetExamAttemptDetail(long attemptId) =>
             _repo.GetExamAttemptDetail(attemptId);
 
         public void Save() => _repo.SaveChanges();

@@ -17,7 +17,7 @@ namespace WebAPI.Services
             _userRepository = userRepository;
         }
 
-        public IEnumerable<PostDTO> GetPosts(int page, int limit)
+        public IEnumerable<PostDTO> GetPosts(int page, int limit, int? userId = null)
         {
             var posts = _context.Post
                 .Include(p => p.User)
@@ -38,25 +38,24 @@ namespace WebAPI.Services
                     .ToList();
             }
 
-            return posts.Select(ToDTO);
+            return posts.Select(p => ToDTO(p, userId));
         }
 
-        public IEnumerable<PostDTO> GetPostsByFilter(string filter, int page, int limit)
+        public IEnumerable<PostDTO> GetPostsByFilter(string filter, int page, int limit, int? userId = null)
         {
             var query = _context.Post
                 .Include(p => p.User)
                 .Include(p => p.Comments)
                 .Include(p => p.PostLikes)
-                .Where(p => !p.IsHidden) // Không hiển thị posts đã bị ẩn
                 .AsQueryable();
 
             query = filter.ToLower() switch
             {
-                "new" => query.OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.CreatedAt),
-                "top" => query.OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.PostLikes.Count),
-                "hot" => query.OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.Comments.Count(c => c.ParentCommentId == null) + p.PostLikes.Count),
-                "closed" => query.Where(p => p.Comments.Any(c => c.Content.Contains("CLOSED") && c.ParentCommentId == null)).OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.CreatedAt),
-                _ => query.OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.CreatedAt)
+                "new" => query.Where(p => !p.IsHidden && (userId == null || !_context.UserPostHide.Any(uph => uph.UserId == userId && uph.PostId == p.PostId))).OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.CreatedAt),
+                "top" => query.Where(p => !p.IsHidden && (userId == null || !_context.UserPostHide.Any(uph => uph.UserId == userId && uph.PostId == p.PostId))).OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.PostLikes.Count),
+                "hot" => query.Where(p => !p.IsHidden && (userId == null || !_context.UserPostHide.Any(uph => uph.UserId == userId && uph.PostId == p.PostId))).OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.ViewCount),
+                "closed" => userId.HasValue ? query.Where(p => _context.UserPostHide.Any(uph => uph.UserId == userId && uph.PostId == p.PostId)).OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.CreatedAt) : query.Where(p => false),
+                _ => query.Where(p => !p.IsHidden && (userId == null || !_context.UserPostHide.Any(uph => uph.UserId == userId && uph.PostId == p.PostId))).OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.CreatedAt)
             };
 
             var posts = query
@@ -72,10 +71,10 @@ namespace WebAPI.Services
                     .ToList();
             }
 
-            return posts.Select(ToDTO);
+            return posts.Select(p => ToDTO(p, userId));
         }
 
-        public PostDTO? GetPostById(int id)
+        public PostDTO? GetPostById(int id, int? userId = null)
         {
             var post = _context.Post
                 .Include(p => p.User)
@@ -90,7 +89,7 @@ namespace WebAPI.Services
                 .Query()
                 .ToList();
 
-            return ToDTO(post);
+            return ToDTO(post, userId);
         }
 
         public PostDTO CreatePost(CreatePostDTO dto, int userId)
@@ -169,21 +168,29 @@ namespace WebAPI.Services
             try
             {
                 // Xóa các dữ liệu liên quan theo thứ tự đúng
-                // 1. Xóa tất cả comments của post (bao gồm nested comments)
+                // 1. Lấy tất cả comments của post (bao gồm nested comments)
                 var allComments = _context.Comment.Where(c => c.PostId == id).ToList();
+                
+                // 2. Xóa tất cả CommentLikes của comments trong post
+                var allCommentLikes = _context.CommentLike
+                    .Where(cl => allComments.Select(c => c.CommentId).Contains(cl.CommentId))
+                    .ToList();
+                _context.CommentLike.RemoveRange(allCommentLikes);
+                
+                // 3. Xóa tất cả comments của post (bao gồm nested comments)
                 _context.Comment.RemoveRange(allComments);
                 
-                // 2. Xóa tất cả likes của post
+                // 4. Xóa tất cả likes của post
                 _context.PostLike.RemoveRange(post.PostLikes);
                 
-                // 3. Xóa tất cả reports của post
+                // 5. Xóa tất cả reports của post
                 _context.Report.RemoveRange(post.Reports);
                 
-                // 4. Xóa Post_Tag relationships (many-to-many)
+                // 6. Xóa Post_Tag relationships (many-to-many)
                 // Clear tags collection trước khi xóa post
                 post.Tags.Clear();
                 
-                // 5. Xóa post
+                // 7. Xóa post
                 _context.Post.Remove(post);
                 
                 _context.SaveChanges();
@@ -275,7 +282,7 @@ namespace WebAPI.Services
                 .Any(pl => pl.PostId == postId && pl.UserId == userId);
         }
 
-        private PostDTO ToDTO(Post post)
+        private PostDTO ToDTO(Post post, int? userId = null)
         {
             return new PostDTO
             {
@@ -287,7 +294,7 @@ namespace WebAPI.Services
                 ViewCount = post.ViewCount ?? 0,
                 CommentCount = post.Comments.Count, // Đếm tất cả comments (bao gồm replies)
                 VoteCount = post.PostLikes.Count,
-                IsVoted = false,
+                IsVoted = userId.HasValue ? IsPostVotedByUser(post.PostId, userId.Value) : false,
                 IsPinned = post.IsPinned,
                 User = new UserDTO
                 {
@@ -311,6 +318,7 @@ namespace WebAPI.Services
             var post = _context.Post.Find(postId);
             if (post == null) return;
 
+            // Use atomic increment to prevent race conditions
             post.ViewCount = (post.ViewCount ?? 0) + 1;
             _context.SaveChanges();
         }
@@ -333,13 +341,39 @@ namespace WebAPI.Services
             _context.SaveChanges();
         }
 
-        public void HidePost(int postId)
+        public void HidePost(int postId, int userId)
         {
             var post = _context.Post.Find(postId);
             if (post == null) throw new KeyNotFoundException("Post not found");
 
-            post.IsHidden = true;
-            _context.SaveChanges();
+            // Kiểm tra xem user đã ẩn post này chưa
+            var existingHide = _context.UserPostHide
+                .FirstOrDefault(uph => uph.UserId == userId && uph.PostId == postId);
+
+            if (existingHide == null)
+            {
+                // Thêm vào UserPostHide thay vì set IsHidden
+                var userPostHide = new UserPostHide
+                {
+                    UserId = userId,
+                    PostId = postId,
+                    HiddenAt = DateTime.UtcNow
+                };
+                _context.UserPostHide.Add(userPostHide);
+                _context.SaveChanges();
+            }
+        }
+
+        public void UnhidePost(int postId, int userId)
+        {
+            var existingHide = _context.UserPostHide
+                .FirstOrDefault(uph => uph.UserId == userId && uph.PostId == postId);
+
+            if (existingHide != null)
+            {
+                _context.UserPostHide.Remove(existingHide);
+                _context.SaveChanges();
+            }
         }
 
     }

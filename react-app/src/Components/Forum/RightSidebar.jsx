@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getPosts, getPostsByFilter } from "../../Services/ForumApi";
+import { getPostsByFilter } from "../../Services/ForumApi";
+import { Pin, Star, ThumbsUp } from "lucide-react";
 import "./RightSidebar.css";
 
 export default function RightSidebar() {
@@ -18,7 +19,7 @@ export default function RightSidebar() {
     
     // Load IELTSPhobic's posts (pinned posts) - sử dụng postId thực từ database
     // Tìm posts có title chứa "Vision" hoặc "Rules" hoặc có tag đặc biệt
-    getPosts(1, 10) // Lấy posts để tìm pinned posts
+    getPostsByFilter("new", 1, 10) // Lấy posts để tìm pinned posts
       .then((response) => {
         const allPosts = response.data;
         
@@ -124,7 +125,7 @@ export default function RightSidebar() {
       {/* IELTSPhobic's Announcements Section */}
       <div className="sidebar-section">
         <div className="sidebar-header">
-          <span className="sidebar-icon">📌</span>
+          <Pin size={20} className="sidebar-icon" />
           <h3>IELTSPhobic's Announcements</h3>
         </div>
         <ul className="sidebar-list">
@@ -134,7 +135,7 @@ export default function RightSidebar() {
               className="sidebar-item clickable pinned"
               onClick={() => handlePostClick(post.postId)}
             >
-              <span className="pin-icon">📌</span>
+              <Pin size={16} className="pin-icon" />
               {post.title}
             </li>
           ))}
@@ -144,7 +145,7 @@ export default function RightSidebar() {
       {/* Most-voted Posts Section */}
       <div className="sidebar-section">
         <div className="sidebar-header">
-          <span className="sidebar-icon">⭐</span>
+          <Star size={20} className="sidebar-icon" />
           <h3>Most-voted posts</h3>
         </div>
         <ul className="sidebar-list">
@@ -158,7 +159,10 @@ export default function RightSidebar() {
                 onClick={() => handlePostClick(post.postId)}
               >
                 <div className="post-title">{post.title}</div>
-                <div className="post-votes">👍 {post.voteCount || 0}</div>
+                <div className="post-votes">
+                  <ThumbsUp size={14} />
+                  {post.voteCount || 0}
+                </div>
               </li>
             ))
           )}

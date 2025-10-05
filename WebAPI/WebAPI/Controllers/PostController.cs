@@ -22,7 +22,8 @@ namespace WebAPI.Controllers
             [FromQuery] int page = 1,
             [FromQuery] int limit = 10)
         {
-            var posts = _postService.GetPosts(page, limit);
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var posts = _postService.GetPosts(page, limit, userId);
             return Ok(posts);
         }
 
@@ -32,23 +33,23 @@ namespace WebAPI.Controllers
             [FromQuery] int page = 1,
             [FromQuery] int limit = 10)
         {
-            var posts = _postService.GetPostsByFilter(filter, page, limit);
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var posts = _postService.GetPostsByFilter(filter, page, limit, userId);
             return Ok(posts);
         }
 
         [HttpGet("{id}")]
-        public ActionResult<PostDTO> GetPost(int id)
+        public ActionResult<PostDTO> GetPost(int id, [FromQuery] bool incrementView = true)
         {
-            var post = _postService.GetPostById(id);
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var post = _postService.GetPostById(id, userId);
             if (post == null) return NotFound("Post not found");
 
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId.HasValue)
+            // Only increment view count if incrementView is true
+            if (incrementView)
             {
-                post.IsVoted = _postService.IsPostVotedByUser(id, userId.Value);
+                _postService.IncrementViewCount(id);
             }
-
-            _postService.IncrementViewCount(id);
 
             return Ok(post);
         }
@@ -229,8 +230,32 @@ namespace WebAPI.Controllers
         {
             try
             {
-                _postService.HidePost(id);
+                var userId = HttpContext.Session.GetInt32("UserId");
+                if (userId == null) return Unauthorized("Please login to hide posts");
+
+                _postService.HidePost(id, userId.Value);
                 return Ok(new { message = "Post hidden successfully" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("{id}/unhide")]
+        public ActionResult UnhidePost(int id)
+        {
+            try
+            {
+                var userId = HttpContext.Session.GetInt32("UserId");
+                if (userId == null) return Unauthorized("Please login to unhide posts");
+
+                _postService.UnhidePost(id, userId.Value);
+                return Ok(new { message = "Post unhidden successfully" });
             }
             catch (KeyNotFoundException ex)
             {

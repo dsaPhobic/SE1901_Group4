@@ -1,18 +1,33 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using WebAPI.Models;
 
 namespace WebAPI.DTOs
 {
-    public class ExamDTO
+    public class ExamDto
     {
+        public int ExamId { get; set; }
 
+        public string ExamType { get; set; } = null!;
+
+        public string ExamName { get; set; } = null!;
+
+        public DateTime CreatedAt { get; set; }
+
+        public virtual ICollection<Listening> Listenings { get; set; } = new List<Listening>();
+
+        public virtual ICollection<ReadingDto> Readings { get; set; } = new List<ReadingDto>();
+
+        public virtual ICollection<Speaking> Speakings { get; set; } = new List<Speaking>();
+
+        public virtual ICollection<Writing> Writings { get; set; } = new List<Writing>();
     }
-    public class UpdateExamDTO
+    public class UpdateExamDto
     {
         public string? ExamType { get; set; } = string.Empty;
         public string? ExamName { get; set; } = string.Empty;
     }
 
-    public class CreateExamDTO
+    public class CreateExamDto
     {
         [Required]
         public string ExamType { get; set; } = string.Empty;
@@ -20,21 +35,7 @@ namespace WebAPI.DTOs
         public string ExamName { get; set; } = string.Empty;
     }
 
-    public class CreateExamItemDTO
-    {
-        public string RefTable { get; set; } = string.Empty;
-        public int RefId { get; set; }
-        public int DisplayOrder { get; set; }
-    }
-    public class ExamResponseDTO
-    {
-        public int ExamId { get; set; }
-        public string ExamType { get; set; } = string.Empty;
-        public string ExamName { get; set; } = string.Empty;
-        public DateTime CreatedAt { get; set; }
-        public List<CreateExamItemDTO> Items { get; set; } = new();
-    }
-    public class ExamAttemptSummaryDTO
+    public class ExamAttemptSummaryDto
     {
         public long AttemptId { get; set; }
         public DateTime StartedAt { get; set; }
@@ -44,7 +45,7 @@ namespace WebAPI.DTOs
         public string ExamType { get; set; } = string.Empty;
         public decimal TotalScore { get; set; }
     }
-    public class ExamAttemptDTO
+    public class ExamAttemptDto
     {
         public long AttemptId { get; set; }
         public DateTime StartedAt { get; set; }
@@ -55,13 +56,13 @@ namespace WebAPI.DTOs
         public decimal TotalScore { get; set; }
         public string AnswerText { get; set; } = string.Empty;
     }
-    public class SubmitSectionDTO
+    public class SubmitSectionDto
     {
         public int ExamId { get; set; }
         public object Answers { get; set; } = new(); // Accepts any JSON object/array
         public DateTime StartedAt { get; set; }
     }
-    public class SubmitAttemptDTO
+    public class SubmitAttemptDto
     {
         public int ExamId { get; set; }
         public string AnswerText { get; set; } = string.Empty;
