@@ -13,6 +13,7 @@ namespace WebAPI.DTOs
         public int CommentCount { get; set; }
         public int VoteCount { get; set; }
         public bool IsVoted { get; set; }
+        public bool IsPinned { get; set; }
         public UserDTO User { get; set; } = null!;
         public List<TagDTO> Tags { get; set; } = new List<TagDTO>();
     }

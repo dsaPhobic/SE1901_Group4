@@ -19,6 +19,10 @@ public partial class Post
 
     public int? ViewCount { get; set; }
 
+    public bool IsPinned { get; set; } = false;
+
+    public bool IsHidden { get; set; } = false;
+
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
     public virtual ICollection<PostLike> PostLikes { get; set; } = new List<PostLike>();

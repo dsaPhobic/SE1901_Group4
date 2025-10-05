@@ -17,6 +17,7 @@ export default function CommentSection({ postId }) {
     setLoading(true);
     getComments(postId)
       .then((response) => {
+        console.log("Loaded comments:", response.data);
         setComments(response.data);
       })
       .catch((error) => {
@@ -47,7 +48,34 @@ export default function CommentSection({ postId }) {
   };
 
   const handleCommentCreated = (newComment) => {
-    setComments((prev) => [newComment, ...prev]);
+    console.log("New comment created:", newComment);
+    console.log("Has parentCommentId:", newComment.parentCommentId);
+    
+    // Nếu là reply, cần cập nhật comment cha (có thể ở bất kỳ tầng nào)
+    if (newComment.parentCommentId) {
+      setComments((prev) => {
+        const updateCommentWithReply = (comments) => {
+          return comments.map(comment => {
+            if (comment.commentId === newComment.parentCommentId) {
+              console.log("Updating parent comment:", comment.commentId);
+              return { ...comment, replies: [...comment.replies, newComment] };
+            }
+            // Recursively update nested comments
+            if (comment.replies && comment.replies.length > 0) {
+              return { ...comment, replies: updateCommentWithReply(comment.replies) };
+            }
+            return comment;
+          });
+        };
+        
+        const updated = updateCommentWithReply(prev);
+        console.log("Updated comments:", updated);
+        return updated;
+      });
+    } else {
+      // Nếu là comment gốc, thêm vào đầu danh sách
+      setComments((prev) => [newComment, ...prev]);
+    }
   };
 
   if (loading) {
@@ -94,13 +122,16 @@ export default function CommentSection({ postId }) {
             No comments yet. Be the first to comment!
           </div>
         ) : (
-          comments.map((comment) => (
-            <CommentItem
-              key={comment.commentId}
-              comment={comment}
-              onReply={handleCommentCreated}
-            />
-          ))
+          comments
+            .filter(comment => !comment.parentCommentId) // Chỉ hiển thị comments gốc
+            .map((comment) => (
+              <CommentItem
+                key={comment.commentId}
+                comment={comment}
+                onReply={handleCommentCreated}
+                level={0}
+              />
+            ))
         )}
       </div>
     </div>
