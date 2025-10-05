@@ -1,54 +1,67 @@
-/* ============ General Answer Input Styles ============ */
-.answer-filled {
-  background-color: #f5f5f5;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 4px 8px;
-  font-family: inherit;
-  font-size: 15px;
+.renderer {
+  line-height: 1.7;
+  font-size: 17px;
+  color: #222;
+  font-family: "Nunito Sans", "Segoe UI", sans-serif;
 }
 
-/* ============ Dropdown Styling ============ */
-.dropdown-inline {
+/* paragraph layout - only break on double newlines */
+p {
+  margin: 0.75rem 0;
+  white-space: normal;
+  display: block;
+}
+
+.numberIndex {
+  font-weight: 700;
+  color: #007bff;
+  margin-right: 6px;
+}
+
+/* Inline text inputs */
+.inlineTextbox {
   display: inline-block;
-  vertical-align: baseline;
-  width: auto !important;
-  min-width: var(--dropdown-min-width, 10ch);
-  max-width: 100%;
-  white-space: nowrap;
-  font-size: 15px;
-  font-family: inherit;
-  border-radius: 6px;
-  padding: 4px 6px;
-  border: 1px solid #ccc;
-}
-
-/* For dark mode or highlighted preview if needed */
-.dropdown-inline.correct {
-  background-color: #e0ffe0;
-  border-color: #7bc47f;
-}
-
-/* Text boxes inline inside paragraphs */
-.inline-textbox {
-  display: inline-block;
-  vertical-align: baseline;
+  vertical-align: middle;
   min-width: 8ch;
   padding: 4px 6px;
+  margin: 0 4px;
   border: 1px solid #ccc;
   border-radius: 6px;
   font-size: 15px;
   font-family: inherit;
+  background-color: #fff;
 }
 
-/* Keep labels clean and separated for choices */
-label {
+.answerFilled {
+  background-color: #fff8e1;
+  border-color: #ffca28;
+}
+
+/* Inline dropdown */
+.dropdownInline {
+  display: inline-block;
+  vertical-align: middle;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 3px 6px;
+  margin: 0 4px;
+  font-size: 16px;
+  font-family: inherit;
+  background-color: white;
+  white-space: nowrap;
+  width: auto;
+  max-width: 30ch;
+  line-height: normal;
+}
+
+/* Never break inline controls */
+.inlineTextbox, .dropdownInline {
+  white-space: nowrap;
+}
+
+/* Choices (radio/checkbox) */
+.choiceItem {
   display: block;
-  margin: 2px 0;
-}
-
-/* Make paragraph layout more elegant */
-.question-block p {
-  margin-bottom: 0.75rem;
-  line-height: 1.6;
+  margin: 3px 0 3px 24px;
+  line-height: 1.5;
 }

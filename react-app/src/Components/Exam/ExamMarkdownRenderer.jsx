@@ -1,8 +1,6 @@
 import React from "react";
 import { marked } from "marked";
-import "./ExamMarkdownRenderer.module.css";
-
-marked.setOptions({ breaks: true });
+import styles from "./ExamMarkdownRenderer.module.css";
 
 function escapeHtml(s) {
   return String(s)
@@ -12,6 +10,7 @@ function escapeHtml(s) {
     .replace(/"/g, "&quot;");
 }
 
+// Split markdown into normal vs question blocks
 function splitBlocks(md) {
   const lines = md.split(/\r?\n/);
   const blocks = [];
@@ -50,109 +49,111 @@ function splitBlocks(md) {
   return blocks;
 }
 
-function processQuestionBlock(lines, qIndex, showAnswers) {
-  const full = lines.join("\n");
-  let text = full;
+// ✅ Allow single line breaks to render as <br/>
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+});
 
-  // Text input inline
+function processQuestionBlock(lines, qIndex, showAnswers) {
+  let text = lines.join("\n"); // keep all \n intact
+
+  // Inline text input
   text = text.replace(/\[T\*([^\]]+)\]/g, (_, ans) =>
     showAnswers
-      ? `<input type="text" value="${escapeHtml(
-          ans
-        )}" readonly class="inline-textbox answer-filled" />`
-      : `<input type="text" class="inline-textbox" name="q${qIndex}_text" />`
+      ? `<input type="text" value="${escapeHtml(ans)}" readonly class="${styles.inlineTextbox} ${styles.answerFilled}" />`
+      : `<input type="text" class="${styles.inlineTextbox}" name="q${qIndex}_text" />`
   );
   text = text.replace(
     /\[T\]/g,
-    `<input type="text" class="inline-textbox" name="q${qIndex}_text" />`
+    `<input type="text" class="${styles.inlineTextbox}" name="q${qIndex}_text" />`
   );
 
+  // Dropdown inline
   const choiceRegex = /\[([* ])\]\s*([^\n\[]+)/g;
   const dropdownRegex = /\[D\]([\s\S]*?)\[\/D\]/g;
-
-  // Dropdowns inside paragraph
   text = text.replace(dropdownRegex, (_, inner) => {
     const options = [...inner.matchAll(choiceRegex)].map((m) => ({
       correct: m[1] === "*",
       text: m[2].trim(),
     }));
-    const longest = Math.min(
-      Math.max(...options.map((o) => o.text.length)),
-      40
-    );
-    const html = `<select name="q${qIndex}" class="dropdown-inline" style="--dropdown-min-width:${longest +
-      2}ch" ${showAnswers ? "disabled" : ""}>${options
-      .map(
-        (o) =>
-          `<option value="${escapeHtml(o.text)}"${
-            showAnswers && o.correct ? " selected" : ""
-          }>${escapeHtml(o.text)}</option>`
-      )
-      .join("")}</select>`;
+    const longest = Math.min(Math.max(...options.map((o) => o.text.length)) + 2, 30);
+    const html =
+      `<select name="q${qIndex}" class="${styles.dropdownInline}" style="width:${longest}ch" ${showAnswers ? "disabled" : ""}>` +
+      options
+        .map(
+          (o) =>
+            `<option value="${escapeHtml(o.text)}"${
+              showAnswers && o.correct ? " selected" : ""
+            }>${escapeHtml(o.text)}</option>`
+        )
+        .join("") +
+      "</select>";
     return html;
   });
 
   // Multiple choice
   text = text.replace(choiceRegex, (match, mark, label) => {
-    const isMulti = (full.match(/\[\*\]/g) || []).length > 1;
-    const inputType = isMulti ? "checkbox" : "radio";
+    const isMulti = (text.match(/\[\*\]/g) || []).length > 1;
+    const type = isMulti ? "checkbox" : "radio";
     const checked = showAnswers && mark === "*" ? "checked" : "";
-    return `<label><input type="${inputType}" name="q${qIndex}" ${checked} ${
-      showAnswers ? "disabled" : ""
-    } /> ${escapeHtml(label.trim())}</label>`;
+    return `<label class="${styles.choiceItem}">
+      <input type="${type}" name="q${qIndex}" ${checked} ${showAnswers ? "disabled" : ""}/>
+      ${escapeHtml(label.trim())}
+    </label>`;
   });
 
-  text = text.replace(/\[!num\]/g, qIndex);
+  // Question numbering
+  text = text.replace(
+    /\[!num\]/g,
+    `<span class="${styles.numberIndex}">Q${qIndex}.</span>`
+  );
+
   return marked.parse(text);
 }
 
 export default function ExamMarkdownRenderer({ markdown = "", showAnswers = false }) {
   const blocks = splitBlocks(markdown);
+  let qCounter = 0;
+
   const html = blocks
-    .map((b, i) => {
+    .map((b) => {
       if (b.type === "markdown") return marked.parse(b.text);
       if (b.type === "question") {
-        const qIndex = blocks.slice(0, i + 1).filter((x) => x.type === "question").length;
-        return processQuestionBlock(b.lines, qIndex, showAnswers);
+        qCounter++;
+        return processQuestionBlock(b.lines, qCounter, showAnswers);
       }
       return "";
     })
     .join("\n");
-  return <div dangerouslySetInnerHTML={{ __html: html }} />;
+
+  return <div className={styles.renderer} dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
-
-/** ✅ Convert markdown to HTML (student view) + extract answers */
+// ✅ Convert markdown to HTML + extract correct answers
 export function renderMarkdownToHtmlAndAnswers(markdown) {
   const blocks = splitBlocks(markdown);
   let htmlOutput = "";
   let allAnswers = [];
+  let qCounter = 0;
 
-  blocks.forEach((b, i) => {
+  blocks.forEach((b) => {
     if (b.type === "markdown") {
       htmlOutput += marked.parse(b.text);
       return;
     }
 
-    const qIndex =
-      blocks.slice(0, i + 1).filter((x) => x.type === "question").length;
+    qCounter++;
     const full = b.lines.join("\n");
 
-    // Extract answers
-    const textAnswers = [...full.matchAll(/\[T\*([^\]]+)\]/g)].map(
-      (m) => m[1].trim()
-    );
-    const radioAnswers = [...full.matchAll(/\[\*\]\s*([^\n\[]+)/g)].map(
-      (m) => m[1].trim()
-    );
-    const dropdownAnswers = [...full.matchAll(/\[D\]([\s\S]*?)\[\/D\]/g)].flatMap(
-      ([, inner]) =>
-        [...inner.matchAll(/\[\*\]\s*([^\n\[]+)/g)].map((m) => m[1].trim())
+    const textAnswers = [...full.matchAll(/\[T\*([^\]]+)\]/g)].map((m) => m[1].trim());
+    const radioAnswers = [...full.matchAll(/\[\*\]\s*([^\n\[]+)/g)].map((m) => m[1].trim());
+    const dropdownAnswers = [...full.matchAll(/\[D\]([\s\S]*?)\[\/D\]/g)].flatMap(([, inner]) =>
+      [...inner.matchAll(/\[\*\]\s*([^\n\[]+)/g)].map((m) => m[1].trim())
     );
 
     allAnswers.push(...textAnswers, ...radioAnswers, ...dropdownAnswers);
-
-    htmlOutput += processQuestionBlock(b.lines, qIndex, false);
+    htmlOutput += processQuestionBlock(b.lines, qCounter, false);
   });
 
   return { html: htmlOutput, answers: allAnswers };
