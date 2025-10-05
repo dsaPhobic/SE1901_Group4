@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 using WebAPI.DTOs;
 using WebAPI.Models;
 using WebAPI.Services;
+using WebAPI.Data;
 
 namespace WebAPI.Controllers
 {
@@ -11,10 +13,12 @@ namespace WebAPI.Controllers
     public class AdminController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly ApplicationDbContext _db;
 
-        public AdminController(IUserService userService)
+        public AdminController(IUserService userService, ApplicationDbContext db)
         {
             _userService = userService;
+            _db = db;
         }
 
         [HttpPost("register-admin")]
@@ -54,7 +58,6 @@ namespace WebAPI.Controllers
             return Ok(new { message = $"User {target.Username} is now a {target.Role}." });
         }
 
-        // ✅ CHỈ ADMIN XEM TOÀN BỘ USER
         [HttpGet("users")]
         [Authorize(Roles = "admin")]
         public ActionResult<IEnumerable<UserDTO>> GetAllUsers()
@@ -72,6 +75,44 @@ namespace WebAPI.Controllers
                 return NotFound("User not found.");
 
             return Ok(ToDto(target));
+        }
+
+        [HttpGet("dashboard")]
+        [Authorize(Roles = "admin")]
+        public IActionResult GetDashboardStats()
+        {
+            var totalUsers = _db.User.Count();
+            var totalExams = _db.Exam.Count();
+            var totalTransactions = _db.Transaction.Where(t => t.Status == "PAID").Sum(t => (decimal?)t.Amount) ?? 0;
+            var totalAttempts = _db.ExamAttempt.Count();
+
+            return Ok(new
+            {
+                totalUsers,
+                totalExams,
+                totalTransactions,
+                totalAttempts
+            });
+        }
+
+        [HttpGet("dashboard/sales-trend")]
+        [Authorize(Roles = "admin")]
+        public IActionResult GetSalesTrend()
+        {
+            var monthlySales = _db.Transaction
+                .Where(t => t.Status == "PAID")
+                .GroupBy(t => new { t.CreatedAt.Year, t.CreatedAt.Month })
+                .Select(g => new
+                {
+                    year = g.Key.Year,
+                    month = g.Key.Month,
+                    total = g.Sum(x => x.Amount)
+                })
+                .OrderBy(g => g.year)
+                .ThenBy(g => g.month)
+                .ToList();
+
+            return Ok(monthlySales);
         }
 
         private static UserDTO ToDto(User user) => new UserDTO
