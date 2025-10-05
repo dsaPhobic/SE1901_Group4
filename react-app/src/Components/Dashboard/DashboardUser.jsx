@@ -1,11 +1,21 @@
+// src/Pages/Dashboard/DashboardUser.jsx
 import React, { useState, useEffect } from "react";
 import AppLayout from "../Layout/AppLayout";
 import styles from "./DashboardUser.module.css";
-import { Book, Headphones, BarChart2, Cloud, Wallet } from "lucide-react";
+import {
+  Book,
+  Headphones,
+  BarChart2,
+  Cloud,
+  Wallet,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import * as AuthApi from "../../Services/AuthApi";
-import * as DashBoardApi from "../../Services/DashBoardApi";
+import { getSubmittedDays } from "../../Services/ExamApi";
+import useExamAttempts from "../../Hook/UseExamAttempts";
 
 export default function DashboardUser() {
   const navigate = useNavigate();
@@ -46,7 +56,7 @@ export default function DashboardUser() {
   // ===== Submitted days =====
   useEffect(() => {
     if (!userId) return;
-    DashBoardApi.getSubmittedDays(userId)
+    getSubmittedDays(userId)
       .then((days) => {
         setSubmittedDays(days);
       })
@@ -55,43 +65,48 @@ export default function DashboardUser() {
       });
   }, [userId]);
 
-  // ===== History + Stats =====
-  useEffect(() => {
-    if (!userId) return;
-    DashBoardApi.getExamAttemptsByUser(userId)
-      .then((res) => {
-        // History rows
-        const rows = res.data.map((a) => [
-          "☑️",
-          a.examName,
-          a.examType,
-          new Date(a.submittedAt).toLocaleDateString("en-GB"),
-          a.totalScore?.toFixed(1) ?? "-",
-        ]);
-        setHistoryData(rows);
+  // ===== History + Stats (dùng hook useExamAttempts) =====
+  const { attempts, loading } = useExamAttempts(userId);
 
-        // Stats từ dữ liệu
-        const grouped = res.data.reduce(
-          (acc, a) => {
-            if (a.examType === "Reading") acc.Reading += a.totalScore ?? 0;
-            if (a.examType === "Listening") acc.Listening += a.totalScore ?? 0;
-            acc.count++;
-            acc.Overall += a.totalScore ?? 0;
-            return acc;
-          },
-          { Reading: 0, Listening: 0, Overall: 0, count: 0 }
-        );
-        const avg = grouped.count > 0 ? grouped.Overall / grouped.count : 0;
-        setStats({
-          Reading: grouped.Reading,
-          Listening: grouped.Listening,
-          Overall: avg,
-        });
-      })
-      .catch((err) => {
-        console.error("Failed to fetch history & stats:", err);
-      });
-  }, [userId]);
+  useEffect(() => {
+    if (!attempts || attempts.length === 0) return;
+
+    // History rows
+    const rows = attempts.map((a) => [
+      a.submittedAt ? (
+        <CheckCircle size={18} color="#28a745" />
+      ) : (
+        <XCircle size={18} color="#dc3545" />
+      ),
+      a.examName,
+      a.examType,
+      a.submittedAt
+        ? new Date(a.submittedAt).toLocaleDateString("en-GB")
+        : "In progress",
+      a.totalScore?.toFixed(1) ?? a.score?.toFixed(1) ?? "-",
+    ]);
+
+    setHistoryData(rows);
+
+    // Stats từ dữ liệu
+    const grouped = attempts.reduce(
+      (acc, a) => {
+        const score = a.totalScore ?? a.score ?? 0;
+        if (a.examType === "Reading") acc.Reading += score;
+        if (a.examType === "Listening") acc.Listening += score;
+        acc.count++;
+        acc.Overall += score;
+        return acc;
+      },
+      { Reading: 0, Listening: 0, Overall: 0, count: 0 }
+    );
+    const avg = grouped.count > 0 ? grouped.Overall / grouped.count : 0;
+    setStats({
+      Reading: grouped.Reading,
+      Listening: grouped.Listening,
+      Overall: avg,
+    });
+  }, [attempts]);
 
   // check ngày có trong submittedDays không
   function isSubmitted(day) {
@@ -254,6 +269,8 @@ export default function DashboardUser() {
                   <div>{r[4]}</div>
                 </div>
               ))
+            ) : loading ? (
+              <div className={styles.emptyState}>Loading...</div>
             ) : (
               <div className={styles.emptyState}>
                 <img
@@ -262,14 +279,14 @@ export default function DashboardUser() {
                   className={styles.emptyImage}
                 />
                 <p>
-                  Bạn hiện chưa làm bài tập nào! Hãy chọn dạng phù hợp và luyện
-                  tập ngay nào!
+                  You have not done any exercises yet! Choose the appropriate
+                  form and practice now!
                 </p>
                 <button
                   className={styles.emptyButton}
                   onClick={() => navigate("/reading")}
                 >
-                  Tiến hành làm bài tập ngay
+                  Do your homework now!
                 </button>
               </div>
             )}
