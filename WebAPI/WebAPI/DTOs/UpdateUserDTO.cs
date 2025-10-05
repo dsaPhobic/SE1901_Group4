@@ -12,6 +12,7 @@ namespace WebAPI.DTOs
 
         public string? Firstname { get; init; }
         public string? Lastname { get; init; }
+        public string? Username { get; init; }
 
         // Only writable by admin; controller/service enforces this
         public string? Role { get; init; }
