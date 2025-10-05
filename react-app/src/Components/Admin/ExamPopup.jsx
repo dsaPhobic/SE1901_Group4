@@ -1,51 +1,53 @@
-// src/Components/Admin/ExamPopup.jsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./ExamPopup.module.css";
-
-// Normalize a reading/skill to camelCase
-const normalizeReading = (r) => ({
-  readingId: r.readingId ?? r.ReadingId,
-  examId: r.examId ?? r.ExamId,
-  readingContent: r.readingContent ?? r.ReadingContent ?? "",
-  readingQuestion: r.readingQuestion ?? r.ReadingQuestion ?? "",
-  readingType: r.readingType ?? r.ReadingType ?? "",
-  displayOrder: r.displayOrder ?? r.DisplayOrder ?? 1,
-  correctAnswer: r.correctAnswer ?? r.CorrectAnswer ?? null,
-  questionHtml: r.questionHtml ?? r.QuestionHtml ?? null,
-});
+import * as readingService from "../../Services/ReadingApi";
 
 export default function ExamSkillModal({
   show,
   exam,
-  skills = [],
   onClose,
   onEdit,
   onDelete,
   onAddSkill,
 }) {
-  if (!show) return null;
+  const [skills, setSkills] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // normalize everything here so downstream is easy
-  const normalizedSkills = Array.isArray(skills)
-    ? skills.map(normalizeReading)
-    : [];
+  useEffect(() => {
+    if (!show || !exam?.examId) return;
+
+    setLoading(true);
+    readingService
+      .getByExam(exam.examId)
+      .then((data) => {
+        setSkills(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => {
+        console.error("❌ Failed to load readings:", err);
+        setSkills([]);
+      })
+      .finally(() => setLoading(false));
+  }, [show, exam]);
+
+  if (!show) return null;
 
   const examName = exam?.examName ?? exam?.ExamName ?? "";
 
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>
-        <h3>
+        <h3 className={styles.title}>
           Manage Skills for <span className={styles.examName}>{examName}</span>
         </h3>
 
-        {normalizedSkills.length > 0 ? (
+        {loading ? (
+          <p>Loading...</p>
+        ) : skills.length > 0 ? (
           <div className={styles.skillList}>
-            {normalizedSkills.map((s) => (
+            {skills.map((s) => (
               <div key={s.readingId} className={styles.skillItem}>
                 <div className={styles.skillText}>
                   <strong>
-                    {/* short preview of the question text */}
                     {s.readingQuestion?.length > 120
                       ? s.readingQuestion.slice(0, 120) + "…"
                       : s.readingQuestion || "(no question text)"}
@@ -55,14 +57,14 @@ export default function ExamSkillModal({
                   <button
                     className={styles.edit}
                     onClick={() => onEdit(s)}
-                    title="Edit"
+                    title="Edit this question"
                   >
                     ✏️
                   </button>
                   <button
                     className={styles.delete}
                     onClick={() => onDelete(s.readingId)}
-                    title="Delete"
+                    title="Delete this question"
                   >
                     🗑
                   </button>
@@ -71,7 +73,7 @@ export default function ExamSkillModal({
             ))}
           </div>
         ) : (
-          <p style={{ opacity: 0.7 }}>No skills linked yet.</p>
+          <p className={styles.empty}>No skills linked yet.</p>
         )}
 
         <div className={styles.footer}>

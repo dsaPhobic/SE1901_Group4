@@ -6,48 +6,55 @@ const API = axios.create({
   withCredentials: true,
 });
 
-// Get exam by id
+const normalizeExam = (e) => ({
+  examId: e.examId ?? e.ExamId,
+  examName: e.examName ?? e.ExamName,
+  examType: e.examType ?? e.ExamType,
+  createdAt: e.createdAt ?? e.CreatedAt,
+});
+
+// ====== EXAMS ======
 export function getById(id) {
-  return API.get(`/${id}`);
+  return API.get(`/${id}`).then((res) => normalizeExam(res.data));
 }
 
 export function getAll() {
-  return API.get("");
+  return API.get("").then((res) => {
+    const list = Array.isArray(res.data)
+      ? res.data.map(normalizeExam)
+      : [];
+    return list;
+  });
 }
 
-// Create new exam
 export function add(data) {
-  return API.post("", data);
+  return API.post("", data).then((res) => normalizeExam(res.data));
 }
 
-// Update exam info
 export function update(id, data) {
-  return API.put(`/${id}`, data);
+  return API.put(`/${id}`, data).then((res) => normalizeExam(res.data));
 }
 
-// Delete exam
 export function remove(id) {
   return API.delete(`/${id}`);
 }
 
-// Lấy tất cả attempt theo userId
+// ====== ATTEMPTS ======
 export function getExamAttemptsByUser(userId) {
-  return API.get(`/user/${userId}`);
+  return API.get(`/user/${userId}`).then((res) => res.data);
 }
 
-// Lấy chi tiết 1 attempt
 export function getExamAttemptDetail(attemptId) {
-  return API.get(`attempt/${attemptId}`);
+  return API.get(`/attempt/${attemptId}`).then((res) => res.data);
 }
 
-export function submitExamAttempt(attemptId, answers) {
-  return API.post(`attempt/submit`, { answers });
+export function submitExamAttempt(examId, answers) {
+  return API.post(`/attempt/submit`, { examId, answers }).then((res) => res.data);
 }
 
-// Lấy danh sách ngày đã submit (chỉ trả về yyyy-MM-dd)
 export function getSubmittedDays(userId) {
-  return getExamAttemptsByUser(userId).then((res) =>
-    res.data
+  return getExamAttemptsByUser(userId).then((attempts) =>
+    attempts
       .filter((a) => a.submittedAt)
       .map((a) => new Date(a.submittedAt).toISOString().split("T")[0])
   );

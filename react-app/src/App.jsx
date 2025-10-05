@@ -27,7 +27,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
 
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/exams" element={<ExamManagement />} />
+        <Route path="/admin/exam" element={<ExamManagement />} />
         <Route path="/admin/exam/add-reading" element={<AddReading />} />
       </Routes>
     </BrowserRouter>
