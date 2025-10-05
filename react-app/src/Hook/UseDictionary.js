@@ -86,7 +86,6 @@ export function useDictionary(user) {
       .catch((err) => console.error("Delete failed:", err));
   };
 
-  // ✅ Hàm reload groups để component bên ngoài gọi
   const reloadGroups = () => setRefreshGroups((prev) => prev + 1);
 
   return {

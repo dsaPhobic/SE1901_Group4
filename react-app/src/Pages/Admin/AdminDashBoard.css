@@ -1,0 +1,98 @@
+.admin-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+/* ===== Main content ===== */
+.admin-main {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.admin-title {
+  font-size: 2rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  color: #0f172a;
+}
+
+/* ===== Cards ===== */
+.admin-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.admin-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+}
+
+.admin-card:hover {
+  transform: translateY(-4px);
+}
+
+.admin-card h3 {
+  font-size: 1rem;
+  color: #475569;
+  margin: 0;
+}
+
+.admin-card p {
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0;
+}
+
+/* ===== Table Section ===== */
+.admin-table-section {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.admin-table-section h2 {
+  margin-bottom: 1rem;
+  color: #0f172a;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-table th {
+  background-color: #f1f5f9;
+  font-weight: 600;
+}
+
+.success {
+  color: #16a34a;
+}
+
+.pending {
+  color: #facc15;
+}
+
+.failed {
+  color: #ef4444;
+}

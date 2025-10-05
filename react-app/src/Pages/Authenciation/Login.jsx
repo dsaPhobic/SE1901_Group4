@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AuthLayout from "../../Components/Layout/AuthLayout";
 import FormInput from "../../Components/Auth/InputField";
 import Button from "../../Components/Auth/Button";
 import { login, register, loginWithGoogle } from "../../Services/AuthApi.js";
-import user from "../../assets/auth_user.png";
-import lock from "../../assets/auth_lock.png";
+import userIcon from "../../assets/auth_user.png";
+import lockIcon from "../../assets/auth_lock.png";
 import google from "../../assets/google.png";
 import BrandPanel from "../../Components/Layout/BrandPanel.jsx";
 import "./Login.css";
@@ -13,8 +13,23 @@ import { useNavigate } from "react-router-dom";
 const Login = () => {
   const [mode, setMode] = useState("login");
   const [form, setForm] = useState({ email: "", password: "", username: "" });
-
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const loginSuccess = params.get("login");
+    const email = params.get("email");
+    const username = params.get("username");
+    const role = params.get("role");
+
+    if (loginSuccess === "success" && email) {
+      const user = { email, username, role: role || "user" };
+      localStorage.setItem("user", JSON.stringify(user));
+
+      if (role === "admin") navigate("/admin/dashboard");
+      else navigate("/home");
+    }
+  }, [navigate]);
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -28,10 +43,14 @@ const Login = () => {
         .then((res) => {
           console.log("Login success:", res.data);
 
-          // lưu full user vào localStorage
-          localStorage.setItem("user", JSON.stringify(res.data));
+          const user = res.data;
+          localStorage.setItem("user", JSON.stringify(user));
 
-          navigate("/home");
+          if (user.role === "admin") {
+            navigate("/admin/dashboard");
+          } else {
+            navigate("/home");
+          }
         })
         .catch((err) => {
           console.error("Auth error:", err.response?.data || err.message);
@@ -51,6 +70,7 @@ const Login = () => {
         });
     } else if (mode === "forgot") {
       console.log("Send reset link to:", form.email);
+      alert("Reset link sent (mock)");
     }
   }
 
@@ -68,10 +88,13 @@ const Login = () => {
                 : "Forgot Password"
             }
           >
-            {/* Social login */}
             {mode === "login" && (
               <div className="social-row">
-                <button type="button" className="google" onClick={loginWithGoogle}>
+                <button
+                  type="button"
+                  className="google"
+                  onClick={loginWithGoogle}
+                >
                   <img src={google} alt="Google" className="social-img" />
                 </button>
               </div>
@@ -85,7 +108,7 @@ const Login = () => {
                   placeholder="Username"
                   value={form.username}
                   onChange={handleChange}
-                  icon={user}
+                  icon={userIcon}
                 />
               )}
 
@@ -95,7 +118,7 @@ const Login = () => {
                 placeholder="Email"
                 value={form.email}
                 onChange={handleChange}
-                icon={user}
+                icon={userIcon}
               />
 
               {(mode === "login" || mode === "register") && (
@@ -105,7 +128,7 @@ const Login = () => {
                   placeholder="Password"
                   value={form.password}
                   onChange={handleChange}
-                  icon={lock}
+                  icon={lockIcon}
                 />
               )}
 

@@ -22,9 +22,8 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 
-    // Ensure SameSite and Secure settings are correct
-    options.Cookie.SameSite = SameSiteMode.Lax; // Use Lax for OAuth state handling
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Ensure cookies are sent over HTTPS
+    options.Cookie.SameSite = SameSiteMode.Lax; 
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; 
 });
 builder.Services.AddHttpContextAccessor();
 
