@@ -1,6 +1,6 @@
 // Hook/useExamAttempts.js
 import { useState, useEffect } from "react";
-import { getExamAttemptsByUser } from "../Services/DashBoardApi";
+import { getExamAttemptsByUser } from "../Services/ExamApi";
 
 export default function useExamAttempts(userId) {
   const [attempts, setAttempts] = useState([]);
@@ -8,18 +8,39 @@ export default function useExamAttempts(userId) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!userId) return; // chưa login thì skip
+    if (!userId) return;
+    let isMounted = true;
     setLoading(true);
+    setError(null);
 
     getExamAttemptsByUser(userId)
       .then((res) => {
-        setAttempts(res.data);
+        let data = res.data;
+
+        if (typeof data === "string") {
+          try {
+            data = JSON.parse(data);
+          } catch (parseErr) {
+            console.error("Failed to parse response:", parseErr);
+            data = [];
+          }
+        }
+
+        if (isMounted) {
+          console.log("Attempts from API:", data);
+          setAttempts(data);
+        }
       })
       .catch((err) => {
-        console.error("Failed to fetch attempts:", err);
-        setError(err);
+        if (isMounted) setError(err);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, [userId]);
 
   return { attempts, loading, error };

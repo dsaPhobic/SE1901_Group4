@@ -11,30 +11,34 @@ import "./Profile.css";
 import useAuth from "../../Hook/UseAuth";
 import useExamAttempts from "../../Hook/UseExamAttempts";
 import AppLayout from "../../Components/Layout/AppLayout";
+import { updateUser } from "../../Services/UserApi";
 
 export default function Profile() {
   const { user, loading } = useAuth();
   const { attempts, loading: attemptsLoading } = useExamAttempts(user?.userId);
   const [activeTab, setActiveTab] = useState("profile");
-  const [showPhone, setShowPhone] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const [profileData, setProfileData] = useState({
     name: "",
     gmail: "",
-    phone: "0775532***",
     accountName: "",
-    password: "*****************",
+    password: "",
   });
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [originalData, setOriginalData] = useState({});
 
   useEffect(() => {
     if (user) {
-      setProfileData((prev) => ({
-        ...prev,
+      const newData = {
         name: (user?.firstname || "") + " " + (user?.lastname || ""),
         gmail: user.email || "",
         accountName: user.username || "",
-      }));
+        password: "",
+      };
+      setProfileData(newData);
+      setOriginalData(newData);
     }
   }, [user]);
 
@@ -58,10 +62,43 @@ export default function Profile() {
   }
 
   const handleInputChange = (e) => {
+    const newValue = e.target.value;
     setProfileData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [e.target.name]: newValue,
     }));
+
+    const hasDataChanged = Object.keys(profileData).some((key) => {
+      if (key === e.target.name) {
+        return newValue !== originalData[key];
+      }
+      return profileData[key] !== originalData[key];
+    });
+    setHasChanges(hasDataChanged || newValue !== originalData[e.target.name]);
+  };
+
+  const handleSave = () => {
+    setIsSaving(true);
+
+    updateUser(user.userId, {
+      firstname: profileData.name.split(" ")[0],
+      lastname: profileData.name.split(" ").slice(1).join(" "),
+      email: profileData.gmail,
+      username: profileData.accountName,
+      password: profileData.password || undefined,
+    })
+      .then(() => {
+        setOriginalData({ ...profileData });
+        setHasChanges(false);
+        alert("Profile updated successfully!");
+      })
+      .catch((error) => {
+        console.error("Error saving profile:", error);
+        alert("Failed to update profile. Please try again.");
+      })
+      .finally(() => {
+        setIsSaving(false);
+      });
   };
 
   const renderContent = () => {
@@ -92,25 +129,6 @@ export default function Profile() {
               </div>
 
               <div className="form-group">
-                <label>Phone Number</label>
-                <div className="input-with-icon">
-                  <input
-                    type={showPhone ? "text" : "password"}
-                    name="phone"
-                    value={profileData.phone}
-                    onChange={handleInputChange}
-                  />
-                  <button
-                    type="button"
-                    className="toggle-visibility"
-                    onClick={() => setShowPhone(!showPhone)}
-                  >
-                    {showPhone ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="form-group">
                 <label>Account Name</label>
                 <input
                   type="text"
@@ -121,14 +139,14 @@ export default function Profile() {
               </div>
 
               <div className="form-group">
-                <label>Account Password</label>
+                <label>Change Password</label>
                 <div className="input-with-icon">
                   <input
                     type={showPassword ? "text" : "password"}
                     name="password"
                     value={profileData.password}
                     onChange={handleInputChange}
-                    readOnly
+                    placeholder="Enter new password"
                   />
                   <button
                     type="button"
@@ -138,6 +156,19 @@ export default function Profile() {
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
+              </div>
+
+              {/* Save Button */}
+              <div className="form-actions">
+                <button
+                  className={`save-btn ${hasChanges ? "has-changes" : ""} ${
+                    isSaving ? "saving" : ""
+                  }`}
+                  onClick={handleSave}
+                  disabled={!hasChanges || isSaving}
+                >
+                  {isSaving ? "Saving..." : "Save Changes"}
+                </button>
               </div>
             </div>
           </div>
@@ -164,7 +195,9 @@ export default function Profile() {
                 </div>
                 <h3>No tests taken yet</h3>
                 <p>Start your learning journey by taking your first exam!</p>
-                <button className="start-test-btn">Start Your First Test</button>
+                <button className="start-test-btn">
+                  Start Your First Test
+                </button>
               </div>
             </div>
           );
@@ -180,16 +213,20 @@ export default function Profile() {
                 </div>
                 <div className="stat-item">
                   <span className="stat-number">
-                    {attempts.filter(a => a.submittedAt).length}
+                    {attempts.filter((a) => a.submittedAt).length}
                   </span>
                   <span className="stat-label">Completed</span>
                 </div>
                 <div className="stat-item">
                   <span className="stat-number">
-                    {attempts.length > 0 
-                      ? Math.round(attempts.reduce((sum, a) => sum + (a.totalScore || 0), 0) / attempts.length)
-                      : 0
-                    }
+                    {attempts.length > 0
+                      ? Math.round(
+                          attempts.reduce(
+                            (sum, a) => sum + (a.totalScore || 0),
+                            0
+                          ) / attempts.length
+                        )
+                      : 0}
                   </span>
                   <span className="stat-label">Avg Score</span>
                 </div>
@@ -203,65 +240,82 @@ export default function Profile() {
                       <h3 className="test-name">{attempt.examName}</h3>
                       <span className="test-type">{attempt.examType}</span>
                     </div>
-                    <div className={`status-badge ${attempt.submittedAt ? 'completed' : 'incomplete'}`}>
-                      {attempt.submittedAt ? 'Completed' : 'Incomplete'}
+                    <div
+                      className={`status-badge ${
+                        attempt.submittedAt ? "completed" : "incomplete"
+                      }`}
+                    >
+                      {attempt.submittedAt ? "Completed" : "Incomplete"}
                     </div>
                   </div>
-                  
+
                   <div className="test-card-body">
                     <div className="score-section">
                       <div className="score-display">
-                        <span className="score-value">{attempt.totalScore || 0}</span>
+                        <span className="score-value">
+                          {attempt.totalScore || 0}
+                        </span>
                         <span className="score-label">points</span>
                       </div>
                       <div className="score-progress">
                         <div className="progress-bar">
-                          <div 
-                            className="progress-fill" 
-                            style={{ width: `${Math.min((attempt.totalScore || 0) / 100 * 100, 100)}%` }}
+                          <div
+                            className="progress-fill"
+                            style={{
+                              width: `${Math.min(
+                                ((attempt.totalScore || 0) / 100) * 100,
+                                100
+                              )}%`,
+                            }}
                           ></div>
                         </div>
                         <span className="progress-text">
-                          {Math.min((attempt.totalScore || 0) / 100 * 100, 100).toFixed(0)}% Complete
+                          {Math.min(
+                            ((attempt.totalScore || 0) / 100) * 100,
+                            100
+                          ).toFixed(0)}
+                          % Complete
                         </span>
                       </div>
                     </div>
-                    
+
                     <div className="test-details">
                       <div className="detail-item">
                         <span className="detail-label">Started:</span>
                         <span className="detail-value">
-                          {new Date(attempt.startedAt).toLocaleDateString()} at {new Date(attempt.startedAt).toLocaleTimeString()}
+                          {new Date(attempt.startedAt).toLocaleDateString()} at{" "}
+                          {new Date(attempt.startedAt).toLocaleTimeString()}
                         </span>
                       </div>
                       {attempt.submittedAt && (
                         <div className="detail-item">
                           <span className="detail-label">Submitted:</span>
                           <span className="detail-value">
-                            {new Date(attempt.submittedAt).toLocaleDateString()} at {new Date(attempt.submittedAt).toLocaleTimeString()}
+                            {new Date(attempt.submittedAt).toLocaleDateString()}{" "}
+                            at{" "}
+                            {new Date(attempt.submittedAt).toLocaleTimeString()}
                           </span>
                         </div>
                       )}
                       <div className="detail-item">
                         <span className="detail-label">Duration:</span>
                         <span className="detail-value">
-                          {attempt.submittedAt 
-                            ? `${Math.round((new Date(attempt.submittedAt) - new Date(attempt.startedAt)) / 60000)} minutes`
-                            : 'In progress...'
-                          }
+                          {attempt.submittedAt
+                            ? `${Math.round(
+                                (new Date(attempt.submittedAt) -
+                                  new Date(attempt.startedAt)) /
+                                  60000
+                              )} minutes`
+                            : "In progress..."}
                         </span>
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="test-card-footer">
-                    <button className="view-details-btn">
-                      View Details
-                    </button>
+                    <button className="view-details-btn">View Details</button>
                     {!attempt.submittedAt && (
-                      <button className="continue-btn">
-                        Continue Test
-                      </button>
+                      <button className="continue-btn">Continue Test</button>
                     )}
                   </div>
                 </div>
