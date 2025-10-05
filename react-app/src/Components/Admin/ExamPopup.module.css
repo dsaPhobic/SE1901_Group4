@@ -1,0 +1,89 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal {
+  background: #fff;
+  width: 560px;
+  max-height: 80vh;
+  overflow-y: auto;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  font-family: "Nunito Sans", sans-serif;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.skillList {
+  margin-top: 12px;
+}
+
+.skillItem {
+  background: #f9f9f9;
+  padding: 10px 14px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  border: 1px solid #eee;
+}
+
+.skillItem:hover {
+  background: #f1f1f1;
+}
+
+.actions button {
+  margin-left: 6px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 18px;
+  transition: transform 0.1s;
+}
+
+.actions button:hover {
+  transform: scale(1.1);
+}
+
+.addBtn {
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  margin-right: 8px;
+}
+
+.closeBtn {
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.footer {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}

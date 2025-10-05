@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using WebAPI.DTOs;
@@ -12,7 +13,6 @@ namespace WebAPI.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IUserService _userService;
-        const string callbackPath = "";
         public AuthController(IUserService userService)
         {
             _userService = userService;
@@ -43,29 +43,50 @@ namespace WebAPI.Controllers
             var user = _userService.Authenticate(dto.Email, dto.Password);
             if (user == null) return Unauthorized("Invalid email or password");
 
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role, user.Role)
+            };
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal,
+                new AuthenticationProperties
+                {
+                    IsPersistent = true,
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddHours(2)
+                }).GetAwaiter().GetResult();
+
             HttpContext.Session.SetInt32("UserId", user.UserId);
+
             return Ok(ToDto(user));
         }
 
         [HttpPost("logout")]
         public IActionResult Logout()
         {
-            HttpContext.Session.Remove("UserId");
+            HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme)
+                       .GetAwaiter().GetResult();
+            HttpContext.Session.Clear();
             return Ok("Logged out successfully");
         }
 
         [HttpGet("google/login")]
         public IActionResult GoogleLogin()
         {
-            var redirectUrl = Url.Action("GoogleResponse", "Auth");
+            var redirectUrl = Url.Action("GoogleResponse", "Auth", null, Request.Scheme);
             var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
             return Challenge(properties, "Google");
         }
 
         [HttpGet("google/response")]
-        public async Task<IActionResult> GoogleResponse()
+        public IActionResult GoogleResponse()
         {
-            var result = await HttpContext.AuthenticateAsync("Cookies");
+            var result = HttpContext.AuthenticateAsync("Google").GetAwaiter().GetResult();
             if (!result.Succeeded) return Unauthorized();
 
             var claims = result.Principal.Identities.FirstOrDefault()?.Claims.ToList();
@@ -77,34 +98,48 @@ namespace WebAPI.Controllers
             var user = _userService.GetByEmail(email);
             if (user == null)
             {
-                user = new User
+                _userService.Register(new RegisterRequestDTO
                 {
                     Username = email.Split('@')[0],
                     Email = email,
-                    Firstname = name ?? "",
-                    Role = "user",
-                    CreatedAt = DateTime.UtcNow
-                };
-                _userService.Register(new RegisterRequestDTO
-                {
-                    Username = user.Username,
-                    Email = user.Email,
                     Password = Guid.NewGuid().ToString(),
-                    Firstname = user.Firstname,
-                    Lastname = user.Lastname
+                    Firstname = name ?? "",
+                    Lastname = ""
                 });
                 user = _userService.GetByEmail(email)!;
             }
 
+            var appClaims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role, user.Role)
+            };
+
+            var identity = new ClaimsIdentity(appClaims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal)
+                       .GetAwaiter().GetResult();
+
             HttpContext.Session.SetInt32("UserId", user.UserId);
 
-            return Redirect($"http://localhost:5173?login=success&email={user.Email}&username={user.Username}");
+            return Redirect($"http://localhost:5173?login=success&email={user.Email}&username={user.Username}&role={user.Role}");
         }
 
         [HttpGet("me")]
         public ActionResult<UserDTO> Me()
         {
             var userId = HttpContext.Session.GetInt32("UserId");
+
+            if (userId == null)
+            {
+                var claimId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (claimId != null && int.TryParse(claimId, out int id))
+                    userId = id;
+            }
+
             if (userId == null) return Unauthorized();
 
             var user = _userService.GetById(userId.Value);

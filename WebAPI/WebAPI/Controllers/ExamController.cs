@@ -3,6 +3,7 @@ using WebAPI.DTOs;
 using WebAPI.Models;
 using WebAPI.Services;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace WebAPI.Controllers
 {
@@ -14,42 +15,62 @@ namespace WebAPI.Controllers
 
         public ExamController(IExamService service) => _examService = service;
 
-        // Create exam (admin only)
+        // ========= CREATE EXAM =========
         [HttpPost]
-        public ActionResult<Exam> Create([FromBody] CreateExamDTO exam)
+        public ActionResult<ExamDto> Create([FromBody] CreateExamDto exam)
         {
             if (exam == null) return BadRequest("Invalid payload");
-            var result = _examService.Create(exam);
-            return CreatedAtAction(nameof(GetById), new { id = result.ExamId }, result);
+
+            var created = _examService.Create(exam);
+            if (created == null) return BadRequest("Failed to create exam");
+
+            // ✅ Convert entity to DTO to avoid cycles
+            var dto = ConvertToDto(created);
+            return CreatedAtAction(nameof(GetById), new { id = dto.ExamId }, dto);
         }
 
-        // Get exam by id
+        // ========= GET EXAM BY ID =========
         [HttpGet("{id}")]
-        public ActionResult<Exam> GetById(int id)
+        public ActionResult<ExamDto> GetById(int id)
         {
-            var result = _examService.GetById(id);
-            if (result == null) return NotFound();
-            return Ok(result);
+            var exam = _examService.GetById(id);
+            if (exam == null) return NotFound();
+
+            var dto = ConvertToDto(exam);
+            return Ok(dto);
         }
 
+        // ========= GET ALL EXAMS =========
         [HttpGet]
-        public ActionResult<IEnumerable<Exam>> GetAll()
+        public ActionResult<IEnumerable<ExamDto>> GetAll()
         {
             var list = _examService.GetAll();
-            return Ok(list);
+
+            // ✅ Map all to DTOs
+            var dtoList = list.Select(ConvertToDto).ToList();
+
+            // ✅ Use safe JSON serializer as fallback
+            var jsonOptions = new JsonSerializerOptions
+            {
+                ReferenceHandler = ReferenceHandler.IgnoreCycles,
+                WriteIndented = true
+            };
+
+            return new JsonResult(dtoList, jsonOptions);
         }
 
-        // Update exam (admin only)
+        // ========= UPDATE EXAM =========
         [HttpPut("{id}")]
-        public ActionResult<Exam> Update(int id, [FromBody] UpdateExamDTO exam)
+        public ActionResult<ExamDto> Update(int id, [FromBody] UpdateExamDto exam)
         {
             if (exam == null) return BadRequest("Invalid payload");
-            var result = _examService.Update(id, exam);
-            if (result == null) return NotFound();
-            return Ok(result);
+            var updated = _examService.Update(id, exam);
+            if (updated == null) return NotFound();
+
+            return Ok(ConvertToDto(updated));
         }
 
-        // Delete exam
+        // ========= DELETE EXAM =========
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
@@ -58,16 +79,16 @@ namespace WebAPI.Controllers
             return NoContent();
         }
 
-        // Lấy tất cả attempt của 1 user
+        // ========= USER ATTEMPTS =========
         [HttpGet("user/{userId}")]
-        public ActionResult<IEnumerable<ExamAttemptSummaryDTO>> GetExamAttemptsByUser(int userId)
+        public ActionResult<IEnumerable<ExamAttemptSummaryDto>> GetExamAttemptsByUser(int userId)
         {
             var attempts = _examService.GetExamAttemptsByUser(userId);
             return Ok(attempts);
         }
 
         [HttpGet("attempt/{attemptId}")]
-        public ActionResult<ExamAttemptSummaryDTO> GetExamAttemptDetail(long attemptId)
+        public ActionResult<ExamAttemptSummaryDto> GetExamAttemptDetail(long attemptId)
         {
             var attempt = _examService.GetExamAttemptDetail(attemptId);
             if (attempt == null) return NotFound();
@@ -76,14 +97,15 @@ namespace WebAPI.Controllers
         }
 
         [HttpPost("attempt/submit")]
-        public ActionResult<ExamAttemptDTO> SubmitAttempt([FromBody] SubmitAttemptDTO dto)
+        public ActionResult<ExamAttemptDto> SubmitAttempt([FromBody] SubmitAttemptDto dto)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return Unauthorized("Please login to submit exam");
+
             try
             {
                 var attempt = _examService.SubmitAttempt(dto.ExamId, userId.Value, dto.AnswerText, dto.StartedAt);
-                var result = new ExamAttemptDTO
+                var result = new ExamAttemptDto
                 {
                     AttemptId = attempt.AttemptId,
                     StartedAt = attempt.StartedAt,
@@ -100,6 +122,34 @@ namespace WebAPI.Controllers
             {
                 return NotFound("Exam not found");
             }
+        }
+
+        // ========= PRIVATE HELPER =========
+        private static ExamDto ConvertToDto(Exam exam)
+        {
+            return new ExamDto
+            {
+                ExamId = exam.ExamId,
+                ExamName = exam.ExamName,
+                ExamType = exam.ExamType,
+                CreatedAt = exam.CreatedAt,
+                Readings = exam.Readings?.Select(r => new ReadingDto
+                {
+                    ReadingId = r.ReadingId,
+                    ExamId = r.ExamId,
+                    ReadingContent = r.ReadingContent,
+                    ReadingQuestion = r.ReadingQuestion,
+                    ReadingType = r.ReadingType,
+                    DisplayOrder = r.DisplayOrder,
+                    CreatedAt = r.CreatedAt,
+                    CorrectAnswer = r.CorrectAnswer,
+                    QuestionHtml = r.QuestionHtml
+                }).ToList() ?? new List<ReadingDto>(),
+
+                Listenings = exam.Listenings ?? new List<Listening>(),
+                Speakings = exam.Speakings ?? new List<Speaking>(),
+                Writings = exam.Writings ?? new List<Writing>()
+            };
         }
     }
 }

@@ -1,8 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import styles from "./QuizPage.module.css";
+import {
+  CheckCircle,
+  XCircle,
+  ArrowLeft,
+  Trophy,
+  RotateCcw,
+} from "lucide-react";
 
 export default function QuizPage({ groupWords, onBack }) {
-  // Trộn thứ tự câu hỏi ban đầu
   const initialOrder = useMemo(
     () => groupWords.map((_, i) => i).sort(() => 0.5 - Math.random()),
     [groupWords]
@@ -10,17 +16,15 @@ export default function QuizPage({ groupWords, onBack }) {
 
   const [queue, setQueue] = useState(initialOrder);
   const [cursor, setCursor] = useState(0);
-  const [mastered, setMastered] = useState(new Set()); // đã trả lời đúng
-  const [failed, setFailed] = useState(new Set());     // đã từng trả lời sai
+  const [mastered, setMastered] = useState(new Set());
+  const [failed, setFailed] = useState(new Set());
   const [selected, setSelected] = useState(null);
   const [revealing, setRevealing] = useState(false);
   const [finished, setFinished] = useState(false);
 
   const total = groupWords.length;
   const currentIndex = queue[cursor];
-  const currentWord = groupWords[currentIndex];
 
-  // đáp án sai dự phòng
   const fallbackWrong = [
     "an unrelated action",
     "a small object or device",
@@ -66,7 +70,6 @@ export default function QuizPage({ groupWords, onBack }) {
     [currentIndex, groupWords]
   );
 
-  // Điểm chỉ tính những từ đúng mà chưa từng sai
   const uniqueCorrect = Array.from(mastered).filter(
     (i) => !failed.has(i)
   ).length;
@@ -74,7 +77,6 @@ export default function QuizPage({ groupWords, onBack }) {
   const progressPercent =
     total === 0 ? 0 : Math.round((uniqueCorrect / total) * 100);
 
-  // Bỏ qua các bản sao đã mastered khi đi tiếp
   useEffect(() => {
     if (finished) return;
     let c = cursor;
@@ -91,7 +93,7 @@ export default function QuizPage({ groupWords, onBack }) {
     }
 
     if (!wasCorrect) {
-      setQueue((q) => [...q, currentIndex]); // đẩy xuống cuối
+      setQueue((q) => [...q, currentIndex]);
       const nextFail = new Set(failed);
       nextFail.add(currentIndex);
       setFailed(nextFail);
@@ -121,42 +123,44 @@ export default function QuizPage({ groupWords, onBack }) {
     }, 700);
   };
 
+  // ✅ Hiển thị khi quiz kết thúc
   if (finished || total === 0) {
     return (
       <div className={styles.quizContainer}>
+        <Trophy size={48} color="#facc15" />
         <h2>Quiz Finished 🎉</h2>
         <p>
-          Your score: {uniqueCorrect} / {total}
+          Your score: <strong>{uniqueCorrect}</strong> / {total}
         </p>
+
         <div className={styles.progressWrap}>
-  <div
-    className={styles.progressBarCorrect}
-    style={{ width: `${(uniqueCorrect / total) * 100}%` }}
-  />
-  <div
-    className={styles.progressBarWrong}
-    style={{ width: `${((total - uniqueCorrect) / total) * 100}%` }}
-  />
-</div>
+          <div
+            className={styles.progressBarCorrect}
+            style={{ width: `${(uniqueCorrect / total) * 100}%` }}
+          />
+          <div
+            className={styles.progressBarWrong}
+            style={{ width: `${((total - uniqueCorrect) / total) * 100}%` }}
+          />
+        </div>
 
         <button className={styles.backBtn} onClick={onBack}>
-          Back to Dictionary
+          <RotateCcw size={18} /> Back to Dictionary
         </button>
       </div>
     );
   }
 
-  // Hiển thị số câu = số đúng + 1 (sai không tăng số thứ tự)
   const displayIndex = Math.min(uniqueCorrect + 1, total);
 
   return (
     <div className={styles.quizContainer}>
       <div className={styles.topRow}>
         <button className={styles.backLink} onClick={onBack}>
-          ← Back
+          <ArrowLeft size={18} /> Back
         </button>
         <div className={styles.counter}>
-          {uniqueCorrect}/{total} mastered
+          <CheckCircle size={16} color="#4ade80" /> {uniqueCorrect}/{total} mastered
         </div>
       </div>
 
@@ -179,6 +183,12 @@ export default function QuizPage({ groupWords, onBack }) {
                 disabled={!!selected}
               >
                 {opt}
+                {selected &&
+                  (isCorrect ? (
+                    <CheckCircle className={styles.icon} color="#4ade80" />
+                  ) : isWrong ? (
+                    <XCircle className={styles.icon} color="#f87171" />
+                  ) : null)}
               </button>
             </li>
           );

@@ -91,6 +91,10 @@ export default function Dictionary() {
         });
     }
   };
+  const handleStartQuiz = () => {
+    reloadGroups();
+    setShowQuiz(true);
+  };
 
   return (
     <div className="home-container">
@@ -115,7 +119,7 @@ export default function Dictionary() {
               {activeGroup && (
                 <button
                   className="start-quiz-btn"
-                  onClick={() => setShowQuiz(true)}
+                  onClick={handleStartQuiz}
                 >
                   Start Quiz
                 </button>
@@ -237,7 +241,6 @@ export default function Dictionary() {
             onClose={() => setShowPopup(false)}
             actions={
               <>
-                {/* chỉ cho Add khi có searchResult hợp lệ */}
                 {searchResult && searchResult.term ? (
                   <button onClick={handleAddToGroup} disabled={!selectedGroupId}>
                     <PlusCircle size={18} /> Add to Group
@@ -289,13 +292,13 @@ export default function Dictionary() {
                 </select>
               </>
             ) : (
-              <p style={{ color: "gray" }}>❌ No word found to add.</p>
+              <p style={{ color: "gray" }}> No word found to add.</p>
             )}
           </Popup>
         )}
 
-    
-    </main>
+
+      </main>
     </div >
   );
 }

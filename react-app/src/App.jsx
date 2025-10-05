@@ -10,12 +10,14 @@ import PostDetail from "./Pages/Forum/PostDetail.jsx";
 import Profile from "./Pages/Profile/Profile.jsx";
 import ExamManagement from "./Pages/Admin/ExamManagement.jsx";
 import AddReading from "./Pages/Admin/AddReading.jsx";
+import AdminDashboard from "./Pages/Admin/AdminDashBoard.jsx"; // ⚡ import admin dashboard
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+
         <Route path="/home" element={<Home />} />
         <Route path="/dictionary" element={<Dictionary />} />
         <Route path="/forum" element={<Forum />} />
@@ -23,9 +25,10 @@ function App() {
         <Route path="/edit-post/:postId" element={<EditPost />} />
         <Route path="/post/:postId" element={<PostDetail />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="admin/exam" element={<ExamManagement />} />
-        <Route path="admin/exam/add-reading" element={<AddReading />} />
-        
+
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/exams" element={<ExamManagement />} />
+        <Route path="/admin/exam/add-reading" element={<AddReading />} />
       </Routes>
     </BrowserRouter>
   );
