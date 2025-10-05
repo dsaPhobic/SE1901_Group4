@@ -15,10 +15,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* ===== Auth ===== */}
         <Route path="/" element={<Login />} />
 
-        {/* ===== User area ===== */}
         <Route path="/home" element={<Home />} />
         <Route path="/dictionary" element={<Dictionary />} />
         <Route path="/forum" element={<Forum />} />
@@ -27,7 +25,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
 
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/exam" element={<ExamManagement />} />
+        <Route path="/admin/exams" element={<ExamManagement />} />
         <Route path="/admin/exam/add-reading" element={<AddReading />} />
       </Routes>
     </BrowserRouter>
