@@ -11,6 +11,10 @@ export function getById(id) {
   return API.get(`/${id}`);
 }
 
+export function getAll() {
+  return API.get("");
+}
+
 // Create new exam
 export function add(data) {
   return API.post("", data);
@@ -34,6 +38,10 @@ export function getExamAttemptsByUser(userId) {
 // Lấy chi tiết 1 attempt
 export function getExamAttemptDetail(attemptId) {
   return API.get(`attempt/${attemptId}`);
+}
+
+export function submitExamAttempt(attemptId, answers) {
+  return API.post(`attempt/submit`, { answers });
 }
 
 // Lấy danh sách ngày đã submit (chỉ trả về yyyy-MM-dd)

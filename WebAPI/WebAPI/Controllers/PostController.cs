@@ -48,6 +48,8 @@ namespace WebAPI.Controllers
                 post.IsVoted = _postService.IsPostVotedByUser(id, userId.Value);
             }
 
+            _postService.IncrementViewCount(id);
+
             return Ok(post);
         }
 
@@ -156,26 +158,6 @@ namespace WebAPI.Controllers
             }
         }
 
-        [HttpPost("{id}/report")]
-        public IActionResult ReportPost(int id, [FromBody] ReportPostDTO dto)
-        {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return Unauthorized("Please login to report posts");
-
-            try
-            {
-                _postService.ReportPost(id, dto.Reason, userId.Value);
-                return Ok("Post reported successfully");
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound("Post not found");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
 
         // Comment endpoints
         [HttpGet("{id}/comments")]
@@ -205,5 +187,85 @@ namespace WebAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost("{id}/pin")]
+        public ActionResult PinPost(int id)
+        {
+            try
+            {
+                _postService.PinPost(id);
+                return Ok(new { message = "Post pinned successfully" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("{id}/unpin")]
+        public ActionResult UnpinPost(int id)
+        {
+            try
+            {
+                _postService.UnpinPost(id);
+                return Ok(new { message = "Post unpinned successfully" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("{id}/hide")]
+        public ActionResult HidePost(int id)
+        {
+            try
+            {
+                _postService.HidePost(id);
+                return Ok(new { message = "Post hidden successfully" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("{id}/report")]
+        public ActionResult ReportPost(int id, [FromBody] ReportPostRequest request)
+        {
+            try
+            {
+                var userId = HttpContext.Session.GetInt32("UserId");
+                if (!userId.HasValue) return Unauthorized("User not logged in");
+
+                _postService.ReportPost(id, request.Reason, userId.Value);
+                return Ok(new { message = "Post reported successfully" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+    }
+
+    public class ReportPostRequest
+    {
+        public string Reason { get; set; }
     }
 }
