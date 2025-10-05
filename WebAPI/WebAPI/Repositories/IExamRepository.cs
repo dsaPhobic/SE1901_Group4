@@ -19,7 +19,7 @@ namespace WebAPI.Repositories
 
         // Save
         void SaveChanges();
-        List<ExamAttemptSummaryDTO> GetExamAttemptsByUser(int userId);
-        ExamAttemptDTO? GetExamAttemptDetail(long attemptId);
+        List<ExamAttemptSummaryDto> GetExamAttemptsByUser(int userId);
+        ExamAttemptDto? GetExamAttemptDetail(long attemptId);
     }
 }

@@ -1,6 +1,18 @@
-// src/Components/Exam/ExamSkillModal.jsx
+// src/Components/Admin/ExamPopup.jsx
 import React from "react";
 import styles from "./ExamPopup.module.css";
+
+// Normalize a reading/skill to camelCase
+const normalizeReading = (r) => ({
+  readingId: r.readingId ?? r.ReadingId,
+  examId: r.examId ?? r.ExamId,
+  readingContent: r.readingContent ?? r.ReadingContent ?? "",
+  readingQuestion: r.readingQuestion ?? r.ReadingQuestion ?? "",
+  readingType: r.readingType ?? r.ReadingType ?? "",
+  displayOrder: r.displayOrder ?? r.DisplayOrder ?? 1,
+  correctAnswer: r.correctAnswer ?? r.CorrectAnswer ?? null,
+  questionHtml: r.questionHtml ?? r.QuestionHtml ?? null,
+});
 
 export default function ExamSkillModal({
   show,
@@ -13,17 +25,31 @@ export default function ExamSkillModal({
 }) {
   if (!show) return null;
 
+  // normalize everything here so downstream is easy
+  const normalizedSkills = Array.isArray(skills)
+    ? skills.map(normalizeReading)
+    : [];
+
+  const examName = exam?.examName ?? exam?.ExamName ?? "";
+
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>
-        <h3>Manage Skills for {exam?.examName}</h3>
+        <h3>
+          Manage Skills for <span className={styles.examName}>{examName}</span>
+        </h3>
 
-        {skills.length > 0 ? (
+        {normalizedSkills.length > 0 ? (
           <div className={styles.skillList}>
-            {skills.map((s, i) => (
-              <div key={i} className={styles.skillItem}>
+            {normalizedSkills.map((s) => (
+              <div key={s.readingId} className={styles.skillItem}>
                 <div className={styles.skillText}>
-                  <strong>{s.readingQuestion}</strong>
+                  <strong>
+                    {/* short preview of the question text */}
+                    {s.readingQuestion?.length > 120
+                      ? s.readingQuestion.slice(0, 120) + "…"
+                      : s.readingQuestion || "(no question text)"}
+                  </strong>
                 </div>
                 <div className={styles.actions}>
                   <button
