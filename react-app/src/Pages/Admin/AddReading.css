@@ -1,0 +1,147 @@
+@import url('https://fonts.googleapis.com/css2?family=Dongle&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Outfit:wght@100..900&display=swap');
+
+.exam-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 20px;
+  font-family: "Dongle", sans-serif;
+}
+
+.exam-form label {
+  font-size: 32px;
+  font-weight: 600;
+  margin-bottom: -10px;
+}
+
+.exam-form input,
+.exam-form select,
+.exam-form textarea {
+  font-family: "Dongle", sans-serif;
+  font-size: 28px;
+  padding: 12px 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.exam-form input:focus,
+.exam-form select:focus,
+.exam-form textarea:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
+}
+
+.exam-form textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.start-quiz-btn {
+  padding: 10px 16px;
+  background-color: #e9a052;
+  color: white;
+  font-size: 32px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  font-family: "Dongle", sans-serif;
+  margin-top: 10px;
+}
+
+.start-quiz-btn:hover {
+  background-color: #cf7e2f;
+}
+
+.status {
+  margin-top: 12px;
+  font-size: 22px;
+  background: #e6f0ff;
+  padding: 6px 12px;
+  border-radius: 10px;
+  color: #007bff;
+  display: inline-block;
+}
+.preview-panel {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px;
+  background: #fff;
+  overflow-y: auto;
+  max-height: 80vh;
+}
+
+.preview-panel h3 {
+  font-size: 36px;
+  margin-bottom: 10px;
+  font-family: "Dongle", sans-serif;
+}
+
+.preview-box {
+  font-size: 26px;
+  line-height: 1.4;
+  font-family: "Nunito Sans", sans-serif;
+}
+
+.preview-box input,
+.preview-box select {
+  margin: 4px 6px;
+  padding: 4px 8px;
+  font-size: 20px;
+}
+.reading-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: start;
+  margin-top: 20px;
+}
+
+/* Stack inputs vertically */
+.exam-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.exam-form label {
+  font-size: 28px;
+  font-weight: 600;
+  font-family: "Dongle", sans-serif;
+}
+
+.exam-form input,
+.exam-form textarea {
+  font-family: "Dongle", sans-serif;
+  font-size: 26px;
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.preview-panel {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 20px;
+  background: #fff;
+}
+
+.preview-panel h3 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  font-family: "Dongle", sans-serif;
+}
+
+.preview-box {
+  font-size: 24px;
+  font-family: "Nunito Sans", sans-serif;
+  line-height: 1.4;
+}

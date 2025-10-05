@@ -119,6 +119,7 @@ namespace WebAPI.Data
                 entity.ToTable("Listening");
 
                 entity.Property(e => e.ListeningId).HasColumnName("listening_id");
+                entity.Property(e => e.CorrectAnswer).HasColumnName("correct_answer");
                 entity.Property(e => e.CreatedAt)
                     .HasPrecision(0)
                     .HasDefaultValueSql("(sysdatetime())")
@@ -130,6 +131,7 @@ namespace WebAPI.Data
                 entity.Property(e => e.ListeningType)
                     .HasMaxLength(50)
                     .HasColumnName("listening_type");
+                entity.Property(e => e.QuestionHtml).HasColumnName("question_html");
 
                 entity.HasOne(d => d.Exam).WithMany(p => p.Listenings)
                     .HasForeignKey(d => d.ExamId)
@@ -174,6 +176,11 @@ namespace WebAPI.Data
                     .HasDefaultValueSql("(sysdatetime())")
                     .HasColumnName("created_at");
                 entity.Property(e => e.UserId).HasColumnName("user_id");
+                entity.Property(e => e.Title).HasColumnName("Title");
+                entity.Property(e => e.UpdatedAt).HasColumnName("UpdatedAt");
+                entity.Property(e => e.ViewCount).HasColumnName("ViewCount");
+                entity.Property(e => e.IsPinned).HasColumnName("IsPinned");
+                entity.Property(e => e.IsHidden).HasColumnName("IsHidden");
 
                 entity.HasOne(d => d.User).WithMany(p => p.Posts)
                     .HasForeignKey(d => d.UserId)
@@ -184,19 +191,19 @@ namespace WebAPI.Data
                     .UsingEntity<Dictionary<string, object>>(
                         "PostTag",
                         r => r.HasOne<Tag>().WithMany()
-                            .HasForeignKey("TagId")
+                            .HasForeignKey("tag_id")
                             .OnDelete(DeleteBehavior.ClientSetNull)
                             .HasConstraintName("FK__Post_Tag__tag_id__00200768"),
                         l => l.HasOne<Post>().WithMany()
-                            .HasForeignKey("PostId")
+                            .HasForeignKey("post_id")
                             .OnDelete(DeleteBehavior.ClientSetNull)
                             .HasConstraintName("FK__Post_Tag__post_i__7F2BE32F"),
                         j =>
                         {
-                            j.HasKey("PostId", "TagId").HasName("PK__Post_Tag__4AFEED4D40095113");
+                            j.HasKey("post_id", "tag_id").HasName("PK__Post_Tag__4AFEED4D40095113");
                             j.ToTable("Post_Tag");
-                            j.IndexerProperty<int>("PostId").HasColumnName("post_id");
-                            j.IndexerProperty<int>("TagId").HasColumnName("tag_id");
+                            j.IndexerProperty<int>("post_id").HasColumnName("post_id");
+                            j.IndexerProperty<int>("tag_id").HasColumnName("tag_id");
                         });
             });
 
@@ -231,12 +238,14 @@ namespace WebAPI.Data
                 entity.ToTable("Reading");
 
                 entity.Property(e => e.ReadingId).HasColumnName("reading_id");
+                entity.Property(e => e.CorrectAnswer).HasColumnName("correct_answer");
                 entity.Property(e => e.CreatedAt)
                     .HasPrecision(0)
                     .HasDefaultValueSql("(sysdatetime())")
                     .HasColumnName("created_at");
                 entity.Property(e => e.DisplayOrder).HasColumnName("display_order");
                 entity.Property(e => e.ExamId).HasColumnName("exam_id");
+                entity.Property(e => e.QuestionHtml).HasColumnName("question_html");
                 entity.Property(e => e.ReadingContent).HasColumnName("reading_content");
                 entity.Property(e => e.ReadingQuestion).HasColumnName("reading_question");
                 entity.Property(e => e.ReadingType)
@@ -266,11 +275,17 @@ namespace WebAPI.Data
                     .HasDefaultValue("Pending")
                     .HasColumnName("status");
                 entity.Property(e => e.UserId).HasColumnName("user_id");
+                entity.Property(e => e.PostId).HasColumnName("post_id");
 
                 entity.HasOne(d => d.User).WithMany(p => p.Reports)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__Report__user_id__60A75C0F");
+
+                entity.HasOne(d => d.Post).WithMany(p => p.Reports)
+                    .HasForeignKey(d => d.PostId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Report_Post");
             });
 
             modelBuilder.Entity<Speaking>(entity =>

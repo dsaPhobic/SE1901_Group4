@@ -14,10 +14,12 @@ namespace WebAPI.Repositories
 
         // Attempt & Answer
         void AddAttempt(ExamAttempt attempt);
+        ExamAttempt? GetAttemptById(long attemptId);
+        void UpdateAttempt(ExamAttempt attempt);
 
         // Save
         void SaveChanges();
-        List<ExamAttemptDTO> GetExamAttemptsByUser(int userId);
+        List<ExamAttemptSummaryDTO> GetExamAttemptsByUser(int userId);
         ExamAttemptDTO? GetExamAttemptDetail(long attemptId);
     }
 }
