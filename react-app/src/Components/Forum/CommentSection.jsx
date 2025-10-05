@@ -51,6 +51,21 @@ export default function CommentSection({ postId }) {
     console.log("New comment created:", newComment);
     console.log("Has parentCommentId:", newComment.parentCommentId);
     
+    // Xử lý delete comment
+    if (newComment.action === 'delete') {
+      setComments((prev) => {
+        const removeComment = (comments) => {
+          return comments.filter(comment => comment.commentId !== newComment.commentId)
+            .map(comment => ({
+              ...comment,
+              replies: comment.replies ? removeComment(comment.replies) : []
+            }));
+        };
+        return removeComment(prev);
+      });
+      return;
+    }
+    
     // Nếu là reply, cần cập nhật comment cha (có thể ở bất kỳ tầng nào)
     if (newComment.parentCommentId) {
       setComments((prev) => {
@@ -130,6 +145,7 @@ export default function CommentSection({ postId }) {
                 comment={comment}
                 onReply={handleCommentCreated}
                 level={0}
+                postId={postId}
               />
             ))
         )}

@@ -17,11 +17,12 @@ namespace WebAPI.Services
             _userRepository = userRepository;
         }
 
-        public IEnumerable<CommentDTO> GetCommentsByPostId(int postId)
+        public IEnumerable<CommentDTO> GetCommentsByPostId(int postId, int? userId = null)
         {
             // Load tất cả comments của post
             var allComments = _context.Comment
                 .Include(c => c.User)
+                .Include(c => c.CommentLikes)
                 .Where(c => c.PostId == postId)
                 .ToList();
 
@@ -31,19 +32,20 @@ namespace WebAPI.Services
                 .OrderBy(c => c.CreatedAt)
                 .ToList();
 
-            return rootComments.Select(c => ToDTOWithReplies(c, allComments));
+            return rootComments.Select(c => ToDTOWithReplies(c, allComments, userId));
         }
 
-        public CommentDTO? GetCommentById(int id)
+        public CommentDTO? GetCommentById(int id, int? currentUserId = null)
         {
             var comment = _context.Comment
                 .Include(c => c.User)
                 .Include(c => c.InverseParentComment)
+                .Include(c => c.CommentLikes)
                 .FirstOrDefault(c => c.CommentId == id);
 
             if (comment == null) return null;
 
-            return ToDTO(comment);
+            return ToDTO(comment, currentUserId);
         }
 
         public CommentDTO CreateComment(int postId, CreateCommentDTO dto, int userId)
@@ -120,8 +122,34 @@ namespace WebAPI.Services
             if (comment.UserId != userId && user.Role != "admin")
                 throw new UnauthorizedAccessException("You don't have permission to delete this comment");
 
-            _context.Comment.Remove(comment);
-            _context.SaveChanges();
+            try
+            {
+                // Xóa tất cả nested comments (replies) trước
+                var nestedComments = _context.Comment.Where(c => c.ParentCommentId == id).ToList();
+                if (nestedComments.Any())
+                {
+                    // Xóa tất cả CommentLikes của nested comments
+                    var nestedCommentLikes = _context.CommentLike
+                        .Where(cl => nestedComments.Select(c => c.CommentId).Contains(cl.CommentId))
+                        .ToList();
+                    _context.CommentLike.RemoveRange(nestedCommentLikes);
+                    
+                    // Xóa nested comments
+                    _context.Comment.RemoveRange(nestedComments);
+                }
+                
+                // Xóa tất cả CommentLikes của comment chính
+                var commentLikes = _context.CommentLike.Where(cl => cl.CommentId == id).ToList();
+                _context.CommentLike.RemoveRange(commentLikes);
+                
+                // Xóa comment chính
+                _context.Comment.Remove(comment);
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error deleting comment: {ex.Message}", ex);
+            }
         }
 
         public void LikeComment(int id, int userId)
@@ -129,7 +157,22 @@ namespace WebAPI.Services
             var comment = _context.Comment.Find(id);
             if (comment == null) throw new KeyNotFoundException("Comment not found");
 
-            comment.LikeNumber++;
+            // Check if user already liked this comment
+            var existingLike = _context.CommentLike
+                .FirstOrDefault(cl => cl.CommentId == id && cl.UserId == userId);
+
+            if (existingLike != null)
+                throw new InvalidOperationException("You have already liked this comment");
+
+            // Add new like record
+            var commentLike = new CommentLike
+            {
+                CommentId = id,
+                UserId = userId,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.CommentLike.Add(commentLike);
             _context.SaveChanges();
         }
 
@@ -138,44 +181,36 @@ namespace WebAPI.Services
             var comment = _context.Comment.Find(id);
             if (comment == null) throw new KeyNotFoundException("Comment not found");
 
-            if (comment.LikeNumber > 0)
-            {
-                comment.LikeNumber--;
-                _context.SaveChanges();
-            }
-        }
+            // Check if user has liked this comment
+            var existingLike = _context.CommentLike
+                .FirstOrDefault(cl => cl.CommentId == id && cl.UserId == userId);
 
-        public void VoteComment(int id, int userId)
-        {
-            var comment = _context.Comment.Find(id);
-            if (comment == null) throw new KeyNotFoundException("Comment not found");
+            if (existingLike == null)
+                throw new InvalidOperationException("You haven't liked this comment");
 
-            comment.LikeNumber++;
+            // Remove like record
+            _context.CommentLike.Remove(existingLike);
             _context.SaveChanges();
         }
 
-        public void UnvoteComment(int id, int userId)
-        {
-            var comment = _context.Comment.Find(id);
-            if (comment == null) throw new KeyNotFoundException("Comment not found");
 
-            if (comment.LikeNumber > 0)
+        private CommentDTO ToDTO(Comment comment, int? currentUserId = null)
+        {
+            // Check if user has voted for this comment using the loaded CommentLikes
+            bool isVoted = false;
+            if (currentUserId.HasValue)
             {
-                comment.LikeNumber--;
-                _context.SaveChanges();
+                isVoted = comment.CommentLikes.Any(cl => cl.UserId == currentUserId.Value);
             }
-        }
 
-        private CommentDTO ToDTO(Comment comment)
-        {
             return new CommentDTO
             {
                 CommentId = comment.CommentId,
                 Content = comment.Content,
                 CreatedAt = comment.CreatedAt,
-                LikeNumber = comment.LikeNumber,
-                VoteCount = comment.LikeNumber,
-                IsVoted = false, // This would need to be set based on current user
+                LikeNumber = comment.CommentLikes.Count,
+                VoteCount = comment.CommentLikes.Count,
+                IsVoted = isVoted,
                 ParentCommentId = comment.ParentCommentId,
                 User = new UserDTO
                 {
@@ -186,26 +221,33 @@ namespace WebAPI.Services
                     Lastname = comment.User.Lastname,
                     Role = comment.User.Role
                 },
-                Replies = comment.InverseParentComment.Select(ToDTO).ToList()
+                Replies = new List<CommentDTO>() // Don't load replies in ToDTO, use ToDTOWithReplies instead
             };
         }
 
-        private CommentDTO ToDTOWithReplies(Comment comment, List<Comment> allComments)
+        private CommentDTO ToDTOWithReplies(Comment comment, List<Comment> allComments, int? currentUserId)
         {
             var replies = allComments
                 .Where(c => c.ParentCommentId == comment.CommentId)
                 .OrderBy(c => c.CreatedAt)
-                .Select(c => ToDTOWithReplies(c, allComments))
+                .Select(c => ToDTOWithReplies(c, allComments, currentUserId))
                 .ToList();
+
+            // Check if user has voted for this comment using the loaded CommentLikes
+            bool isVoted = false;
+            if (currentUserId.HasValue)
+            {
+                isVoted = comment.CommentLikes.Any(cl => cl.UserId == currentUserId.Value);
+            }
 
             return new CommentDTO
             {
                 CommentId = comment.CommentId,
                 Content = comment.Content,
                 CreatedAt = comment.CreatedAt,
-                LikeNumber = comment.LikeNumber,
-                VoteCount = comment.LikeNumber,
-                IsVoted = false,
+                LikeNumber = comment.CommentLikes.Count,
+                VoteCount = comment.CommentLikes.Count,
+                IsVoted = isVoted,
                 ParentCommentId = comment.ParentCommentId,
                 User = new UserDTO
                 {
@@ -218,6 +260,12 @@ namespace WebAPI.Services
                 },
                 Replies = replies
             };
+        }
+
+        private bool IsCommentVotedByUser(int commentId, int userId)
+        {
+            return _context.CommentLike
+                .Any(cl => cl.CommentId == commentId && cl.UserId == userId);
         }
     }
 }

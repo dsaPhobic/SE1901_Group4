@@ -6,16 +6,12 @@ const API = axios.create({
 });
 
 // Posts API
-export function getPosts(page = 1, limit = 10) {
-  return API.get(`/posts?page=${page}&limit=${limit}`);
-}
-
 export function getPostsByFilter(filter, page = 1, limit = 10) {
   return API.get(`/posts/filter/${filter}?page=${page}&limit=${limit}`);
 }
 
-export function getPost(postId) {
-  return API.get(`/posts/${postId}`);
+export function getPost(postId, incrementView = true) {
+  return API.get(`/posts/${postId}?incrementView=${incrementView}`);
 }
 
 export function createPost(postData) {
@@ -42,6 +38,10 @@ export function hidePost(postId) {
   return API.post(`/posts/${postId}/hide`);
 }
 
+export function unhidePost(postId) {
+  return API.post(`/posts/${postId}/unhide`);
+}
+
 export function reportPost(postId, reason) {
   return API.post(`/posts/${postId}/report`, { reason });
 }
@@ -56,11 +56,11 @@ export function unvotePost(postId) {
 
 // Comments API
 export function getComments(postId) {
-  return API.get(`/posts/${postId}/comments`);
+  return API.get(`/comments/post/${postId}`);
 }
 
 export function createComment(postId, content, parentCommentId = null) {
-  return API.post(`/posts/${postId}/comments`, {
+  return API.post(`/comments/post/${postId}`, {
     content,
     parentCommentId
   });
@@ -82,17 +82,7 @@ export function unlikeComment(commentId) {
   return API.delete(`/comments/${commentId}/like`);
 }
 
-export function voteComment(commentId) {
-  return API.post(`/comments/${commentId}/vote`);
-}
 
-export function unvoteComment(commentId) {
-  return API.delete(`/comments/${commentId}/vote`);
-}
-
-export function createReply(commentId, content) {
-  return API.post(`/comments/${commentId}/replies`, { content });
-}
 
 // Tags API
 export function getTags() {

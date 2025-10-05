@@ -26,6 +26,8 @@ namespace WebAPI.Data
         public virtual DbSet<Comment> Comment { get; set; }
         public virtual DbSet<Tag> Tag { get; set; }
         public virtual DbSet<PostLike> PostLike { get; set; }
+        public virtual DbSet<CommentLike> CommentLike { get; set; }
+        public virtual DbSet<UserPostHide> UserPostHide { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -468,6 +470,56 @@ namespace WebAPI.Data
                 entity.Property(e => e.Term)
                     .HasMaxLength(100)
                     .HasColumnName("word");
+            });
+
+            modelBuilder.Entity<CommentLike>(entity =>
+            {
+                entity.HasKey(e => e.CommentLikeId).HasName("PK__CommentLike__CommentLikeId");
+
+                entity.ToTable("CommentLike");
+
+                entity.Property(e => e.CommentLikeId).HasColumnName("comment_like_id");
+                entity.Property(e => e.CommentId).HasColumnName("comment_id");
+                entity.Property(e => e.UserId).HasColumnName("user_id");
+                entity.Property(e => e.CreatedAt)
+                    .HasPrecision(0)
+                    .HasDefaultValueSql("(sysdatetime())")
+                    .HasColumnName("created_at");
+
+                entity.HasOne(d => d.Comment).WithMany(c => c.CommentLikes)
+                    .HasForeignKey(d => d.CommentId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__CommentLike__comment_id");
+
+                entity.HasOne(d => d.User).WithMany()
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__CommentLike__user_id");
+            });
+
+            modelBuilder.Entity<UserPostHide>(entity =>
+            {
+                entity.HasKey(e => e.UserPostHideId).HasName("PK__UserPostH__user_post_hide_id");
+
+                entity.ToTable("UserPostHide");
+
+                entity.Property(e => e.UserPostHideId).HasColumnName("user_post_hide_id");
+                entity.Property(e => e.UserId).HasColumnName("user_id");
+                entity.Property(e => e.PostId).HasColumnName("post_id");
+                entity.Property(e => e.HiddenAt)
+                    .HasPrecision(0)
+                    .HasDefaultValueSql("(sysdatetime())")
+                    .HasColumnName("hidden_at");
+
+                entity.HasOne(d => d.User).WithMany()
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("FK__UserPostHide__user_id");
+
+                entity.HasOne(d => d.Post).WithMany()
+                    .HasForeignKey(d => d.PostId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("FK__UserPostHide__post_id");
             });
 
             modelBuilder.Entity<Writing>(entity =>

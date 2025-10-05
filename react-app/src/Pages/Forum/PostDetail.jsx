@@ -6,6 +6,9 @@ import HeaderBar from "../../Components/Layout/HeaderBar";
 import CommentSection from "../../Components/Forum/CommentSection";
 import { getPost, votePost, unvotePost, reportPost, deletePost, pinPost, unpinPost, hidePost } from "../../Services/ForumApi";
 import useAuth from "../../Hook/UseAuth";
+import { MoreVertical, Trash2, Pin, EyeOff, Flag, ArrowLeft, MessageCircle, Image, Share, Download, ThumbsUp, Edit } from "lucide-react";
+
+// Không cần helper functions nữa - để view count tăng mỗi lần vào post
 
 export default function PostDetail() {
   const { postId } = useParams();
@@ -20,14 +23,37 @@ export default function PostDetail() {
   const [showMenu, setShowMenu] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
   const menuRef = useRef(null);
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
+    // Reset ref khi postId thay đổi
+    hasLoadedRef.current = false;
     loadPost();
   }, [postId]);
 
+  // Sync state with post data when post changes
+  useEffect(() => {
+    if (post) {
+      setIsVoted(post.isVoted || false);
+      setVoteCount(post.voteCount || 0);
+      setIsPinned(post.isPinned || false);
+    }
+  }, [post]);
+
   const loadPost = () => {
+    // Tránh gọi API nhiều lần do React StrictMode
+    if (hasLoadedRef.current) {
+      console.log(`Post ${postId} already loaded, skipping...`);
+      return;
+    }
+    
     setLoading(true);
-    getPost(postId)
+    hasLoadedRef.current = true;
+    
+    console.log(`Loading post ${postId} - view count will increment`);
+    
+    // Luôn tăng view count mỗi lần vào post
+    getPost(postId, true)
       .then(response => {
         setPost(response.data);
         setIsVoted(response.data.isVoted || false);
@@ -36,6 +62,9 @@ export default function PostDetail() {
       })
       .catch(error => {
         console.error("Error loading post:", error);
+        if (error.response?.status === 404) {
+          navigate('/forum');
+        }
       })
       .finally(() => {
         setLoading(false);
@@ -84,6 +113,12 @@ export default function PostDetail() {
   const handleMenuToggle = (e) => {
     e.stopPropagation();
     setShowMenu(!showMenu);
+  };
+
+  const handleEditPost = (e) => {
+    e.stopPropagation();
+    navigate(`/edit-post/${post.postId}`);
+    setShowMenu(false);
   };
 
   const handleDeletePost = (e) => {
@@ -204,7 +239,8 @@ export default function PostDetail() {
           <div className="post-detail-main">
             <div className="post-detail-header">
               <button className="back-btn" onClick={() => navigate("/forum")}>
-                ← Back to Forum
+                <ArrowLeft size={16} />
+                Back to Forum
               </button>
             </div>
 
@@ -222,11 +258,7 @@ export default function PostDetail() {
                 <div className="post-actions">
                   <div className="post-menu-container" ref={menuRef}>
                     <button className="post-menu-btn" onClick={handleMenuToggle}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="1"/>
-                        <circle cx="12" cy="5" r="1"/>
-                        <circle cx="12" cy="19" r="1"/>
-                      </svg>
+                      <MoreVertical size={16} />
                     </button>
                     
                     {showMenu && (
@@ -234,17 +266,16 @@ export default function PostDetail() {
                         {user && post && (user.userId === post.user.userId || user.role === 'admin') ? (
                           // Menu for post owner or admin
                           <>
+                            <button className="menu-item edit" onClick={handleEditPost}>
+                              <Edit size={16} />
+                              Chỉnh sửa bài viết
+                            </button>
                             <button className="menu-item delete" onClick={handleDeletePost}>
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <polyline points="3,6 5,6 21,6"/>
-                                <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"/>
-                              </svg>
+                              <Trash2 size={16} />
                               Xóa bài viết
                             </button>
                             <button className="menu-item pin" onClick={handlePinPost}>
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                              </svg>
+                              <Pin size={16} />
                               {isPinned ? "Hủy ghim" : "Ghim bài viết"}
                             </button>
                           </>
@@ -252,23 +283,15 @@ export default function PostDetail() {
                           // Menu for other users
                           <>
                             <button className="menu-item hide" onClick={handleHidePost}>
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                                <line x1="1" y1="1" x2="23" y2="23"/>
-                              </svg>
+                              <EyeOff size={16} />
                               Ẩn bài viết
                             </button>
                             <button className="menu-item pin" onClick={handlePinPost}>
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                              </svg>
+                              <Pin size={16} />
                               {isPinned ? "Hủy ghim" : "Ghim bài viết"}
                             </button>
                             <button className="menu-item report" onClick={handleReportPost}>
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
-                                <line x1="4" y1="22" x2="4" y2="15"/>
-                              </svg>
+                              <Flag size={16} />
                               Tố cáo bài viết
                             </button>
                           </>
@@ -283,7 +306,7 @@ export default function PostDetail() {
                 <h1 className="post-title">
                   {isPinned && (
                     <span className="pinned-indicator" title="Bài viết đã được ghim">
-                      📌 
+                      <Pin size={16} />
                     </span>
                   )}
                   {post.title}
@@ -306,8 +329,9 @@ export default function PostDetail() {
                   className={`vote-btn ${isVoted ? "voted" : ""}`}
                   onClick={handleVote}
                 >
-                  <span>+</span>
-                  <span>Vote</span>
+                  <ThumbsUp size={16} />
+                  <span>{isVoted ? "Unlike" : "Like"}</span>
+                  <span className="vote-count">({voteCount})</span>
                 </button>
               </div>
             </div>
@@ -328,23 +352,13 @@ export default function PostDetail() {
               </div>
               <div className="profile-actions">
                 <button className="profile-action-btn">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                  </svg>
+                  <MessageCircle size={16} />
                 </button>
                 <button className="profile-action-btn">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                    <circle cx="8.5" cy="8.5" r="1.5"/>
-                    <polyline points="21,15 16,10 5,21"/>
-                  </svg>
+                  <Image size={16} />
                 </button>
                 <button className="profile-action-btn">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-                    <polyline points="16,6 12,2 8,6"/>
-                    <line x1="12" y1="2" x2="12" y2="15"/>
-                  </svg>
+                  <Download size={16} />
                 </button>
               </div>
             </div>
