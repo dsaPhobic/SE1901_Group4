@@ -45,7 +45,8 @@ builder.Services.AddScoped<IExamRepository, ExamRepository>();
 builder.Services.AddScoped<IExamService, ExamService>();
 builder.Services.AddScoped<IReadingRepository, ReadingRepository>();
 builder.Services.AddScoped<IReadingService, ReadingService>();
-
+builder.Services.AddScoped<IWritingRepository, WritingRepository>();
+builder.Services.AddScoped<IWritingService, WritingService>();
 // ====== Authentication ======
 builder.Services.AddAuthentication(options =>
 {

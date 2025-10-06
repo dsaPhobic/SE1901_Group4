@@ -11,7 +11,7 @@ import Profile from "./Pages/Profile/Profile.jsx";
 import ExamManagement from "./Pages/Admin/ExamManagement.jsx";
 import AddReading from "./Pages/Admin/AddReading.jsx";
 import AdminDashboard from "./Pages/Admin/AdminDashBoard.jsx"; // ⚡ import admin dashboard
-
+import AddWriting from "./Pages/Admin/AddWriting.jsx"
 function App() {
   return (
     <BrowserRouter>
@@ -29,6 +29,7 @@ function App() {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/exam" element={<ExamManagement />} />
         <Route path="/admin/exam/add-reading" element={<AddReading />} />
+        <Route path="/admin/exam/add-writing" element={<AddWriting />} />
       </Routes>
     </BrowserRouter>
   );

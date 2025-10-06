@@ -1,0 +1,97 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 24px 28px;
+  width: 80%;
+  max-width: 800px;
+  margin: 40px auto;
+}
+
+.card h2 {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.examInfo {
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+  color: #444;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+}
+
+.group label {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.group input,
+.group select,
+.group textarea {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.95rem;
+  transition: border 0.2s;
+}
+
+.group input:focus,
+.group select:focus,
+.group textarea:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.btnPrimary {
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-weight: 600;
+  margin-top: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btnPrimary:hover {
+  background: #0069d9;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.backBtn {
+  background: transparent;
+  border: none;
+  color: #555;
+  margin-top: 16px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.backBtn:hover {
+  color: #007bff;
+}

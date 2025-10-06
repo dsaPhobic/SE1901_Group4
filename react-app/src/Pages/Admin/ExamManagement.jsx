@@ -65,13 +65,47 @@ export default function ExamManagement() {
 
   // ====== Manage exam (open modal) ======
   const handleManageClick = (exam) => {
-    setSelectedExam(exam); // exam already has readings
+    setSelectedExam(exam);
     setShowModal(true);
+    fetchSkills(exam.examId);
+  };
+
+  // ====== Determine path by exam type ======
+  const getExamPath = (type) => {
+    switch (type) {
+      case "Reading":
+        return "add-reading";
+      case "Listening":
+        return "add-listening";
+      case "Writing":
+        return "add-writing";
+      case "Speaking":
+        return "add-speaking";
+      default:
+        return "";
+    }
+  };
+
+  // ====== Add skill ======
+  const handleAddSkill = () => {
+    if (!selectedExam) return;
+    const path = getExamPath(selectedExam.examType);
+    if (!path) {
+      alert("⚠️ Unknown exam type");
+      return;
+    }
+    navigate(path, { state: { exam: selectedExam } });
   };
 
   // ====== Edit skill ======
   const handleEditSkill = (skill) => {
-    navigate(`add-reading`, { state: { exam: selectedExam, skill } });
+    if (!selectedExam) return;
+    const path = getExamPath(selectedExam.examType);
+    if (!path) {
+      alert("⚠️ Unknown exam type");
+      return;
+    }
+    navigate(path, { state: { exam: selectedExam, skill } });
   };
 
   // ====== Delete skill ======
@@ -85,15 +119,10 @@ export default function ExamManagement() {
       .catch((err) => console.error("❌ Failed to delete skill:", err));
   };
 
-  // ====== Add skill ======
-  const handleAddSkill = () => {
-    navigate(`add-reading`, { state: { exam: selectedExam } });
-  };
-
   return (
     <>
       <Sidebar />
-      <main class="admin-main">
+      <main className="admin-main">
         <div className={styles.dashboard}>
           {/* Header */}
           <header className={styles.header}>
