@@ -13,13 +13,13 @@ namespace WebAPI.DTOs
 
         public DateTime CreatedAt { get; set; }
 
-        public virtual ICollection<Listening> Listenings { get; set; } = new List<Listening>();
+        public virtual ICollection<ListeningDto> Listenings { get; set; } = new List<ListeningDto>();
 
         public virtual ICollection<ReadingDto> Readings { get; set; } = new List<ReadingDto>();
 
         public virtual ICollection<Speaking> Speakings { get; set; } = new List<Speaking>();
 
-        public virtual ICollection<Writing> Writings { get; set; } = new List<Writing>();
+        public virtual ICollection<WritingDTO> Writings { get; set; } = new List<WritingDTO>();
     }
     public class UpdateExamDto
     {

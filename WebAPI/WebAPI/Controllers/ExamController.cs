@@ -146,9 +146,28 @@ namespace WebAPI.Controllers
                     QuestionHtml = r.QuestionHtml
                 }).ToList() ?? new List<ReadingDto>(),
 
-                Listenings = exam.Listenings ?? new List<Listening>(),
+                Listenings = exam.Listenings?.Select(r => new ListeningDto
+                {
+                    ListeningId = r.ListeningId,
+                    ExamId = r.ExamId,
+                    ListeningContent = r.ListeningContent,
+                    ListeningQuestion = r.ListeningQuestion,
+                    ListeningType = r.ListeningType,
+                    DisplayOrder = r.DisplayOrder,
+                    CreatedAt = r.CreatedAt,
+                    CorrectAnswer = r.CorrectAnswer,
+                    QuestionHtml = r.QuestionHtml
+                }).ToList() ?? new List<ListeningDto>(),
                 Speakings = exam.Speakings ?? new List<Speaking>(),
-                Writings = exam.Writings ?? new List<Writing>()
+                Writings = exam.Writings?.Select(r => new WritingDTO
+                {
+                    WritingId = r.WritingId,
+                    ExamId = r.ExamId,
+                    WritingQuestion = r.WritingQuestion,
+                    WritingType = r.WritingType,
+                    DisplayOrder = r.DisplayOrder,
+                    CreatedAt = r.CreatedAt
+                }).ToList() ?? new List<WritingDTO>()
             };
         }
     }
