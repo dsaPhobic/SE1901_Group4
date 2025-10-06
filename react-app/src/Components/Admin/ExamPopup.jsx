@@ -6,6 +6,8 @@ import * as listeningService from "../../Services/ListeningApi";
 import * as writingService from "../../Services/WritingApi";
 import * as speakingService from "../../Services/SpeakingApi";
 
+import { Pencil, Trash2, PlusCircle, XCircle, Loader2 } from "lucide-react";
+
 export default function ExamSkillModal({
   show,
   exam,
@@ -17,7 +19,7 @@ export default function ExamSkillModal({
   const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Pick correct service
+  // Pick correct API service based on exam type
   const getService = (type) => {
     switch (type?.toLowerCase()) {
       case "reading":
@@ -36,9 +38,7 @@ export default function ExamSkillModal({
   useEffect(() => {
     if (!show || !exam?.examId) return;
 
-    setLoading(true);
     const service = getService(exam.examType);
-
     if (!service?.getByExam) {
       console.warn("⚠️ No service found for", exam.examType);
       setSkills([]);
@@ -46,10 +46,11 @@ export default function ExamSkillModal({
       return;
     }
 
+    setLoading(true);
     service
       .getByExam(exam.examId)
       .then((data) => {
-        console.log("✅ Loaded skills:", data);
+        console.log(`✅ Loaded ${exam.examType} skills:`, data);
         setSkills(Array.isArray(data) ? data : []);
       })
       .catch((err) => {
@@ -64,9 +65,9 @@ export default function ExamSkillModal({
   const examName = exam?.examName ?? exam?.ExamName ?? "";
   const examType = exam?.examType ?? exam?.ExamType ?? "";
 
-  // Correct field mappings for camelCase JSON
+  // Extract consistent fields
   const getSkillId = (s) =>
-    s.readingId || s.listeningId || s.writingId || s.speakingId;
+    s.readingId || s.listeningId || s.writingId || s.speakingId || s.id;
 
   const getQuestionText = (s) =>
     s.readingQuestion ||
@@ -86,7 +87,9 @@ export default function ExamSkillModal({
         </h3>
 
         {loading ? (
-          <p>Loading...</p>
+          <p className={styles.loading}>
+            <Loader2 size={18} className="spin" /> Loading...
+          </p>
         ) : skills.length > 0 ? (
           <div className={styles.skillList}>
             {skills.map((s, index) => {
@@ -103,20 +106,21 @@ export default function ExamSkillModal({
                         : question}
                     </span>
                   </div>
+
                   <div className={styles.actions}>
                     <button
                       className={styles.edit}
                       onClick={() => onEdit(s)}
                       title="Edit this question"
                     >
-                      ✏️
+                      <Pencil size={16} />
                     </button>
                     <button
                       className={styles.delete}
                       onClick={() => onDelete(id)}
                       title="Delete this question"
                     >
-                      🗑
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 </div>
@@ -129,10 +133,10 @@ export default function ExamSkillModal({
 
         <div className={styles.footer}>
           <button className={styles.addBtn} onClick={onAddSkill}>
-            ➕ Add Skill
+            <PlusCircle size={16} style={{ marginRight: 4 }} /> Add Skill
           </button>
           <button className={styles.closeBtn} onClick={onClose}>
-            Close
+            <XCircle size={16} style={{ marginRight: 4 }} /> Close
           </button>
         </div>
       </div>
