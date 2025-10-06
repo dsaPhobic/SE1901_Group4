@@ -2,43 +2,50 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import * as examService from "../../Services/ExamApi";
 import * as readingService from "../../Services/ReadingApi";
+import * as writingService from "../../Services/WritingApi";
 import ExamSkillModal from "../../Components/Admin/ExamPopup.jsx";
-import styles from "./ExamManagement.module.css";
 import Sidebar from "../../Components/Admin/AdminNavbar.jsx";
+import styles from "./ExamManagement.module.css";
 
 export default function ExamManagement() {
   const [examName, setExamName] = useState("");
   const [examType, setExamType] = useState("Reading");
   const [exams, setExams] = useState([]);
-  const [status, setStatus] = useState("");
-  const [selectedExam, setSelectedExam] = useState(null);
   const [skills, setSkills] = useState([]);
+  const [selectedExam, setSelectedExam] = useState(null);
+  const [status, setStatus] = useState("");
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
+  // ====== Service mapping ======
+  const serviceMap = {
+    Reading: readingService,
+    Writing: writingService,
+  };
+
   // ====== Load exams ======
-  const fetchExams = () => {
-    examService
-      .getAll()
-      .then((list) => setExams(list))
-      .catch((err) => {
-        console.error("❌ Failed to fetch exams:", err);
-        setExams([]);
-      });
+  const fetchExams = async () => {
+    try {
+      const list = await examService.getAll();
+      setExams(list);
+    } catch (err) {
+      console.error("❌ Failed to fetch exams:", err);
+      setExams([]);
+    }
   };
 
   // ====== Load skills for an exam ======
-  const fetchSkills = (examId) => {
-    readingService
-      .getByExam(examId)
-      .then((res) => {
-        const list = Array.isArray(res.data) ? res.data : [];
-        setSkills(list);
-      })
-      .catch((err) => {
-        console.error("❌ Failed to fetch skills:", err);
-        setSkills([]);
-      });
+  const fetchSkills = async (examId, type) => {
+    const service = serviceMap[type];
+    if (!service) return console.error("⚠️ Unknown exam type:", type);
+
+    try {
+      const list = await service.getByExam(examId);
+      setSkills(Array.isArray(list) ? list : []);
+    } catch (err) {
+      console.error(`❌ Failed to fetch ${type} skills:`, err);
+      setSkills([]);
+    }
   };
 
   useEffect(() => {
@@ -46,54 +53,42 @@ export default function ExamManagement() {
   }, []);
 
   // ====== Create exam ======
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus("Submitting...");
 
-    examService
-      .add({ examName, examType })
-      .then((created) => {
-        setStatus(`✅ Created exam "${created.examName}"`);
-        setExamName("");
-        fetchExams();
-      })
-      .catch((err) => {
-        console.error(err);
-        setStatus("❌ Failed to create exam");
-      });
+    try {
+      const created = await examService.add({ examName, examType });
+      setStatus(`✅ Created exam "${created.examName}"`);
+      setExamName("");
+      fetchExams();
+    } catch (err) {
+      console.error(err);
+      setStatus("❌ Failed to create exam");
+    }
   };
 
-  // ====== Manage exam (open modal) ======
+  // ====== Manage exam ======
   const handleManageClick = (exam) => {
     setSelectedExam(exam);
     setShowModal(true);
-    fetchSkills(exam.examId);
+    fetchSkills(exam.examId, exam.examType);
   };
 
-  // ====== Determine path by exam type ======
+  // ====== Determine path ======
   const getExamPath = (type) => {
-    switch (type) {
-      case "Reading":
-        return "add-reading";
-      case "Listening":
-        return "add-listening";
-      case "Writing":
-        return "add-writing";
-      case "Speaking":
-        return "add-speaking";
-      default:
-        return "";
-    }
+    const map = {
+      Reading: "add-reading",
+      Writing: "add-writing",
+    };
+    return map[type] || "";
   };
 
   // ====== Add skill ======
   const handleAddSkill = () => {
     if (!selectedExam) return;
     const path = getExamPath(selectedExam.examType);
-    if (!path) {
-      alert("⚠️ Unknown exam type");
-      return;
-    }
+    if (!path) return alert("⚠️ Unknown exam type");
     navigate(path, { state: { exam: selectedExam } });
   };
 
@@ -101,22 +96,24 @@ export default function ExamManagement() {
   const handleEditSkill = (skill) => {
     if (!selectedExam) return;
     const path = getExamPath(selectedExam.examType);
-    if (!path) {
-      alert("⚠️ Unknown exam type");
-      return;
-    }
+    if (!path) return alert("⚠️ Unknown exam type");
     navigate(path, { state: { exam: selectedExam, skill } });
   };
 
   // ====== Delete skill ======
-  const handleDeleteSkill = (readingId) => {
+  const handleDeleteSkill = async (skillId) => {
     if (!window.confirm("Are you sure you want to delete this question?"))
       return;
 
-    readingService
-      .remove(readingId)
-      .then(() => fetchSkills(selectedExam.examId))
-      .catch((err) => console.error("❌ Failed to delete skill:", err));
+    const service = serviceMap[selectedExam.examType];
+    if (!service) return;
+
+    try {
+      await service.remove(skillId);
+      fetchSkills(selectedExam.examId, selectedExam.examType);
+    } catch (err) {
+      console.error("❌ Failed to delete skill:", err);
+    }
   };
 
   return (
@@ -124,13 +121,13 @@ export default function ExamManagement() {
       <Sidebar />
       <main className="admin-main">
         <div className={styles.dashboard}>
-          {/* Header */}
+          {/* ===== Header ===== */}
           <header className={styles.header}>
             <h2>📚 Exam Management</h2>
             <button className={styles.exportBtn}>⬇️ Export CSV</button>
           </header>
 
-          {/* Create Exam Section */}
+          {/* ===== Create Exam ===== */}
           <section className={styles.card}>
             <form onSubmit={handleSubmit} className={styles.form}>
               <div className={styles.group}>
@@ -152,9 +149,7 @@ export default function ExamManagement() {
                   required
                 >
                   <option value="Reading">Reading</option>
-                  <option value="Listening">Listening</option>
                   <option value="Writing">Writing</option>
-                  <option value="Speaking">Speaking</option>
                 </select>
               </div>
 
@@ -165,7 +160,7 @@ export default function ExamManagement() {
             {status && <p className={styles.status}>{status}</p>}
           </section>
 
-          {/* Exam Table */}
+          {/* ===== Exam List ===== */}
           <section className={styles.card}>
             <h3>Existing Exams</h3>
             <div className={styles.tableWrapper}>
@@ -173,14 +168,14 @@ export default function ExamManagement() {
                 <thead>
                   <tr>
                     <th>ID</th>
-                    <th>Exam Name</th>
+                    <th>Name</th>
                     <th>Type</th>
-                    <th>Date Created</th>
+                    <th>Created At</th>
                     <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {exams.length > 0 ? (
+                  {exams.length ? (
                     exams.map((exam) => (
                       <tr key={exam.examId}>
                         <td>{exam.examId}</td>
@@ -203,10 +198,7 @@ export default function ExamManagement() {
                     ))
                   ) : (
                     <tr>
-                      <td
-                        colSpan="5"
-                        style={{ textAlign: "center", opacity: 0.6 }}
-                      >
+                      <td colSpan="5" style={{ textAlign: "center", opacity: 0.6 }}>
                         No exams found.
                       </td>
                     </tr>
@@ -216,7 +208,7 @@ export default function ExamManagement() {
             </div>
           </section>
 
-          {/* Modal */}
+          {/* ===== Modal ===== */}
           <ExamSkillModal
             show={showModal}
             exam={selectedExam}

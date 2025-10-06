@@ -1,14 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using WebAPI.Data;
+﻿using WebAPI.Data;
 using WebAPI.Models;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace WebAPI.Repositories
 {
     public class WritingRepository : IWritingRepository
     {
         private readonly ApplicationDbContext _db;
-
         public WritingRepository(ApplicationDbContext db)
         {
             _db = db;
@@ -18,10 +17,9 @@ namespace WebAPI.Repositories
             _db.Writing.FirstOrDefault(w => w.WritingId == id);
 
         public List<Writing> GetByExamId(int examId) =>
-            _db.Writing
-                .Where(w => w.ExamId == examId)
-                .OrderBy(w => w.DisplayOrder)
-                .ToList();
+            _db.Writing.Where(w => w.ExamId == examId)
+                       .OrderBy(w => w.DisplayOrder)
+                       .ToList();
 
         public void Add(Writing writing) => _db.Writing.Add(writing);
         public void Update(Writing writing) => _db.Writing.Update(writing);
