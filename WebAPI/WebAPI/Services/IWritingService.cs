@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using WebAPI.DTOs;
+﻿using WebAPI.DTOs;
+using System.Collections.Generic;
 
 namespace WebAPI.Services
 {

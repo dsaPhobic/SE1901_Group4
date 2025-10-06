@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using WebAPI.DTOs;
+﻿using WebAPI.DTOs;
 using WebAPI.Models;
 using WebAPI.Repositories;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace WebAPI.Services
 {
@@ -35,12 +35,11 @@ namespace WebAPI.Services
                 WritingQuestion = dto.WritingQuestion,
                 WritingType = dto.WritingType,
                 DisplayOrder = dto.DisplayOrder,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                ImageUrl = dto.ImageUrl
             };
-
             _repo.Add(entity);
             _repo.SaveChanges();
-
             return MapToDto(entity);
         }
 
@@ -52,10 +51,10 @@ namespace WebAPI.Services
             if (dto.WritingQuestion != null) existing.WritingQuestion = dto.WritingQuestion;
             if (dto.WritingType != null) existing.WritingType = dto.WritingType;
             if (dto.DisplayOrder > 0) existing.DisplayOrder = dto.DisplayOrder;
+            if (dto.ImageUrl != null) existing.ImageUrl = dto.ImageUrl;
 
             _repo.Update(existing);
             _repo.SaveChanges();
-
             return MapToDto(existing);
         }
 
@@ -63,7 +62,6 @@ namespace WebAPI.Services
         {
             var existing = _repo.GetById(id);
             if (existing == null) return false;
-
             _repo.Delete(existing);
             _repo.SaveChanges();
             return true;
@@ -77,7 +75,8 @@ namespace WebAPI.Services
                 WritingQuestion = w.WritingQuestion,
                 WritingType = w.WritingType,
                 DisplayOrder = w.DisplayOrder,
-                CreatedAt = w.CreatedAt
+                CreatedAt = w.CreatedAt,
+                ImageUrl = w.ImageUrl
             };
     }
 }

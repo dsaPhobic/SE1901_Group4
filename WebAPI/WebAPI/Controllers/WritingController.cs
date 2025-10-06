@@ -22,7 +22,6 @@ namespace WebAPI.Controllers
         {
             if (dto == null)
                 return BadRequest("Invalid payload.");
-
             var result = _writingService.Create(dto);
             return CreatedAtAction(nameof(GetById), new { id = result.WritingId }, result);
         }
@@ -34,7 +33,6 @@ namespace WebAPI.Controllers
             var result = _writingService.GetById(id);
             if (result == null)
                 return NotFound();
-
             return Ok(result);
         }
 
@@ -52,11 +50,9 @@ namespace WebAPI.Controllers
         {
             if (dto == null)
                 return BadRequest("Invalid payload.");
-
             var result = _writingService.Update(id, dto);
             if (result == null)
                 return NotFound();
-
             return Ok(result);
         }
 
@@ -67,7 +63,6 @@ namespace WebAPI.Controllers
             var deleted = _writingService.Delete(id);
             if (!deleted)
                 return NotFound();
-
             return NoContent();
         }
     }
