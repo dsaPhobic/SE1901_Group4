@@ -1,5 +1,5 @@
 import React from "react";
-import StatItem from "../UI/StatItem"; 
+import StatItem from "../../Components/UI/StatItem";
 
 export default function StatsPanel() {
   return (

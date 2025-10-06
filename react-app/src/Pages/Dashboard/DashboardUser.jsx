@@ -1,6 +1,6 @@
 // src/Pages/Dashboard/DashboardUser.jsx
 import React, { useState, useEffect } from "react";
-import AppLayout from "../Layout/AppLayout";
+import AppLayout from "../../Components/Layout/AppLayout";
 import styles from "./DashboardUser.module.css";
 import {
   Book,
@@ -269,12 +269,10 @@ export default function DashboardUser() {
                   <div>{r[4]}</div>
                 </div>
               ))
-            ) : loading ? (
-              <div className={styles.emptyState}>Loading...</div>
             ) : (
               <div className={styles.emptyState}>
                 <img
-                  src="../../src/assets/sad-bean.png"
+                  src="../../src/assets/sad_cloud.png"
                   alt="No history"
                   className={styles.emptyImage}
                 />

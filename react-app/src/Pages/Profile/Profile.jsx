@@ -12,8 +12,10 @@ import useAuth from "../../Hook/UseAuth";
 import useExamAttempts from "../../Hook/UseExamAttempts";
 import AppLayout from "../../Components/Layout/AppLayout";
 import { updateUser } from "../../Services/UserApi";
+import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
+  const navigate = useNavigate();
   const { user, loading } = useAuth();
   const { attempts, loading: attemptsLoading } = useExamAttempts(user?.userId);
   const [activeTab, setActiveTab] = useState("profile");
@@ -140,22 +142,19 @@ export default function Profile() {
 
               <div className="form-group">
                 <label>Change Password</label>
-                <div className="input-with-icon">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    value={profileData.password}
-                    onChange={handleInputChange}
-                    placeholder="Enter new password"
-                  />
-                  <button
-                    type="button"
-                    className="toggle-visibility"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
+                <button
+                  className="save-btn has-changes"
+                  style={{
+                    backgroundColor: "#f44336",
+                    cursor: "pointer",
+                    opacity: 1,
+                    fontSize: "28px",
+                    padding: "10px 20px",
+                  }}
+                  onClick={() => navigate("/?mode=forgot")}
+                >
+                  Go to Forgot Password
+                </button>
               </div>
 
               {/* Save Button */}

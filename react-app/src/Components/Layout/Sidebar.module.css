@@ -101,3 +101,56 @@
 .emptyMenu {
   font-size: 30px;
 }
+@media (max-width: 1536px) {
+  .sidebar {
+    width: 200px; /* giảm từ 240px xuống */
+    font-size: clamp(12px, 0.9vw, 15px);
+  }
+
+  .sidebarHeader {
+    padding: 15px;
+  }
+
+  .logoIcon {
+    font-size: 30px;
+  }
+
+  .logoText {
+    font-size: 32px; /* nhỏ lại để vừa thanh bên */
+  }
+
+  .sidebarNav {
+    padding: 10px 0;
+  }
+
+  .navItem {
+    gap: 8px;
+    padding: 10px 16px;
+    font-size: 30px;
+  }
+
+  .navItem svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .sidebarFooter {
+    padding: 15px;
+  }
+
+  .footerText {
+    font-size: clamp(14px, 1vw, 18px);
+  }
+
+  .moneySymbols {
+    font-size: clamp(10px, 0.9vw, 12px);
+  }
+
+  .cloudIcon {
+    font-size: clamp(16px, 1.2vw, 18px);
+  }
+
+  .emptyMenu {
+    font-size: 22px;
+  }
+}
