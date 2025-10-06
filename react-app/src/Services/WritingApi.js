@@ -4,7 +4,9 @@ const API = axios.create({
   baseURL: "/api/writing",
   withCredentials: true,
 });
-
+export function getAll() {
+  return API.get("").then((res) => res.data);
+}
 
 export function getByExam(examId) {
   return API.get(`/exam/${examId}`).then((res) => res.data);
@@ -15,7 +17,7 @@ export function getById(id) {
 }
 
 export function add(data) {
-  return API.post("/", data);
+  return API.post("", data).then((res) => res.data);
 }
 
 export function update(id, data) {
