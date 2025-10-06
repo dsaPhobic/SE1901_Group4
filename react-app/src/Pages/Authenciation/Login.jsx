@@ -29,6 +29,8 @@ const Login = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const modeParam = params.get("mode");
+    if (modeParam) setMode(modeParam);
     const loginSuccess = params.get("login");
     const email = params.get("email");
     const username = params.get("username");

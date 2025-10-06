@@ -13,7 +13,7 @@ export default function HeaderBar({ title }) {
   };
 
   const goToLogin = () => {
-    navigate("/login");
+    navigate("/");
   };
 
   if (loading) {
