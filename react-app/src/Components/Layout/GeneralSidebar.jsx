@@ -5,7 +5,6 @@ import {
   Headphones,
   MessageSquare,
   Pencil,
-  Settings,
   MessageCircle,
   Library,
   ShoppingBag,
@@ -43,7 +42,6 @@ const menuItems = [
   { icon: <Headphones size={20} />, label: "Listening", path: "/listening" },
   { icon: <MessageSquare size={20} />, label: "Speaking", path: "/speaking" },
   { icon: <Pencil size={20} />, label: "Writing", path: "/writing" },
-  { icon: <Settings size={20} />, label: "Settings", path: "/settings" },
   { icon: <MessageCircle size={20} />, label: "General", path: "/forum" },
   { icon: <Library size={20} />, label: "Dictionary", path: "/dictionary" },
 

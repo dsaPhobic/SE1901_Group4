@@ -2,13 +2,16 @@
   padding: 10px;
   display: grid;
   grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto auto;
   grid-template-areas:
     "calendar goals"
     "history goals"
     "history balance";
   gap: 5px;
   box-sizing: border-box;
-  overflow: hidden;
+  align-items: start;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* Font chữ responsive */
@@ -29,10 +32,10 @@
 .calendarWeekLabel,
 .calendarWeekday,
 .calendarDay {
-  font-size: 30px;
+  font-size: 25px;
 }
 .monthYear {
-  font-size: 30px;
+  font-size: 25px;
 }
 .submitted {
   background: #28a745;
@@ -46,7 +49,7 @@
   background: #fff;
   border-radius: 14px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  padding: 20px;
+  padding: 10px;
 }
 
 /* Calendar */
@@ -58,7 +61,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 5px;
 }
 
 .cardTitle {
@@ -71,13 +74,13 @@
   gap: 8px;
 }
 .statusText {
-  font-size: 30px;
+  font-size: 25px;
 }
 .statLabel {
-  font-size: 30px;
+  font-size: 25px;
 }
 .statValue {
-  font-size: 30px;
+  font-size: 25px;
 }
 
 .statusDot {
@@ -128,14 +131,13 @@
   grid-area: goals;
   display: flex;
   flex-direction: column;
-
-  gap: 10px;
+  gap: 2px;
 }
 
 .goalsSection {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 5px;
 }
 
 .sectionTitle {
@@ -174,13 +176,13 @@
 
 /* Label và Score */
 .goalLabel {
-  font-size: 30px;
+  font-size: 25px;
   color: #666;
   margin-bottom: 8px;
 }
 
 .goalScore {
-  font-size: 30px;
+  font-size: 25px;
   font-weight: 800;
   color: #000;
 }
@@ -286,7 +288,7 @@
 }
 
 .emptyState p {
-  font-size: 18px;
+  font-size: 20px;
   color: #555;
   margin: 0;
 }
@@ -296,7 +298,8 @@
   border: none;
   padding: 10px 20px;
   border-radius: 20px;
-  font-size: 16px;
+  font-family: "Dongle", sans-serif;
+  font-size: 20px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;
@@ -310,7 +313,7 @@
 .balanceWrapper {
   grid-area: balance;
   display: flex;
-  gap: 20px;
+  gap: 10px;
   align-items: stretch;
 }
 
@@ -319,7 +322,7 @@
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  padding: 20px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -335,7 +338,7 @@
 .userAvatars {
   display: flex;
   gap: 12px;
-  margin-bottom: 15px;
+  margin-bottom: 5px;
   flex-wrap: wrap;
 }
 
@@ -352,7 +355,7 @@
 }
 
 .avatarItem span {
-  font-size: 30px;
+  font-size: 25px;
   color: #555;
 }
 
@@ -414,6 +417,6 @@
 }
 
 .enjoyText {
-  font-size: 30px;
+  font-size: 20px;
   font-weight: 600;
 }

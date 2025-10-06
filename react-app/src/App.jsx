@@ -1,9 +1,11 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./Pages/Authenciation/Login.jsx";
-import Home from "./Pages/Home/Home.jsx";
+import Home from "./Pages/Dashboard/DashboardUser.jsx";
 import Dictionary from "./Pages/Dictionary/Dictionary.jsx";
 import Forum from "./Pages/Forum/Forum.jsx";
+import ReadingPage from "./Pages/Reading/ReadingPage.jsx";
+import WritingPage from "./Pages/Writing/WritingPage.jsx";
 import CreatePost from "./Pages/Forum/CreatePost.jsx";
 import EditPost from "./Pages/Forum/EditPost.jsx";
 import PostDetail from "./Pages/Forum/PostDetail.jsx";
@@ -11,7 +13,7 @@ import Profile from "./Pages/Profile/Profile.jsx";
 import ExamManagement from "./Pages/Admin/ExamManagement.jsx";
 import AddReading from "./Pages/Admin/AddReading.jsx";
 import AdminDashboard from "./Pages/Admin/AdminDashBoard.jsx"; // ⚡ import admin dashboard
-import AddWriting from "./Pages/Admin/AddWriting.jsx"
+import AddWriting from "./Pages/Admin/AddWriting.jsx";
 function App() {
   return (
     <BrowserRouter>
@@ -20,6 +22,8 @@ function App() {
 
         <Route path="/home" element={<Home />} />
         <Route path="/dictionary" element={<Dictionary />} />
+        <Route path="/reading" element={<ReadingPage />} />
+        <Route path="/writing" element={<WritingPage />} />
         <Route path="/forum" element={<Forum />} />
         <Route path="/create-post" element={<CreatePost />} />
         <Route path="/edit-post/:postId" element={<EditPost />} />
