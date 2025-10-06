@@ -9,10 +9,21 @@ import google from "../../assets/google.png";
 import BrandPanel from "../../Components/Layout/BrandPanel.jsx";
 import "./Login.css";
 import { useNavigate } from "react-router-dom";
+import { 
+  User, 
+  Lock, 
+  Mail, 
+  AlertCircle, 
+  CheckCircle, 
+  Loader2 
+} from "lucide-react";
 
 const Login = () => {
   const [mode, setMode] = useState("login");
   const [form, setForm] = useState({ email: "", password: "", username: "" });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,12 +42,32 @@ const Login = () => {
     }
   }, [navigate]);
 
+  function getErrorIcon(errorMessage) {
+    if (errorMessage.includes("Account not found")) return <User size={16} />;
+    if (errorMessage.includes("Incorrect password")) return <Lock size={16} />;
+    if (errorMessage.includes("Email has already been used")) return <Mail size={16} />;
+    return <AlertCircle size={16} />;
+  }
+
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
+    // Clear messages when user starts typing
+    if (error) setError("");
+    if (success) setSuccess("");
+  }
+
+  function switchMode(newMode) {
+    setMode(newMode);
+    setError(""); // Clear error when switching modes
+    setSuccess(""); // Clear success when switching modes
+    setForm({ email: "", password: "", username: "" }); // Clear form
   }
 
   function handleSubmit(e) {
     e.preventDefault();
+    setError("");
+    setSuccess("");
+    setIsLoading(true);
 
     if (mode === "login") {
       login({ email: form.email, password: form.password })
@@ -54,6 +85,12 @@ const Login = () => {
         })
         .catch((err) => {
           console.error("Auth error:", err.response?.data || err.message);
+          // Display specific error message from backend
+          const errorMessage = err.response?.data?.message || err.message || "Login failed. Please try again.";
+          setError(errorMessage);
+        })
+        .finally(() => {
+          setIsLoading(false);
         });
     } else if (mode === "register") {
       register({
@@ -63,14 +100,25 @@ const Login = () => {
       })
         .then((res) => {
           console.log("Register success:", res.data);
-          setMode("login");
+          setSuccess("Account created successfully! Please login with your credentials.");
+          // Auto switch to login mode after 2 seconds
+          setTimeout(() => {
+            setMode("login");
+            setSuccess("");
+          }, 2000);
         })
         .catch((err) => {
           console.error("Auth error:", err.response?.data || err.message);
+          const errorMessage = err.response?.data?.message || err.message || "Registration failed. Please try again.";
+          setError(errorMessage);
+        })
+        .finally(() => {
+          setIsLoading(false);
         });
     } else if (mode === "forgot") {
       console.log("Send reset link to:", form.email);
       alert("Reset link sent (mock)");
+      setIsLoading(false);
     }
   }
 
@@ -132,11 +180,36 @@ const Login = () => {
                 />
               )}
 
+              {error && (
+                <div className="error-message">
+                  <div className="error-icon">{getErrorIcon(error)}</div>
+                  <div className="error-text">{error}</div>
+                </div>
+              )}
+
+              {success && (
+                <div className="success-message">
+                  <div className="success-icon">
+                    <CheckCircle size={16} />
+                  </div>
+                  <div className="success-text">{success}</div>
+                </div>
+              )}
+
               <div className="button-location">
-                <Button type="submit" variant="yellow">
-                  {mode === "login" && "Login"}
-                  {mode === "register" && "Sign up"}
-                  {mode === "forgot" && "Send reset link"}
+                <Button type="submit" variant="yellow" disabled={isLoading}>
+                  {isLoading ? (
+                    <div className="loading-content">
+                      <Loader2 size={16} className="loading-spinner" />
+                      <span>Loading...</span>
+                    </div>
+                  ) : (
+                    <>
+                      {mode === "login" && "Login"}
+                      {mode === "register" && "Sign up"}
+                      {mode === "forgot" && "Send reset link"}
+                    </>
+                  )}
                 </Button>
               </div>
             </form>
@@ -146,7 +219,7 @@ const Login = () => {
                 <button
                   type="button"
                   className="forgot-password"
-                  onClick={() => setMode("forgot")}
+                  onClick={() => switchMode("forgot")}
                 >
                   Forgot your password?
                 </button>
@@ -154,7 +227,7 @@ const Login = () => {
                   <span>or</span>
                 </div>
                 <div className="button-location">
-                  <Button variant="yellow" onClick={() => setMode("register")}>
+                  <Button variant="yellow" onClick={() => switchMode("register")}>
                     Create New Account
                   </Button>
                 </div>
@@ -165,7 +238,7 @@ const Login = () => {
               <button
                 type="button"
                 className="link-like"
-                onClick={() => setMode("login")}
+                onClick={() => switchMode("login")}
               >
                 Already have account? Login
               </button>
@@ -175,7 +248,7 @@ const Login = () => {
               <button
                 type="button"
                 className="link-like"
-                onClick={() => setMode("login")}
+                onClick={() => switchMode("login")}
               >
                 ← Back to login
               </button>
