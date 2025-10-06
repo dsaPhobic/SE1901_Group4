@@ -20,10 +20,11 @@ import {
 
 const Login = () => {
   const [mode, setMode] = useState("login");
-  const [form, setForm] = useState({ email: "", password: "", username: "" });
+  const [form, setForm] = useState({ email: "", password: "", username: "", confirmPassword: "" });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -49,25 +50,95 @@ const Login = () => {
     return <AlertCircle size={16} />;
   }
 
+  function validateEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  function validateForm() {
+    const errors = {};
+    
+    if (mode === "register") {
+      // Email validation
+      if (!form.email) {
+        errors.email = "Email is required";
+      } else if (!validateEmail(form.email)) {
+        errors.email = "Please enter a valid email address";
+      }
+      
+      // Username validation
+      if (!form.username) {
+        errors.username = "Username is required";
+      } else if (form.username.length < 3) {
+        errors.username = "Username must be at least 3 characters";
+      }
+      
+      // Password validation
+      if (!form.password) {
+        errors.password = "Password is required";
+      } else if (form.password.length < 6) {
+        errors.password = "Password must be at least 6 characters";
+      }
+      
+      // Confirm password validation
+      if (!form.confirmPassword) {
+        errors.confirmPassword = "Please confirm your password";
+      } else if (form.password !== form.confirmPassword) {
+        errors.confirmPassword = "Passwords do not match";
+      }
+    } else if (mode === "login") {
+      // Login validation
+      if (!form.email) {
+        errors.email = "Email is required";
+      } else if (!validateEmail(form.email)) {
+        errors.email = "Please enter a valid email address";
+      }
+      
+      if (!form.password) {
+        errors.password = "Password is required";
+      }
+    }
+    
+    return errors;
+  }
+
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
     // Clear messages when user starts typing
     if (error) setError("");
     if (success) setSuccess("");
+    
+    // Clear specific field validation error
+    if (validationErrors[e.target.name]) {
+      setValidationErrors(prev => ({
+        ...prev,
+        [e.target.name]: ""
+      }));
+    }
   }
 
   function switchMode(newMode) {
     setMode(newMode);
     setError(""); // Clear error when switching modes
     setSuccess(""); // Clear success when switching modes
-    setForm({ email: "", password: "", username: "" }); // Clear form
+    setValidationErrors({}); // Clear validation errors
+    setForm({ email: "", password: "", username: "", confirmPassword: "" }); // Clear form
   }
 
   function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setSuccess("");
+    setValidationErrors({});
     setIsLoading(true);
+
+    // Validate form before submission
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      setIsLoading(false);
+      return;
+    }
 
     if (mode === "login") {
       login({ email: form.email, password: form.password })
@@ -180,6 +251,17 @@ const Login = () => {
                 />
               )}
 
+              {mode === "register" && (
+                <FormInput
+                  name="confirmPassword"
+                  type="password"
+                  placeholder="Confirm Password"
+                  value={form.confirmPassword}
+                  onChange={handleChange}
+                  icon={lockIcon}
+                />
+              )}
+
               {error && (
                 <div className="error-message">
                   <div className="error-icon">{getErrorIcon(error)}</div>
@@ -194,6 +276,18 @@ const Login = () => {
                   </div>
                   <div className="success-text">{success}</div>
                 </div>
+              )}
+
+              {/* Field validation errors */}
+              {Object.keys(validationErrors).map(fieldName => 
+                validationErrors[fieldName] && (
+                  <div key={fieldName} className="field-error">
+                    <div className="error-icon">
+                      <AlertCircle size={14} />
+                    </div>
+                    <div className="error-text">{validationErrors[fieldName]}</div>
+                  </div>
+                )
               )}
 
               <div className="button-location">
