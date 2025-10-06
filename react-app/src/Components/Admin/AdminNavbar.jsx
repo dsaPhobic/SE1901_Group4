@@ -1,18 +1,45 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import {
-  Cloud,
-  Wallet,
-  GraduationCap,
-} from "lucide-react"; 
+import { Cloud, Wallet, GraduationCap } from "lucide-react";
 import styles from "./AdminNavbar.module.css";
+import {
+    LayoutDashboard,
+    Users,
+    BookOpen,
+    DollarSign,
+    MessageCircle,
+} from "lucide-react";
 
-export default function Sidebar({ menuItems = [] }) {
+const menuItems = [
+  {
+    icon: <LayoutDashboard size={20} />,
+    label: "Dashboard",
+    path: "/admin/dashboard",
+  },
+  { icon: <Users size={20} />, label: "Users", path: "/admin/users" },
+  { icon: <BookOpen size={20} />, label: "Exams", path: "/admin/exam" },
+  {
+    icon: <DollarSign size={20} />,
+    label: "Transactions",
+    path: "/admin/transactions",
+  },
+  {
+    icon: <MessageCircle size={20} />,
+    label: "Feedback",
+    path: "/admin/feedback",
+  },
+];
+
+export default function Sidebar() {
   return (
     <aside className={styles.sidebar}>
       <div className={styles.sidebarHeader}>
         <div className={styles.logo}>
-          <GraduationCap size={28} color="#38bdf8" className={styles.logoIcon} />
+          <GraduationCap
+            size={28}
+            color="#38bdf8"
+            className={styles.logoIcon}
+          />
           <span className={styles.logoText}>IELTSPhobic</span>
         </div>
       </div>

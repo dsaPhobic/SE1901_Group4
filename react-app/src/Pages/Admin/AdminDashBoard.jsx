@@ -42,13 +42,7 @@ export default function AdminDashboard() {
 
     const [salesData, setSalesData] = useState([]);
 
-    const adminMenu = [
-        { icon: <LayoutDashboard size={20} />, label: "Dashboard", path: "/admin/dashboard" },
-        { icon: <Users size={20} />, label: "Users", path: "/admin/users" },
-        { icon: <BookOpen size={20} />, label: "Exams", path: "/admin/exams" },
-        { icon: <DollarSign size={20} />, label: "Transactions", path: "/admin/transactions" },
-        { icon: <MessageCircle size={20} />, label: "Feedback", path: "/admin/feedback" },
-    ];
+
 
     useEffect(() => {
         getDashboardStats()
@@ -113,7 +107,7 @@ export default function AdminDashboard() {
 
     return (
         <div className="admin-container">
-            <Sidebar menuItems={adminMenu} />
+            <Sidebar/>
 
             <main className="admin-main">
                 <h1 className="admin-title">

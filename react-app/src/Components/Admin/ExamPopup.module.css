@@ -1,3 +1,4 @@
+/* src/Components/Admin/ExamPopup.module.css */
 .overlay {
   position: fixed;
   inset: 0;
@@ -6,84 +7,134 @@
   align-items: center;
   justify-content: center;
   z-index: 999;
+  backdrop-filter: blur(2px);
 }
 
 .modal {
-  background: #fff;
-  width: 560px;
-  max-height: 80vh;
+  background: #ffffff;
+  padding: 1.8rem 2rem;
+  border-radius: 1rem;
+  width: 600px;
+  max-width: 90%;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+  animation: fadeIn 0.25s ease;
+}
+
+.title {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  color: #222;
+  font-weight: 700;
+}
+
+.examName {
+  color: #ff8a00;
+}
+
+.skillList {
+  max-height: 320px;
   overflow-y: auto;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-  font-family: "Nunito Sans", sans-serif;
-  animation: fadeIn 0.2s ease-out;
+  margin-bottom: 1.5rem;
+  padding-right: 6px;
+}
+
+.skillItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 0.6rem;
+  padding: 0.8rem 1rem;
+  margin-bottom: 0.6rem;
+  transition: all 0.2s ease;
+}
+
+.skillItem:hover {
+  background: #fff6e9;
+  border-color: #ffd089;
+}
+
+.skillText {
+  flex: 1;
+  font-size: 0.95rem;
+  color: #333;
+  line-height: 1.4;
+  margin-right: 10px;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit,
+.delete {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.edit:hover {
+  transform: scale(1.1);
+}
+
+.delete:hover {
+  transform: scale(1.1);
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.2rem;
+}
+
+.addBtn {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 0.6rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.addBtn:hover {
+  background: #0f9f74;
+}
+
+.closeBtn {
+  background: #6b7280;
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 0.6rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.closeBtn:hover {
+  background: #555b65;
+}
+
+.empty {
+  text-align: center;
+  font-size: 0.95rem;
+  color: #555;
+  margin: 1.2rem 0;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(-10px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.skillList {
-  margin-top: 12px;
-}
-
-.skillItem {
-  background: #f9f9f9;
-  padding: 10px 14px;
-  border-radius: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  border: 1px solid #eee;
-}
-
-.skillItem:hover {
-  background: #f1f1f1;
-}
-
-.actions button {
-  margin-left: 6px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-size: 18px;
-  transition: transform 0.1s;
-}
-
-.actions button:hover {
-  transform: scale(1.1);
-}
-
-.addBtn {
-  background: #28a745;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 14px;
-  cursor: pointer;
-  margin-right: 8px;
-}
-
-.closeBtn {
-  background: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 14px;
-  cursor: pointer;
-}
-
-.footer {
-  margin-top: 16px;
-  display: flex;
-  justify-content: flex-end;
 }
