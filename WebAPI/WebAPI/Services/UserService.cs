@@ -68,8 +68,11 @@ namespace WebAPI.Services
         public User? Authenticate(string email, string password)
         {
             var user = _repo.GetByEmail(email);
-            if (user == null || !PasswordService.VerifyPassword(password, user.PasswordHash, user.PasswordSalt))
-                return null;
+            if (user == null)
+                throw new UnauthorizedAccessException("Account not found with this email address");
+            
+            if (!PasswordService.VerifyPassword(password, user.PasswordHash, user.PasswordSalt))
+                throw new UnauthorizedAccessException("Incorrect password");
 
             return user;
         }

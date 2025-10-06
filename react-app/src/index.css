@@ -1,7 +1,10 @@
-/* index.css hoặc App.css */
+/* Ensure Dongle font is applied globally */
+* {
+  font-family: "Dongle", sans-serif;
+}
 
 :root {
-  font-family: "Dongle", sans-serif; /* hoặc font bạn muốn */
+  font-family: "Dongle", sans-serif;
   color: #333;
   margin: 0;
   padding: 0;
