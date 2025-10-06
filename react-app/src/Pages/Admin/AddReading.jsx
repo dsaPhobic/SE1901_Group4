@@ -5,6 +5,16 @@ import ExamMarkdownRenderer, {
   renderMarkdownToHtmlAndAnswers,
 } from "../../Components/Exam/ExamMarkdownRenderer.jsx";
 import styles from "./AddReading.module.css";
+import {
+  FileText,
+  Pencil,
+  PlusCircle,
+  CheckCircle,
+  XCircle,
+  ArrowLeft,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 
 export default function AddReading() {
   const location = useLocation();
@@ -14,9 +24,10 @@ export default function AddReading() {
 
   const [readingContent, setReadingContent] = useState("");
   const [readingQuestion, setReadingQuestion] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState({ icon: null, message: "" });
   const [showAnswers, setShowAnswers] = useState(true);
 
+  // Load data if editing
   useEffect(() => {
     if (skill) {
       setReadingContent(skill.readingContent || "");
@@ -26,7 +37,7 @@ export default function AddReading() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setStatus("Processing...");
+    setStatus({ icon: <FileText size={16} />, message: "Processing..." });
 
     try {
       const { html, answers } = renderMarkdownToHtmlAndAnswers(readingQuestion);
@@ -42,29 +53,49 @@ export default function AddReading() {
 
       if (skill) {
         await readingService.update(skill.readingId, payload);
-        setStatus("✅ Updated successfully!");
+        setStatus({
+          icon: <CheckCircle color="green" size={16} />,
+          message: "Updated successfully!",
+        });
       } else {
         await readingService.add(payload);
-        setStatus("✅ Added successfully!");
+        setStatus({
+          icon: <CheckCircle color="green" size={16} />,
+          message: "Added successfully!",
+        });
       }
 
       setTimeout(() => navigate(-1), 1000);
     } catch (err) {
       console.error(err);
-      setStatus("❌ Failed to save question");
+      setStatus({
+        icon: <XCircle color="red" size={16} />,
+        message: "Failed to save question.",
+      });
     }
   };
 
   return (
     <div className={styles.container}>
+      {/* ===== Header ===== */}
       <header className={styles.header}>
         <h2>
-          {skill
-            ? `✏️ Edit Reading for ${exam?.examName}`
-            : `📝 Add Reading for ${exam?.examName}`}
+          <FileText size={22} style={{ marginRight: 6 }} />
+          {skill ? (
+            <>
+              <Pencil size={18} style={{ marginRight: 6 }} /> Edit Reading for{" "}
+              {exam?.examName}
+            </>
+          ) : (
+            <>
+              <PlusCircle size={18} style={{ marginRight: 6 }} /> Add Reading for{" "}
+              {exam?.examName}
+            </>
+          )}
         </h2>
       </header>
 
+      {/* ===== Grid Layout ===== */}
       <div className={styles.grid}>
         {/* ===== Left: Form ===== */}
         <form onSubmit={handleSubmit} className={styles.form}>
@@ -90,18 +121,31 @@ export default function AddReading() {
 
           <div className={styles.buttons}>
             <button type="submit" className={styles.btnPrimary}>
-              {skill ? "Update Question" : "Add Question"}
+              {skill ? (
+                <>
+                  <Pencil size={16} style={{ marginRight: 6 }} /> Update Question
+                </>
+              ) : (
+                <>
+                  <PlusCircle size={16} style={{ marginRight: 6 }} /> Add Question
+                </>
+              )}
             </button>
             <button
               type="button"
               className={styles.btnSecondary}
               onClick={() => navigate(-1)}
             >
-              Back
+              <ArrowLeft size={16} style={{ marginRight: 6 }} /> Back
             </button>
           </div>
 
-          {status && <p className={styles.status}>{status}</p>}
+          {status.message && (
+            <p className={styles.status}>
+              {status.icon}
+              <span style={{ marginLeft: 6 }}>{status.message}</span>
+            </p>
+          )}
         </form>
 
         {/* ===== Right: Preview ===== */}
@@ -114,7 +158,15 @@ export default function AddReading() {
                 showAnswers ? styles.show : styles.hide
               }`}
             >
-              {showAnswers ? "Hide Answers" : "Show Answers"}
+              {showAnswers ? (
+                <>
+                  <EyeOff size={14} style={{ marginRight: 4 }} /> Hide Answers
+                </>
+              ) : (
+                <>
+                  <Eye size={14} style={{ marginRight: 4 }} /> Show Answers
+                </>
+              )}
             </button>
           </div>
 
