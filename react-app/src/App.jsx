@@ -1,6 +1,9 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./Pages/Authenciation/Login.jsx";
+import ForgotPassword from "./Pages/Authenciation/ForgotPassword.jsx";
+import VerifyOtp from "./Pages/Authenciation/VerifyOtp.jsx";
+import ResetPassword from "./Pages/Authenciation/ResetPassword.jsx";
 import Home from "./Pages/Dashboard/DashboardUser.jsx";
 import Dictionary from "./Pages/Dictionary/Dictionary.jsx";
 import Forum from "./Pages/Forum/Forum.jsx";
@@ -19,6 +22,10 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/verify-otp" element={<VerifyOtp />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         <Route path="/home" element={<Home />} />
         <Route path="/dictionary" element={<Dictionary />} />
