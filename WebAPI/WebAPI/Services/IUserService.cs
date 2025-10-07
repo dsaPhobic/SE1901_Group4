@@ -18,5 +18,9 @@ namespace WebAPI.Services
         void Update(User user);
         void Delete(int id, int currentUserId);
         User RegisterAdmin(RegisterRequestDTO dto);
+        
+        string SendPasswordResetOtp(string email);
+        string VerifyOtp(string email, string otpCode);
+        string ResetPassword(string email, string resetToken, string newPassword);
     }
 }

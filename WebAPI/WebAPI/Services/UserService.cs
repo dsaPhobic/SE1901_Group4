@@ -4,13 +4,24 @@ using System.Linq;
 using WebAPI.DTOs;
 using WebAPI.Models;
 using WebAPI.Repositories;
+using WebAPI.ExternalServices;
+using WebAPI.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace WebAPI.Services
 {
     public class UserService : IUserService
     {
         private readonly IUserRepository _repo;
-        public UserService(IUserRepository repo) => _repo = repo;
+        private readonly IEmailService _emailService;
+        private readonly ApplicationDbContext _context;
+        
+        public UserService(IUserRepository repo, IEmailService emailService, ApplicationDbContext context)
+        {
+            _repo = repo;
+            _emailService = emailService;
+            _context = context;
+        }
 
         public User? GetById(int id) => _repo.GetById(id);
         public User? GetByEmail(string email) => _repo.GetByEmail(email);
@@ -129,6 +140,117 @@ namespace WebAPI.Services
 
             _repo.Delete(user);
             _repo.SaveChanges();
+        }
+
+        public string SendPasswordResetOtp(string email)
+        {
+            Console.WriteLine($"Starting password reset for email: {email}");
+            
+            var user = _repo.GetByEmail(email);
+            if (user == null)
+            {
+                Console.WriteLine($"User not found for email: {email}");
+                throw new InvalidOperationException("No account found with this email address");
+            }
+
+            Console.WriteLine($"User found: {user.Username}");
+
+            // Generate 6-digit OTP
+            var random = new Random();
+            var otpCode = random.Next(100000, 999999).ToString();
+            Console.WriteLine($"Generated OTP: {otpCode}");
+
+            // Invalidate any existing OTPs for this email
+            var existingOtps = _context.PasswordResetOtp
+                .Where(o => o.Email == email && !o.IsUsed)
+                .ToList();
+            
+            foreach (var otp in existingOtps)
+            {
+                otp.IsUsed = true;
+            }
+
+            // Create new OTP
+            var passwordResetOtp = new PasswordResetOtp
+            {
+                Email = email,
+                OtpCode = otpCode,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(10), // OTP expires in 10 minutes
+                IsUsed = false
+            };
+
+            _context.PasswordResetOtp.Add(passwordResetOtp);
+            _context.SaveChanges();
+            Console.WriteLine($"OTP saved to database");
+
+            // Send email
+            Console.WriteLine($"Attempting to send email...");
+            try
+            {
+                _emailService.SendOtpEmail(email, otpCode);
+                Console.WriteLine($"Email sent successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Email sending failed: {ex.Message}");
+                throw;
+            }
+
+            return "OTP sent successfully to your email address";
+        }
+
+        public string VerifyOtp(string email, string otpCode)
+        {
+            var otp = _context.PasswordResetOtp
+                .Where(o => o.Email == email && o.OtpCode == otpCode && !o.IsUsed && o.ExpiresAt > DateTime.UtcNow)
+                .FirstOrDefault();
+
+            if (otp == null)
+                throw new InvalidOperationException("Invalid or expired OTP");
+
+            // Generate a secure reset token
+            var resetToken = Guid.NewGuid().ToString();
+            
+            // Store the reset token in the OTP record
+            otp.ResetToken = resetToken;
+            otp.ResetTokenExpires = DateTime.UtcNow.AddMinutes(15); // Token valid for 15 minutes
+            _context.SaveChanges();
+
+            return resetToken;
+        }
+
+        public string ResetPassword(string email, string resetToken, string newPassword)
+        {
+            // Verify reset token
+            var otp = _context.PasswordResetOtp
+                .Where(o => o.Email == email && o.ResetToken == resetToken && !o.IsUsed && o.ResetTokenExpires > DateTime.UtcNow)
+                .FirstOrDefault();
+
+            if (otp == null)
+                throw new InvalidOperationException("Invalid or expired reset token");
+
+            // Get user
+            var user = _repo.GetByEmail(email);
+            if (user == null)
+                throw new InvalidOperationException("User not found");
+
+            // Update password
+            PasswordService.CreatePasswordHash(newPassword, out var hash, out var salt);
+            user.PasswordHash = hash;
+            user.PasswordSalt = salt;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            _repo.Update(user);
+            
+            // Mark OTP as used
+            otp.IsUsed = true;
+            otp.ResetToken = null; // Clear the token
+            otp.ResetTokenExpires = null;
+            
+            _context.SaveChanges();
+
+            return "Password reset successfully";
         }
     }
 }

@@ -8,7 +8,7 @@ import lockIcon from "../../assets/auth_lock.png";
 import google from "../../assets/google.png";
 import BrandPanel from "../../Components/Layout/BrandPanel.jsx";
 import "./Login.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { 
   User, 
   Lock, 
@@ -312,13 +312,12 @@ const Login = () => {
 
             {mode === "login" && (
               <>
-                <button
-                  type="button"
+                <Link
+                  to="/forgot-password"
                   className="forgot-password"
-                  onClick={() => switchMode("forgot")}
                 >
                   Forgot your password?
-                </button>
+                </Link>
                 <div className="divider">
                   <span>or</span>
                 </div>
