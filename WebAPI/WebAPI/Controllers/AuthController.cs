@@ -5,6 +5,7 @@ using System.Security.Claims;
 using WebAPI.DTOs;
 using WebAPI.Models;
 using WebAPI.Services;
+using WebAPI.ExternalServices;
 
 namespace WebAPI.Controllers
 {
@@ -13,9 +14,14 @@ namespace WebAPI.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IUserService _userService;
-        public AuthController(IUserService userService)
+        private readonly IConfiguration _configuration;
+        private readonly IEmailService _emailService;
+        
+        public AuthController(IUserService userService, IConfiguration configuration, IEmailService emailService)
         {
             _userService = userService;
+            _configuration = configuration;
+            _emailService = emailService;
         }
 
         [HttpPost("register")]
@@ -156,6 +162,96 @@ namespace WebAPI.Controllers
             if (user == null) return Unauthorized();
 
             return Ok(ToDto(user));
+        }
+
+        [HttpPost("forgot-password")]
+        [ProducesResponseType(typeof(object), 200)]
+        [ProducesResponseType(typeof(object), 400)]
+        public ActionResult ForgotPassword([FromBody] ForgotPasswordRequestDTO dto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            try
+            {
+                var result = _userService.SendPasswordResetOtp(dto.Email);
+                return Ok(new { message = result });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while sending OTP" });
+            }
+        }
+
+        [HttpPost("verify-otp")]
+        [ProducesResponseType(typeof(object), 200)]
+        [ProducesResponseType(typeof(object), 400)]
+        public ActionResult VerifyOtp([FromBody] VerifyOtpRequestDTO dto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            try
+            {
+                var resetToken = _userService.VerifyOtp(dto.Email, dto.OtpCode);
+                return Ok(new { message = "OTP verified successfully", resetToken = resetToken });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while verifying OTP" });
+            }
+        }
+
+        [HttpPost("reset-password")]
+        [ProducesResponseType(typeof(object), 200)]
+        [ProducesResponseType(typeof(object), 400)]
+        public ActionResult ResetPassword([FromBody] ResetPasswordRequestDTO dto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            try
+            {
+                var result = _userService.ResetPassword(dto.Email, dto.ResetToken, dto.NewPassword);
+                return Ok(new { message = result });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while resetting password" });
+            }
+        }
+
+        [HttpPost("test-email")]
+        public ActionResult TestEmail([FromBody] ForgotPasswordRequestDTO dto)
+        {
+            try
+            {
+                Console.WriteLine($"[EMAIL TEST] Testing email configuration...");
+                Console.WriteLine($"[EMAIL TEST] SMTP Server: {_configuration["Email:SmtpServer"] ?? "Not configured"}");
+                Console.WriteLine($"[EMAIL TEST] SMTP Port: {_configuration["Email:SmtpPort"] ?? "Not configured"}");
+                Console.WriteLine($"[EMAIL TEST] Username: {_configuration["Email:Username"] ?? "Not configured"}");
+                Console.WriteLine($"[EMAIL TEST] FromEmail: {_configuration["Email:FromEmail"] ?? "Not configured"}");
+                
+                // Test email sending
+                _emailService.SendOtpEmail(dto.Email, "123456");
+                
+                return Ok(new { message = "Email test successful", email = dto.Email });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[EMAIL TEST] Error: {ex.Message}");
+                Console.WriteLine($"[EMAIL TEST] Stack Trace: {ex.StackTrace}");
+                return StatusCode(500, new { message = "Email test failed", error = ex.Message });
+            }
         }
 
         private static UserDTO ToDto(User user) => new UserDTO

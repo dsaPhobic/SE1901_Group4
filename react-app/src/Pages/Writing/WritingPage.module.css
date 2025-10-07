@@ -1,5 +1,8 @@
 .container {
   padding: 16px;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  scrollbar-gutter: stable both-edges;
 }
 
 .pageTitle {
@@ -97,21 +100,27 @@
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(15, 23, 42, 0.55);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
   z-index: 50;
+  animation: fadeIn 180ms ease-out;
 }
 
 .modal {
   width: 100%;
-  max-width: 560px;
-  background: #fff;
-  border-radius: 12px;
+  max-width: 680px;
+  background: linear-gradient(180deg, #ffffff, #fbfbfb);
+  border-radius: 16px;
   border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.15), 0 4px 12px rgba(2, 6, 23, 0.12);
   overflow: hidden;
+  transform: translateY(6px);
+  animation: slideUp 220ms ease-out;
 }
 
 .modalHeader {
@@ -133,6 +142,16 @@
   font-size: 22px;
   cursor: pointer;
   line-height: 1;
+  color: #64748b;
+  border-radius: 8px;
+  transition: background-color 120ms ease, color 120ms ease, transform 80ms ease;
+}
+.iconBtn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+.iconBtn:active {
+  transform: scale(0.96);
 }
 
 .modalContent {
@@ -147,6 +166,54 @@
   grid-template-columns: 1fr;
   gap: 12px;
 }
+/* Dropdown menu for time selection */
+.dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0; /* 👈 hiển thị bên phải icon bút */
+  margin-top: 6px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  z-index: 10;
+  min-width: 50px; /* 👈 nhỏ gọn hơn */
+  padding: 4px 0;
+  animation: dropdownSlide 0.15s ease-out;
+}
+
+.dropdownItem {
+  padding: 5px 5px; /* 👈 nhỏ lại */
+  font-size: 20px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  text-align: center; /* 👈 căn giữa text */
+}
+
+.dropdownItem:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+/* Giúp định vị dropdown tương đối so với icon */
+.timeRow {
+  position: relative; /* 👈 quan trọng */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Hiệu ứng trượt xuống nhẹ */
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 @media (min-width: 780px) {
   .modalGrid {
@@ -156,9 +223,11 @@
 
 .modalColumn {
   display: flex;
+  flex-direction: column;
 }
 
 .blockCard {
+  flex: 1;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   overflow: hidden;
@@ -170,8 +239,9 @@
 
 .blockHeader {
   background: linear-gradient(180deg, #f9fafb, #f3f4f6);
-  padding: 10px 12px;
+  padding: 12px 14px;
   font-weight: 600;
+  border-bottom: 1px solid #eef2f7;
 }
 
 .blockBody {
@@ -179,14 +249,21 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  flex-grow: 1;
 }
 
 .blockActions {
-  padding: 10px 12px;
+  padding: 16px 12px;
   border-top: 1px solid #f3f4f6;
   display: flex;
-  gap: 10px;
-  justify-content: flex-end;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.centerActions {
+  min-height: 72px;
 }
 
 .list {
@@ -203,10 +280,17 @@
 .taskOption {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px;
+  gap: 10px;
+  padding: 10px;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: 10px;
+  transition: border-color 140ms ease, box-shadow 140ms ease,
+    background-color 140ms ease;
+}
+.taskOption:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+  box-shadow: 0 1px 0 rgba(2, 6, 23, 0.04);
 }
 
 .taskMeta {
@@ -240,6 +324,58 @@
   color: #111827;
 }
 
+/* Time row UX improvements */
+.timeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.inlineEditBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #475569;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease,
+    color 120ms ease;
+}
+.inlineEditBtn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+.inlineEditBtn:active {
+  transform: translateY(1px);
+}
+
+.timeSelect {
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+/* Screen reader only text */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .questionPreview h4 {
   margin: 6px 0;
 }
@@ -255,19 +391,72 @@
 .secondaryBtn {
   background: #f3f4f6;
   color: #111827;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  padding: 10px 14px;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 20px;
+  transition: background-color 140ms ease, border-color 140ms ease,
+    transform 80ms ease;
+}
+.secondaryBtn:hover {
+  background: #e5e7eb;
+  border-color: #d1d5db;
+}
+.secondaryBtn:active {
+  transform: translateY(1px);
 }
 
 .primaryBtn {
   background: #2563eb;
   color: #fff;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 8px;
+  border: 1px solid #1d4ed8;
+  padding: 10px 14px;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 20px;
+  transition: background-color 140ms ease, box-shadow 140ms ease,
+    transform 80ms ease;
+}
+.primaryBtn:hover {
+  background: #1d4ed8;
+  box-shadow: 0 6px 14px rgba(29, 78, 216, 0.28);
+}
+.primaryBtn:disabled {
+  background: #93c5fd;
+  border-color: #93c5fd;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.primaryBtn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* subtle raised look used for prominent actions */
+.elevatedBtn {
+  box-shadow: 0 8px 16px rgba(29, 78, 216, 0.25);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(6px);
+  }
+}
+.highlightNumber {
+  color: #16a34a; /* Màu xanh dương nổi bật */
+  font-weight: 600; /* In đậm nhẹ */
 }
