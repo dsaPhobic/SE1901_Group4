@@ -58,3 +58,5 @@ yarn-error.log*
 /react-app/package.json
 /react-app/package-lock.json
 /WebAPI/WebAPI/appsettings.Development.json
+WebAPI/WebAPI/appsettings.json
+SQLQuery1.sql
