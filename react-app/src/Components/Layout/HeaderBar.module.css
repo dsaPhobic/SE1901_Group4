@@ -103,6 +103,21 @@
   font-size: 30px;
   color: #6c757d;
 }
+.avatarImage {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+  border: 2px solid #ddd;
+  transition: 0.2s;
+}
+
+.avatarImage:hover {
+  border-color: #007bff;
+  transform: scale(1.05);
+}
+
 @media (max-width: 1536px) {
   .mainHeader {
     padding: 10px 20px;
