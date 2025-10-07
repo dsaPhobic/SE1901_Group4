@@ -165,7 +165,8 @@ namespace WebAPI.Controllers
             Email = user.Email,
             Firstname = user.Firstname,
             Lastname = user.Lastname,
-            Role = user.Role
+            Role = user.Role,
+            Avatar = user.Avatar
         };
     }
 }

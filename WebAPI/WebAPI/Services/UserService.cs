@@ -96,6 +96,7 @@ namespace WebAPI.Services
             if (!string.IsNullOrWhiteSpace(dto.Firstname)) user.Firstname = dto.Firstname;
             if (!string.IsNullOrWhiteSpace(dto.Lastname)) user.Lastname = dto.Lastname;
             if (!string.IsNullOrWhiteSpace(dto.Username)) user.Username = dto.Username;
+            if (!string.IsNullOrWhiteSpace(dto.Avatar)) user.Avatar = dto.Avatar;
 
             if (!string.IsNullOrWhiteSpace(dto.Role) && currentUser.Role == "admin")
                 user.Role = dto.Role;

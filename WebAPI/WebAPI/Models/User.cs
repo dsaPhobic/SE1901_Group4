@@ -25,6 +25,8 @@ public partial class User
 
     public DateTime? UpdatedAt { get; set; }
 
+    public string? Avatar { get; set; }
+
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
     public virtual ICollection<ExamAttempt> ExamAttempts { get; set; } = new List<ExamAttempt>();

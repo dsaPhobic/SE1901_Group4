@@ -47,7 +47,15 @@ export default function HeaderBar({ title }) {
 
             {/* avatar user */}
             <div className={styles.userAvatar} onClick={goToProfile}>
-              <User size={20} />
+              {user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt="User Avatar"
+                  className={styles.avatarImage}
+                />
+              ) : (
+                <User size={20} />
+              )}
             </div>
 
             <div className={styles.userInfo}>

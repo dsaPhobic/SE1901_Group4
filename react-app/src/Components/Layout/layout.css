@@ -7,15 +7,16 @@
 
 .app-main,
 .main-content {
-  margin-left: 240px; /* đẩy nội dung sang phải đúng bằng sidebar */
+  margin-left: 240px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0; /* 🔑 để con không tràn */
+  min-height: 0;
   background: #f8f9fa;
   overflow: hidden;
-  font-size: clamp(20px, 1vw, 28px); /* chữ responsive, dễ đọc */
+  font-size: clamp(20px, 1vw, 30px);
 }
+
 @media (max-width: 1536px) {
   .sidebar {
     width: 200px;

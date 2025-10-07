@@ -12,6 +12,7 @@ import useAuth from "../../Hook/UseAuth";
 import useExamAttempts from "../../Hook/UseExamAttempts";
 import AppLayout from "../../Components/Layout/AppLayout";
 import { updateUser } from "../../Services/UserApi";
+import { uploadImage } from "../../Services/UploadApi";
 import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
@@ -26,10 +27,12 @@ export default function Profile() {
     gmail: "",
     accountName: "",
     password: "",
+    avatar: "",
   });
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [originalData, setOriginalData] = useState({});
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -38,6 +41,7 @@ export default function Profile() {
         gmail: user.email || "",
         accountName: user.username || "",
         password: "",
+        avatar: user.avatar || "",
       };
       setProfileData(newData);
       setOriginalData(newData);
@@ -79,6 +83,39 @@ export default function Profile() {
     setHasChanges(hasDataChanged || newValue !== originalData[e.target.name]);
   };
 
+  const handleAvatarUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image file");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File size must be less than 5MB");
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+
+    try {
+      const response = await uploadImage(file);
+      setProfileData((prev) => ({
+        ...prev,
+        avatar: response.url,
+      }));
+      setHasChanges(true);
+    } catch (error) {
+      console.error("Error uploading avatar:", error);
+      alert("Failed to upload avatar. Please try again.");
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
   const handleSave = () => {
     setIsSaving(true);
 
@@ -88,11 +125,17 @@ export default function Profile() {
       email: profileData.gmail,
       username: profileData.accountName,
       password: profileData.password || undefined,
+      avatar: profileData.avatar || undefined,
     })
       .then(() => {
         setOriginalData({ ...profileData });
         setHasChanges(false);
         alert("Profile updated successfully!");
+        // ✅ Không reload — cập nhật UI trực tiếp
+        // Cập nhật avatar hiển thị ngay:
+        if (profileData.avatar) {
+          user.avatar = profileData.avatar;
+        }
       })
       .catch((error) => {
         console.error("Error saving profile:", error);
@@ -138,6 +181,53 @@ export default function Profile() {
                   value={profileData.accountName}
                   onChange={handleInputChange}
                 />
+              </div>
+
+              <div className="form-group">
+                <label>Avatar</label>
+                <div className="avatar-upload-section">
+                  <div className="avatar-preview">
+                    {profileData.avatar ? (
+                      <img
+                        src={profileData.avatar}
+                        alt="Avatar"
+                        className="avatar-image"
+                      />
+                    ) : (
+                      <div className="avatar-placeholder">
+                        <User size={40} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="avatar-upload-controls">
+                    <input
+                      type="file"
+                      id="avatar-upload"
+                      accept="image/*"
+                      onChange={handleAvatarUpload}
+                      style={{ display: "none" }}
+                    />
+                    <label
+                      htmlFor="avatar-upload"
+                      className="avatar-upload-btn"
+                      disabled={isUploadingAvatar}
+                    >
+                      {isUploadingAvatar ? "Uploading..." : "Upload Avatar"}
+                    </label>
+                    {profileData.avatar && (
+                      <button
+                        type="button"
+                        className="avatar-remove-btn"
+                        onClick={() => {
+                          setProfileData((prev) => ({ ...prev, avatar: "" }));
+                          setHasChanges(true);
+                        }}
+                      >
+                        Remove Avatar
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
 
               <div className="form-group">
@@ -354,7 +444,15 @@ export default function Profile() {
         <div className="profile-sidebar">
           <div className="user-info">
             <div className="user-avatar">
-              <User size={60} />
+              {profileData.avatar ? (
+                <img
+                  src={profileData.avatar}
+                  alt="User Avatar"
+                  className="sidebar-avatar-image"
+                />
+              ) : (
+                <User size={60} />
+              )}
             </div>
             <div className="user-details">
               <h3>{profileData.name || "..."}</h3>
