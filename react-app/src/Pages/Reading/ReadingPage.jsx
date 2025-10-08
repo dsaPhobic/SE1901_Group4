@@ -2,52 +2,49 @@ import React, { useEffect, useState } from "react";
 import AppLayout from "../../Components/Layout/AppLayout";
 import * as examService from "../../Services/ExamApi";
 import * as readingService from "../../Services/ReadingApi";
-import ReadingCard from "../../Components/Exam/ExamCard";
-import ReadingModal from "../../Components/Exam/ExamPopup";
+import ExamCard from "../../Components/Exam/ExamCard";
+import ExamSkillModal from "../../Components/Exam/ExamPopup";
 import styles from "./ReadingPage.module.css";
-import "../../Components/Exam/ExamMarkdownRenderer.module.css";
 
 export default function ReadingPage() {
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeExam, setActiveExam] = useState(null);
-  const [examReadings, setExamReadings] = useState([]);
+  const [examQuestions, setExamQuestions] = useState([]);
   const [loadingDetail, setLoadingDetail] = useState(false);
 
+  // ====== Fetch all exams and filter Reading ======
   useEffect(() => {
     let mounted = true;
-
     examService
       .getAll()
       .then((data) => {
-        if (mounted) {
-          const readingExams = Array.isArray(data)
-            ? data.filter((e) => e.examType === "Reading")
-            : [];
-          setExams(readingExams);
-        }
+        if (!mounted) return;
+        const list = Array.isArray(data)
+          ? data.filter((e) => e.examType === "Reading")
+          : [];
+        setExams(list);
       })
       .catch((err) => {
         console.error(err);
         if (mounted) setError("Failed to load Reading exams.");
       })
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
-
+      .finally(() => mounted && setLoading(false));
     return () => (mounted = false);
   }, []);
 
+  // ====== Load questions for selected exam ======
   const handleTakeExam = (exam) => {
     setActiveExam(exam);
     setLoadingDetail(true);
-    setExamReadings([]);
+    setExamQuestions([]);
 
     readingService
       .getByExam(exam.examId)
-      .then((details) => {
-        setExamReadings(Array.isArray(details) ? details : []);
+      .then((data) => {
+        const list = Array.isArray(data) ? data : [];
+        setExamQuestions(list);
       })
       .catch((err) => {
         console.error(err);
@@ -62,28 +59,33 @@ export default function ReadingPage() {
         <h2 className={styles.pageTitle}>IELTS Reading</h2>
 
         {loading && <div className={styles.stateText}>Loading…</div>}
-        {error && !loading && <div className={styles.errorText}>{error}</div>}
+        {!loading && error && (
+          <div className={styles.errorText}>{error}</div>
+        )}
 
         {!loading && !error && (
           <div className={styles.grid}>
-            {exams.map((exam) => (
-              <ReadingCard
-                key={exam.examId}
-                exam={exam}
-                onTake={() => handleTakeExam(exam)}
-              />
-            ))}
-            {exams.length === 0 && (
-              <div className={styles.stateText}>No reading exams available.</div>
+            {exams.length > 0 ? (
+              exams.map((exam) => (
+                <ExamCard
+                  key={exam.examId}
+                  exam={exam}
+                  onTake={() => handleTakeExam(exam)}
+                />
+              ))
+            ) : (
+              <div className={styles.stateText}>
+                No reading exams available.
+              </div>
             )}
           </div>
         )}
       </div>
 
       {activeExam && (
-        <ReadingModal
+        <ExamSkillModal
           exam={activeExam}
-          questions={examReadings}
+          tasks={examQuestions}
           loading={loadingDetail}
           onClose={() => setActiveExam(null)}
         />
