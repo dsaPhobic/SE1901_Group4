@@ -5,8 +5,11 @@ import * as writingService from "../../Services/WritingApi";
 import ExamCard from "../../Components/Exam/ExamCard";
 import ExamSkillModal from "../../Components/Exam/ExamPopup";
 import styles from "./WritingPage.module.css";
+import { useNavigate } from "react-router-dom";
 
 export default function WritingPage() {
+  const navigate = useNavigate(); // ✅ Hook phải nằm bên trong function component
+
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
