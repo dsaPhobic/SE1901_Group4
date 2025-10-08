@@ -2,57 +2,48 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import * as examService from "../../Services/ExamApi";
 import * as readingService from "../../Services/ReadingApi";
+import * as writingService from "../../Services/WritingApi";
 import ExamSkillModal from "../../Components/Admin/ExamPopup.jsx";
+import Sidebar from "../../Components/Admin/AdminNavbar.jsx";
 import styles from "./ExamManagement.module.css";
-
-const normalizeExam = (e) => ({
-  examId: e.examId ?? e.ExamId,
-  examName: e.examName ?? e.ExamName,
-  examType: e.examType ?? e.ExamType,
-  createdAt: e.createdAt ?? e.CreatedAt,
-});
-
-const normalizeReading = (r) => ({
-  readingId: r.readingId ?? r.ReadingId,
-  examId: r.examId ?? r.ExamId,
-  readingContent: r.readingContent ?? r.ReadingContent ?? "",
-  readingQuestion: r.readingQuestion ?? r.ReadingQuestion ?? "",
-  readingType: r.readingType ?? r.ReadingType ?? "",
-  displayOrder: r.displayOrder ?? r.DisplayOrder ?? 1,
-  correctAnswer: r.correctAnswer ?? r.CorrectAnswer ?? null,
-  questionHtml: r.questionHtml ?? r.QuestionHtml ?? null,
-});
 
 export default function ExamManagement() {
   const [examName, setExamName] = useState("");
   const [examType, setExamType] = useState("Reading");
   const [exams, setExams] = useState([]);
-  const [status, setStatus] = useState("");
-  const [selectedExam, setSelectedExam] = useState(null);
   const [skills, setSkills] = useState([]);
+  const [selectedExam, setSelectedExam] = useState(null);
+  const [status, setStatus] = useState("");
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
+  // ====== Service mapping ======
+  const serviceMap = {
+    Reading: readingService,
+    Writing: writingService,
+  };
+
+  // ====== Load exams ======
   const fetchExams = async () => {
     try {
-      const res = await examService.getAll();
-      const list = Array.isArray(res.data) ? res.data.map(normalizeExam) : [];
+      const list = await examService.getAll();
       setExams(list);
     } catch (err) {
-      console.error(err);
+      console.error("❌ Failed to fetch exams:", err);
       setExams([]);
     }
   };
 
-  const fetchSkills = async (examId) => {
+  // ====== Load skills for an exam ======
+  const fetchSkills = async (examId, type) => {
+    const service = serviceMap[type];
+    if (!service) return console.error("⚠️ Unknown exam type:", type);
+
     try {
-      const res = await readingService.getByExam(examId);
-      const list = Array.isArray(res.data)
-        ? res.data.map(normalizeReading)
-        : [];
-      setSkills(list);
+      const list = await service.getByExam(examId);
+      setSkills(Array.isArray(list) ? list : []);
     } catch (err) {
-      console.error(err);
+      console.error(`❌ Failed to fetch ${type} skills:`, err);
       setSkills([]);
     }
   };
@@ -61,147 +52,174 @@ export default function ExamManagement() {
     fetchExams();
   }, []);
 
+  // ====== Create exam ======
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus("Submitting...");
+
     try {
-      const res = await examService.add({ examName, examType });
-      const created = normalizeExam(res.data ?? {});
-      setStatus(`✅ Created exam "${created.examName ?? examName}"`);
+      const created = await examService.add({ examName, examType });
+      setStatus(`✅ Created exam "${created.examName}"`);
       setExamName("");
-      await fetchExams();
+      fetchExams();
     } catch (err) {
       console.error(err);
       setStatus("❌ Failed to create exam");
     }
   };
 
-  const handleManageClick = async (exam) => {
-    const norm = normalizeExam(exam);
-    setSelectedExam(norm);
-    await fetchSkills(norm.examId);
+  // ====== Manage exam ======
+  const handleManageClick = (exam) => {
+    setSelectedExam(exam);
     setShowModal(true);
+    fetchSkills(exam.examId, exam.examType);
   };
 
-  const handleEditSkill = (skillNorm) => {
-    navigate(`add-reading`, {
-      state: { exam: selectedExam, skill: skillNorm },
-    });
+  // ====== Determine path ======
+  const getExamPath = (type) => {
+    const map = {
+      Reading: "add-reading",
+      Writing: "add-writing",
+    };
+    return map[type] || "";
   };
 
-  const handleDeleteSkill = async (readingId) => {
-    if (!window.confirm("Are you sure you want to delete this question?")) return;
+  // ====== Add skill ======
+  const handleAddSkill = () => {
+    if (!selectedExam) return;
+    const path = getExamPath(selectedExam.examType);
+    if (!path) return alert("⚠️ Unknown exam type");
+    navigate(path, { state: { exam: selectedExam } });
+  };
+
+  // ====== Edit skill ======
+  const handleEditSkill = (skill) => {
+    if (!selectedExam) return;
+    const path = getExamPath(selectedExam.examType);
+    if (!path) return alert("⚠️ Unknown exam type");
+    navigate(path, { state: { exam: selectedExam, skill } });
+  };
+
+  // ====== Delete skill ======
+  const handleDeleteSkill = async (skillId) => {
+    if (!window.confirm("Are you sure you want to delete this question?"))
+      return;
+
+    const service = serviceMap[selectedExam.examType];
+    if (!service) return;
+
     try {
-      await readingService.remove(readingId);
-      await fetchSkills(selectedExam.examId);
+      await service.remove(skillId);
+      fetchSkills(selectedExam.examId, selectedExam.examType);
     } catch (err) {
       console.error("❌ Failed to delete skill:", err);
     }
   };
 
-  const handleAddSkill = () => {
-    navigate(`add-reading`, {
-      state: { exam: selectedExam },
-    });
-  };
-
   return (
-    <div className={styles.dashboard}>
-      <header className={styles.header}>
-        <h2>📚 Exam Management</h2>
-        <button className={styles.exportBtn}>⬇️ Export CSV</button>
-      </header>
+    <>
+      <Sidebar />
+      <main className="admin-main">
+        <div className={styles.dashboard}>
+          {/* ===== Header ===== */}
+          <header className={styles.header}>
+            <h2>📚 Exam Management</h2>
+            <button className={styles.exportBtn}>⬇️ Export CSV</button>
+          </header>
 
-      <section className={styles.card}>
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.group}>
-            <label>Exam Name</label>
-            <input
-              type="text"
-              value={examName}
-              onChange={(e) => setExamName(e.target.value)}
-              placeholder="Enter exam name..."
-              required
-            />
-          </div>
+          {/* ===== Create Exam ===== */}
+          <section className={styles.card}>
+            <form onSubmit={handleSubmit} className={styles.form}>
+              <div className={styles.group}>
+                <label>Exam Name</label>
+                <input
+                  type="text"
+                  value={examName}
+                  onChange={(e) => setExamName(e.target.value)}
+                  placeholder="Enter exam name..."
+                  required
+                />
+              </div>
 
-          <div className={styles.group}>
-            <label>Exam Type</label>
-            <select
-              value={examType}
-              onChange={(e) => setExamType(e.target.value)}
-              required
-            >
-              <option value="Reading">Reading</option>
-              <option value="Listening">Listening</option>
-              <option value="Writing">Writing</option>
-              <option value="Speaking">Speaking</option>
-            </select>
-          </div>
+              <div className={styles.group}>
+                <label>Exam Type</label>
+                <select
+                  value={examType}
+                  onChange={(e) => setExamType(e.target.value)}
+                  required
+                >
+                  <option value="Reading">Reading</option>
+                  <option value="Writing">Writing</option>
+                </select>
+              </div>
 
-          <button type="submit" className={styles.btnPrimary}>
-            + Create Exam
-          </button>
-        </form>
-        {status && <p className={styles.status}>{status}</p>}
-      </section>
+              <button type="submit" className={styles.btnPrimary}>
+                + Create Exam
+              </button>
+            </form>
+            {status && <p className={styles.status}>{status}</p>}
+          </section>
 
-      <section className={styles.card}>
-        <h3>Existing Exams</h3>
-        <div className={styles.tableWrapper}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Exam Name</th>
-                <th>Type</th>
-                <th>Date Created</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {exams.length > 0 ? (
-                exams.map((exam) => (
-                  <tr key={exam.examId}>
-                    <td>{exam.examId}</td>
-                    <td>{exam.examName}</td>
-                    <td>{exam.examType}</td>
-                    <td>
-                      {exam.createdAt
-                        ? new Date(exam.createdAt).toLocaleDateString()
-                        : ""}
-                    </td>
-                    <td>
-                      <button
-                        className={styles.btnManage}
-                        onClick={() => handleManageClick(exam)}
-                      >
-                        Manage
-                      </button>
-                    </td>
+          {/* ===== Exam List ===== */}
+          <section className={styles.card}>
+            <h3>Existing Exams</h3>
+            <div className={styles.tableWrapper}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Created At</th>
+                    <th>Action</th>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="5" style={{ textAlign: "center", opacity: 0.6 }}>
-                    No exams found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+                </thead>
+                <tbody>
+                  {exams.length ? (
+                    exams.map((exam) => (
+                      <tr key={exam.examId}>
+                        <td>{exam.examId}</td>
+                        <td>{exam.examName}</td>
+                        <td>{exam.examType}</td>
+                        <td>
+                          {exam.createdAt
+                            ? new Date(exam.createdAt).toLocaleDateString()
+                            : ""}
+                        </td>
+                        <td>
+                          <button
+                            className={styles.btnManage}
+                            onClick={() => handleManageClick(exam)}
+                          >
+                            Manage
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="5" style={{ textAlign: "center", opacity: 0.6 }}>
+                        No exams found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
 
-      <ExamSkillModal
-        show={showModal}
-        exam={selectedExam}
-        skills={skills}
-        onClose={() => setShowModal(false)}
-        onEdit={handleEditSkill}
-        onDelete={handleDeleteSkill}
-        onAddSkill={handleAddSkill}
-      />
-    </div>
+          {/* ===== Modal ===== */}
+          <ExamSkillModal
+            show={showModal}
+            exam={selectedExam}
+            skills={skills}
+            onClose={() => setShowModal(false)}
+            onEdit={handleEditSkill}
+            onDelete={handleDeleteSkill}
+            onAddSkill={handleAddSkill}
+          />
+        </div>
+      </main>
+    </>
   );
 }

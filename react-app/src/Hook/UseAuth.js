@@ -28,7 +28,10 @@ export default function useAuth() {
         return res.data;
       })
       .catch((err) => {
-        throw err;
+        const errorMessage = err.response?.data?.message || err.message || "Login failed";
+        const error = new Error(errorMessage);
+        error.status = err.response?.status;
+        throw error;
       });
   }
 

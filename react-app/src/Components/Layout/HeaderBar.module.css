@@ -6,11 +6,14 @@
   justify-content: space-between;
   align-items: center;
   z-index: 10;
+  left: 200px;
 }
 /* HeaderBar.module.css */
 .signInBtn {
   background-color: #f44336; /* đỏ */
   color: white;
+  font-family: "Dongle", sans-serif;
+  font-size: 30px;
   border: none;
   padding: 6px 14px;
   border-radius: 6px;
@@ -38,7 +41,7 @@
 }
 
 .notificationIcon {
-  font-size: clamp(16px, 1.2vw, 18px);
+  font-size: 18px;
   color: #6c757d;
   cursor: pointer;
   position: relative;
@@ -66,7 +69,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(16px, 1.2vw, 18px);
+  font-size: 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
@@ -78,11 +81,11 @@
 
 .userAvatar,
 .userInfo {
-  cursor: pointer; /* làm thành clickable */
+  cursor: pointer;
 }
 
 .userAvatar:hover {
-  background-color: #ffb300; /* highlight khi hover */
+  background-color: #ffb300;
   transition: 0.2s;
 }
 
@@ -99,4 +102,55 @@
 .userRole {
   font-size: 30px;
   color: #6c757d;
+}
+.avatarImage {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+  border: 2px solid #ddd;
+  transition: 0.2s;
+}
+
+.avatarImage:hover {
+  border-color: #007bff;
+  transform: scale(1.05);
+}
+
+@media (max-width: 1536px) {
+  .mainHeader {
+    padding: 10px 20px;
+  }
+
+  .pageTitle {
+    font-size: clamp(26px, 2vw, 36px); /* giảm kích thước tiêu đề */
+  }
+
+  .userSection {
+    gap: 10px;
+  }
+
+  .notificationIcon {
+    font-size: clamp(14px, 1vw, 16px);
+  }
+
+  .userAvatar {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+
+  .userName {
+    font-size: 20px;
+  }
+
+  .userRole {
+    font-size: 20px;
+  }
+
+  .signInBtn {
+    padding: 5px 10px;
+    font-size: 20px;
+  }
 }

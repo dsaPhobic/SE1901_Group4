@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import "./Dictionary.css";
-import Sidebar from "../../Components/Layout/Sidebar";
+import Sidebar from "../../Components/Layout/GeneralSidebar";
 import HeaderBar from "../../Components/Layout/HeaderBar";
 import {
   Trash2,
@@ -117,10 +117,7 @@ export default function Dictionary() {
               />
 
               {activeGroup && (
-                <button
-                  className="start-quiz-btn"
-                  onClick={handleStartQuiz}
-                >
+                <button className="start-quiz-btn" onClick={handleStartQuiz}>
                   Start Quiz
                 </button>
               )}
@@ -131,8 +128,9 @@ export default function Dictionary() {
               {groups.map((g) => (
                 <div key={g.groupId} className="tab-wrapper">
                   <button
-                    className={`tab ${activeGroup?.groupId === g.groupId ? "active" : ""
-                      }`}
+                    className={`tab ${
+                      activeGroup?.groupId === g.groupId ? "active" : ""
+                    }`}
                     onClick={() => setActiveGroup(g)}
                   >
                     {g.groupname} ({g.wordIds.length})
@@ -242,7 +240,10 @@ export default function Dictionary() {
             actions={
               <>
                 {searchResult && searchResult.term ? (
-                  <button onClick={handleAddToGroup} disabled={!selectedGroupId}>
+                  <button
+                    onClick={handleAddToGroup}
+                    disabled={!selectedGroupId}
+                  >
                     <PlusCircle size={18} /> Add to Group
                   </button>
                 ) : null}
@@ -283,7 +284,9 @@ export default function Dictionary() {
                   value={selectedGroupId || ""}
                   onChange={(e) => setSelectedGroupId(Number(e.target.value))}
                 >
-                  <option value="" className="select-group">-- Select group --</option>
+                  <option value="" className="select-group">
+                    -- Select group --
+                  </option>
                   {groups.map((g) => (
                     <option key={g.groupId} value={g.groupId}>
                       {g.groupname}
@@ -296,9 +299,7 @@ export default function Dictionary() {
             )}
           </Popup>
         )}
-
-
       </main>
-    </div >
+    </div>
   );
 }

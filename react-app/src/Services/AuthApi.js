@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "/api/auth",
+  baseURL: "https://localhost:7264/api/auth",
   withCredentials: true,
 });
 
@@ -23,4 +23,21 @@ export function getMe() {
 
 export function loginWithGoogle() {
   window.location.href = "/api/auth/google/login";
+}
+
+export function forgotPassword(email) {
+  return API.post("/forgot-password", { email });
+}
+
+export function verifyOtp(email, otpCode) {
+  return API.post("/verify-otp", { email, otpCode });
+}
+
+export function resetPassword(email, resetToken, newPassword, confirmPassword) {
+  return API.post("/reset-password", { 
+    email, 
+    resetToken, 
+    newPassword, 
+    confirmPassword 
+  });
 }

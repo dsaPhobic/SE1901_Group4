@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Forum.css";
-import Sidebar from "../../Components/Layout/Sidebar";
+import Sidebar from "../../Components/Layout/GeneralSidebar";
 import HeaderBar from "../../Components/Layout/HeaderBar";
 import PostList from "../../Components/Forum/PostList";
 import RightSidebar from "../../Components/Forum/RightSidebar";
@@ -21,7 +21,7 @@ export default function Forum({ onNavigate }) {
     { key: "new", label: "New" },
     { key: "top", label: "Top" },
     { key: "hot", label: "Hot" },
-    { key: "closed", label: "Closed" }
+    { key: "closed", label: "Closed" },
   ];
 
   useEffect(() => {
@@ -82,45 +82,47 @@ export default function Forum({ onNavigate }) {
   return (
     <div className="forum-container">
       <Sidebar onNavigate={onNavigate} />
-      
+
       <main className="main-content">
         <HeaderBar onNavigate={onNavigate} currentPage="forum" />
-        
+
         <div className="forum-content">
           <div className="forum-main">
             <div className="forum-header">
               <h1>FORUM</h1>
-              <button 
+              <button
                 className="ask-question-btn"
-                onClick={() => navigate('/create-post')}
+                onClick={() => navigate("/create-post")}
               >
                 <Plus size={16} />
                 Create a post
               </button>
             </div>
-            
+
             <div className="forum-filters">
               {filters.map((filter) => (
                 <button
                   key={filter.key}
-                  className={`filter-btn ${activeFilter === filter.key ? "active" : ""}`}
+                  className={`filter-btn ${
+                    activeFilter === filter.key ? "active" : ""
+                  }`}
                   onClick={() => handleFilterChange(filter.key)}
                 >
                   {filter.label}
                 </button>
               ))}
             </div>
-            
-            <PostList 
+
+            <PostList
               posts={posts}
               loading={loading}
               onLoadMore={loadMorePosts}
               hasMore={hasMore}
               onPostUpdated={handlePostUpdated}
-              isInClosedSection={activeFilter === 'closed'}
+              isInClosedSection={activeFilter === "closed"}
             />
           </div>
-          
+
           <RightSidebar />
         </div>
       </main>

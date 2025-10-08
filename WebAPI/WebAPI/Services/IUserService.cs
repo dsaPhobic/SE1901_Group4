@@ -19,6 +19,10 @@ namespace WebAPI.Services
         void Delete(int id, int currentUserId);
         User RegisterAdmin(RegisterRequestDTO dto);
         
+        string SendPasswordResetOtp(string email);
+        string VerifyOtp(string email, string otpCode);
+        string ResetPassword(string email, string resetToken, string newPassword);
+        
         // Moderator methods
         IEnumerable<UserStatsDTO> GetUsersWithStats(int page, int limit);
         UserStatsDTO? GetUserStats(int userId);

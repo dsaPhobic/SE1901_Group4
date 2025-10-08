@@ -2,17 +2,37 @@
   display: flex;
   height: 100vh;
   width: 100%;
-  overflow: hidden; /* ngăn scroll tổng */
+  overflow: hidden;
 }
 
 .app-main,
 .main-content {
-  margin-left: 240px; /* đẩy nội dung sang phải đúng bằng sidebar */
+  margin-left: 240px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0; /* 🔑 để con không tràn */
+  min-height: 0;
   background: #f8f9fa;
   overflow: hidden;
-  font-size: clamp(20px, 1vw, 28px); /* chữ responsive, dễ đọc */
+  font-size: clamp(20px, 1vw, 30px);
+}
+
+@media (max-width: 1536px) {
+  .sidebar {
+    width: 200px;
+  }
+
+  .app-main {
+    margin-left: 200px;
+  }
+
+  .mainHeader {
+    left: 200px;
+    width: calc(100% - 200px);
+    padding: 10px 20px;
+  }
+
+  .main-content {
+    padding: 80px 15px 15px 15px;
+  }
 }
