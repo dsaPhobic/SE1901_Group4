@@ -18,5 +18,9 @@ namespace WebAPI.Services
         void Update(User user);
         void Delete(int id, int currentUserId);
         User RegisterAdmin(RegisterRequestDTO dto);
+        
+        // Moderator methods
+        IEnumerable<UserStatsDTO> GetUsersWithStats(int page, int limit);
+        UserStatsDTO? GetUserStats(int userId);
     }
 }

@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import {
   LineChart,
   Book,
@@ -16,6 +16,8 @@ import {
 import styles from "./Sidebar.module.css";
 
 export default function Sidebar() {
+  const location = useLocation();
+  
   // danh sách menu
   const menuItems = [
     {
@@ -39,6 +41,18 @@ export default function Sidebar() {
     },
   ];
 
+  // Function to check if a menu item should be active
+  const isActive = (path) => {
+    if (path === "/forum") {
+      // General should be active for forum, create-post, edit-post, and post detail pages
+      return location.pathname === "/forum" || 
+             location.pathname.startsWith("/create-post") || 
+             location.pathname.startsWith("/edit-post") || 
+             location.pathname.startsWith("/post/");
+    }
+    return location.pathname === path;
+  };
+
   return (
     <aside className={styles.sidebar}>
       <div className={styles.sidebarHeader}>
@@ -53,9 +67,7 @@ export default function Sidebar() {
           <NavLink
             key={index}
             to={item.path} // đường dẫn của route
-            className={({ isActive }) =>
-              `${styles.navItem} ${isActive ? styles.active : ""}`
-            }
+            className={`${styles.navItem} ${isActive(item.path) ? styles.active : ""}`}
           >
             {item.icon}
             <span className={styles.label}>{item.label}</span>

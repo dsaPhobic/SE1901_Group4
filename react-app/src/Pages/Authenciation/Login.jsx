@@ -27,6 +27,7 @@ const Login = () => {
       localStorage.setItem("user", JSON.stringify(user));
 
       if (role === "admin") navigate("/admin/dashboard");
+      else if (role === "moderator") navigate("/moderator/dashboard");
       else navigate("/home");
     }
   }, [navigate]);
@@ -48,6 +49,8 @@ const Login = () => {
 
           if (user.role === "admin") {
             navigate("/admin/dashboard");
+          } else if (user.role === "moderator") {
+            navigate("/moderator/dashboard");
           } else {
             navigate("/home");
           }

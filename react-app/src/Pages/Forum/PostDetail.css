@@ -37,7 +37,7 @@
   border: none;
   color: #007bff;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 22px;
   padding: 8px 0;
 }
 
@@ -77,12 +77,12 @@
   font-weight: 600;
   color: #333;
   margin: 0;
-  font-size: 16px;
+  font-size: 30px;
 }
 
 .post-time {
   color: #666;
-  font-size: 14px;
+  font-size: 22px;
   margin: 0;
 }
 
@@ -111,7 +111,7 @@
 }
 
 .post-title {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 600;
   color: #333;
   margin: 0 0 16px 0;
@@ -121,7 +121,7 @@
 .post-body {
   color: #333;
   line-height: 1.6;
-  font-size: 16px;
+  font-size: 24px;
   white-space: pre-wrap;
 }
 
@@ -137,7 +137,7 @@
   color: #666;
   padding: 6px 12px;
   border-radius: 16px;
-  font-size: 12px;
+  font-size: 28px;
   font-weight: 500;
 }
 
@@ -152,13 +152,13 @@
   background: #007bff;
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
+  padding: 6px 12px;
+  border-radius: 4px;
   font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   transition: background-color 0.2s;
   font-size: 14px;
 }
@@ -215,7 +215,7 @@
   padding: 12px;
   border: 1px solid #ddd;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 22px;
   margin-bottom: 16px;
   resize: vertical;
 }
@@ -279,7 +279,7 @@
 }
 
 .profile-username {
-  font-size: 18px;
+  font-size: 26px;
   font-weight: 600;
   color: #333;
   margin: 0 0 12px 0;
@@ -290,7 +290,7 @@
 }
 
 .profile-votes {
-  font-size: 16px;
+  font-size: 24px;
   color: #666;
   font-weight: 600;
 }
@@ -309,7 +309,7 @@
   padding: 8px;
   border-radius: 4px;
   transition: all 0.2s;
-  font-size: 18px;
+  font-size: 26px;
 }
 
 .profile-action-btn:hover {
@@ -363,7 +363,7 @@
   background: none;
   text-align: left;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 22px;
   color: #333;
   transition: background-color 0.2s ease;
 }
@@ -406,7 +406,7 @@
 
 /* Pinned indicator */
 .pinned-indicator {
-  font-size: 20px;
+  font-size: 28px;
   color: #ffc107;
   animation: pulse 2s infinite;
   margin-right: 8px;
