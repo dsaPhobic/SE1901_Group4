@@ -34,6 +34,7 @@ export default function CreatePost({ onNavigate }) {
     setLoading(true);
     createPost(formData)
       .then((response) => {
+        alert("Bài viết đã được tạo thành công và đang chờ duyệt. Bạn sẽ được thông báo khi bài viết được phê duyệt.");
         navigate("/forum");
       })
       .catch((error) => {

@@ -113,13 +113,23 @@ namespace WebAPI.Services
 
         public void DeleteComment(int id, int userId)
         {
-            var comment = _context.Comment.Find(id);
+            var comment = _context.Comment
+                .Include(c => c.Post)
+                .FirstOrDefault(c => c.CommentId == id);
             if (comment == null) throw new KeyNotFoundException("Comment not found");
 
             var user = _userRepository.GetById(userId);
             if (user == null) throw new UnauthorizedAccessException("User not found");
 
-            if (comment.UserId != userId && user.Role != "admin")
+            // Cho phép xóa nếu:
+            // 1. User là chủ comment
+            // 2. User là admin
+            // 3. User là chủ bài viết (post owner)
+            bool canDelete = comment.UserId == userId || 
+                            user.Role == "admin" || 
+                            comment.Post.UserId == userId;
+
+            if (!canDelete)
                 throw new UnauthorizedAccessException("You don't have permission to delete this comment");
 
             try

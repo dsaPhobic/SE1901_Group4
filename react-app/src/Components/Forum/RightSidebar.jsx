@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getPostsByFilter } from "../../Services/ForumApi";
 import { Pin, Star, ThumbsUp } from "lucide-react";
+import AnnouncementPopup from "./AnnouncementPopup";
 import "./RightSidebar.css";
 
 export default function RightSidebar() {
@@ -9,6 +10,8 @@ export default function RightSidebar() {
   const [ieltsPhobicPosts, setIeltsPhobicPosts] = useState([]);
   const [mustReadPosts, setMustReadPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showAnnouncement, setShowAnnouncement] = useState(false);
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
 
   useEffect(() => {
     loadPosts();
@@ -41,16 +44,16 @@ export default function RightSidebar() {
           {
             postId: 'vision-fallback',
             title: "Our Vision — The Direction of IELTSPhobic",
-            content: "Our vision is to provide the best IELTS learning experience...",
-            user: { username: "IELTSPhobic Team" },
+            content: "Our vision is to provide the best IELTS learning experience for students worldwide. We are committed to creating an innovative platform that combines cutting-edge technology with proven teaching methods to help students achieve their IELTS goals.\n\nKey principles:\n• Student-centered learning\n• Evidence-based teaching methods\n• Continuous innovation\n• Global accessibility\n\nWe believe that every student deserves access to high-quality IELTS preparation resources, regardless of their background or location.",
+            user: { username: "IELTSPhobic" },
             createdAt: new Date().toISOString(),
             isPinned: true
           },
           {
             postId: 'rules-fallback',
             title: "Community Rules — IELTSPhobic Forum Guidelines",
-            content: "Please read our community guidelines before participating...",
-            user: { username: "IELTSPhobic Team" },
+            content: "Please read our community guidelines before participating in the IELTSPhobic forum:\n\n1. Be respectful and constructive in all interactions\n2. Stay on topic and contribute meaningfully to discussions\n3. No spam, self-promotion, or irrelevant content\n4. Use appropriate language and maintain professionalism\n5. Help others learn and share knowledge generously\n6. Follow academic integrity and cite sources when necessary\n\nViolations may result in warnings or temporary restrictions. We're committed to maintaining a positive learning environment for all members.",
+            user: { username: "IELTSPhobic" },
             createdAt: new Date().toISOString(),
             isPinned: true
           }
@@ -65,16 +68,16 @@ export default function RightSidebar() {
           { 
             postId: 'vision-fallback',
             title: "Our Vision — The Direction of IELTSPhobic",
-            content: "Our vision is to provide the best IELTS learning experience...",
-            user: { username: "IELTSPhobic Team" },
+            content: "Our vision is to provide the best IELTS learning experience for students worldwide. We are committed to creating an innovative platform that combines cutting-edge technology with proven teaching methods to help students achieve their IELTS goals.\n\nKey principles:\n• Student-centered learning\n• Evidence-based teaching methods\n• Continuous innovation\n• Global accessibility\n\nWe believe that every student deserves access to high-quality IELTS preparation resources, regardless of their background or location.",
+            user: { username: "IELTSPhobic" },
             createdAt: new Date().toISOString(),
             isPinned: true
           },
           { 
             postId: 'rules-fallback',
             title: "Community Rules — IELTSPhobic Forum Guidelines",
-            content: "Please read our community guidelines before participating...",
-            user: { username: "IELTSPhobic Team" },
+            content: "Please read our community guidelines before participating in the IELTSPhobic forum:\n\n1. Be respectful and constructive in all interactions\n2. Stay on topic and contribute meaningfully to discussions\n3. No spam, self-promotion, or irrelevant content\n4. Use appropriate language and maintain professionalism\n5. Help others learn and share knowledge generously\n6. Follow academic integrity and cite sources when necessary\n\nViolations may result in warnings or temporary restrictions. We're committed to maintaining a positive learning environment for all members.",
+            user: { username: "IELTSPhobic" },
             createdAt: new Date().toISOString(),
             isPinned: true
           }
@@ -105,19 +108,23 @@ export default function RightSidebar() {
     console.log("Clicked post ID:", postId);
     console.log("IELTSPhobic posts:", ieltsPhobicPosts);
     
-    // Nếu là fallback post, hiển thị modal thay vì navigate
-    if (postId === 'vision-fallback') {
-      alert("Our Vision — The Direction of IELTSPhobic\n\nOur vision is to provide the best IELTS learning experience for students worldwide. We are committed to creating an innovative platform that combines cutting-edge technology with proven teaching methods to help students achieve their IELTS goals.\n\nKey principles:\n• Student-centered learning\n• Evidence-based teaching methods\n• Continuous innovation\n• Global accessibility");
-      return;
-    }
-    
-    if (postId === 'rules-fallback') {
-      alert("Community Rules — IELTSPhobic Forum Guidelines\n\nPlease read our community guidelines before participating:\n\n1. Be respectful and constructive\n2. Stay on topic\n3. No spam or self-promotion\n4. Use appropriate language\n5. Help others learn\n6. Follow academic integrity\n\nViolations may result in warnings or temporary restrictions.");
+    // Nếu là fallback post, hiển thị popup thay vì navigate
+    if (postId === 'vision-fallback' || postId === 'rules-fallback') {
+      const announcement = ieltsPhobicPosts.find(post => post.postId === postId);
+      if (announcement) {
+        setSelectedAnnouncement(announcement);
+        setShowAnnouncement(true);
+      }
       return;
     }
     
     // Navigate đến post thực
     navigate(`/post/${postId}`);
+  };
+
+  const handleCloseAnnouncement = () => {
+    setShowAnnouncement(false);
+    setSelectedAnnouncement(null);
   };
 
   return (
@@ -168,6 +175,13 @@ export default function RightSidebar() {
           )}
         </ul>
       </div>
+
+      {/* Announcement Popup */}
+      <AnnouncementPopup
+        isOpen={showAnnouncement}
+        onClose={handleCloseAnnouncement}
+        announcement={selectedAnnouncement}
+      />
     </div>
   );
 }

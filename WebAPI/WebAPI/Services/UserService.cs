@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using WebAPI.Data;
 using WebAPI.DTOs;
 using WebAPI.Models;
 using WebAPI.Repositories;
@@ -251,6 +253,55 @@ namespace WebAPI.Services
             _context.SaveChanges();
 
             return "Password reset successfully";
+        }
+
+        // Moderator methods
+        public IEnumerable<UserStatsDTO> GetUsersWithStats(int page, int limit)
+        {
+            var users = _context.User
+                .Include(u => u.Posts)
+                .Include(u => u.Comments)
+                .Include(u => u.Reports)
+                .Skip((page - 1) * limit)
+                .Take(limit)
+                .ToList();
+
+            return users.Select(user => new UserStatsDTO
+            {
+                UserId = user.UserId,
+                Username = user.Username,
+                Email = user.Email,
+                TotalPosts = user.Posts?.Count ?? 0,
+                TotalComments = user.Comments?.Count ?? 0,
+                ApprovedPosts = user.Posts?.Count(p => p.Status == "approved") ?? 0,
+                RejectedPosts = user.Posts?.Count(p => p.Status == "rejected") ?? 0,
+                ReportedPosts = user.Reports?.Count ?? 0,
+                CreatedAt = user.CreatedAt
+            });
+        }
+
+        public UserStatsDTO? GetUserStats(int userId)
+        {
+            var user = _context.User
+                .Include(u => u.Posts)
+                .Include(u => u.Comments)
+                .Include(u => u.Reports)
+                .FirstOrDefault(u => u.UserId == userId);
+            
+            if (user == null) return null;
+
+            return new UserStatsDTO
+            {
+                UserId = user.UserId,
+                Username = user.Username,
+                Email = user.Email,
+                TotalPosts = user.Posts?.Count ?? 0,
+                TotalComments = user.Comments?.Count ?? 0,
+                ApprovedPosts = user.Posts?.Count(p => p.Status == "approved") ?? 0,
+                RejectedPosts = user.Posts?.Count(p => p.Status == "rejected") ?? 0,
+                ReportedPosts = user.Reports?.Count ?? 0,
+                CreatedAt = user.CreatedAt
+            };
         }
     }
 }

@@ -23,6 +23,10 @@ public partial class Post
 
     public bool IsHidden { get; set; } = false;
 
+    public string Status { get; set; } = "pending"; // pending, approved, rejected
+
+    public string? RejectionReason { get; set; }
+
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
     public virtual ICollection<PostLike> PostLikes { get; set; } = new List<PostLike>();

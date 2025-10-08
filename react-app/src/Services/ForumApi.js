@@ -70,8 +70,8 @@ export function updateComment(commentId, content) {
   return API.put(`/comments/${commentId}`, { content });
 }
 
-export function deleteComment(commentId) {
-  return API.delete(`/comments/${commentId}`);
+export function deleteComment(postId, commentId) {
+  return API.delete(`/posts/${postId}/comments/${commentId}`);
 }
 
 export function likeComment(commentId) {

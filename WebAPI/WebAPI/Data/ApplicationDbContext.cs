@@ -184,6 +184,8 @@ namespace WebAPI.Data
                 entity.Property(e => e.ViewCount).HasColumnName("ViewCount");
                 entity.Property(e => e.IsPinned).HasColumnName("IsPinned");
                 entity.Property(e => e.IsHidden).HasColumnName("IsHidden");
+                entity.Property(e => e.Status).HasColumnName("Status");
+                entity.Property(e => e.RejectionReason).HasColumnName("RejectionReason");
 
                 entity.HasOne(d => d.User).WithMany(p => p.Posts)
                     .HasForeignKey(d => d.UserId)

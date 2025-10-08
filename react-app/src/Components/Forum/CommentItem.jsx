@@ -1,24 +1,49 @@
 import React, { useState, useEffect } from "react";
 import { likeComment, unlikeComment, createComment, updateComment, deleteComment } from "../../Services/ForumApi";
-import { ThumbsUp, Edit, Trash2 } from "lucide-react";
+import { ThumbsUp, Edit, Trash2, MoreHorizontal } from "lucide-react";
 import useAuth from "../../Hook/UseAuth";
+import { formatTimeVietnam } from "../../utils/date";
 
-export default function CommentItem({ comment, onReply, level = 0, postId }) {
+export default function CommentItem({ comment, onReply, level = 0, postId, postOwnerId }) {
   const { user } = useAuth();
   const [isVoted, setIsVoted] = useState(comment.isVoted || false);
   const [voteCount, setVoteCount] = useState(comment.voteCount || 0);
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [showReplies, setShowReplies] = useState(true); // Mở replies mặc định cho tất cả levels
+  const [showReplies, setShowReplies] = useState(false); // Đóng replies mặc định
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(comment.content);
+  const [showMenu, setShowMenu] = useState(false);
 
   // Sync state with props when component mounts or props change
   useEffect(() => {
     setIsVoted(comment.isVoted || false);
     setVoteCount(comment.voteCount || comment.likeNumber || 0);
   }, [comment.isVoted, comment.voteCount, comment.likeNumber]);
+
+  // Close menu when clicking outside or when other comment menus are opened
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showMenu && !event.target.closest('.comment-menu')) {
+        setShowMenu(false);
+      }
+    };
+
+    const handleCloseAllMenus = (event) => {
+      if (event.detail.excludeCommentId !== comment.commentId) {
+        setShowMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('closeAllCommentMenus', handleCloseAllMenus);
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('closeAllCommentMenus', handleCloseAllMenus);
+    };
+  }, [showMenu, comment.commentId]);
 
   const handleVote = (e) => {
     e.stopPropagation();
@@ -73,9 +98,9 @@ export default function CommentItem({ comment, onReply, level = 0, postId }) {
   };
 
   const handleDeleteComment = () => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa comment này?")) {
+    if (window.confirm("Are you sure you want to delete this comment?")) {
       setSubmitting(true);
-      deleteComment(comment.commentId)
+      deleteComment(postId, comment.commentId)
         .then(() => {
           // Gọi callback để xóa comment khỏi danh sách
           if (onReply) {
@@ -90,6 +115,16 @@ export default function CommentItem({ comment, onReply, level = 0, postId }) {
           setSubmitting(false);
         });
     }
+  };
+
+  const handleMenuClick = (e) => {
+    e.stopPropagation();
+    // Close all other comment menus by dispatching a custom event
+    const closeAllMenusEvent = new CustomEvent('closeAllCommentMenus', {
+      detail: { excludeCommentId: comment.commentId }
+    });
+    window.dispatchEvent(closeAllMenusEvent);
+    setShowMenu(!showMenu);
   };
 
   const handleReply = (e) => {
@@ -118,14 +153,7 @@ export default function CommentItem({ comment, onReply, level = 0, postId }) {
   };
 
   const formatTime = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return formatTimeVietnam(dateString);
   };
 
   const hasReplies = comment.replies && comment.replies.length > 0;
@@ -164,89 +192,117 @@ export default function CommentItem({ comment, onReply, level = 0, postId }) {
           className="comment-avatar"
         />
         <div className="comment-user-info">
-          <p className="comment-username">@{comment.user?.username}</p>
-          <p className="comment-time">{formatTime(comment.createdAt)}</p>
+          <span className="comment-username">@{comment.user?.username}</span>
+          <div className="comment-content">
+            {isEditing ? (
+              <div className="edit-comment-form">
+                <textarea
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                  className="edit-textarea"
+                  rows={3}
+                />
+                <div className="edit-actions">
+                  <button 
+                    className="btn-save" 
+                    onClick={handleSaveEdit}
+                    disabled={submitting}
+                  >
+                    Save
+                  </button>
+                  <button 
+                    className="btn-cancel" 
+                    onClick={handleCancelEdit}
+                    disabled={submitting}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              comment.content
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="comment-content">
-        {isEditing ? (
-          <div className="edit-comment-form">
-            <textarea
-              value={editText}
-              onChange={(e) => setEditText(e.target.value)}
-              className="edit-textarea"
-              rows={3}
-            />
-            <div className="edit-actions">
-              <button 
-                className="btn-save" 
-                onClick={handleSaveEdit}
-                disabled={submitting}
-              >
-                Save
-              </button>
-              <button 
-                className="btn-cancel" 
-                onClick={handleCancelEdit}
-                disabled={submitting}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        ) : (
-          comment.content
-        )}
-      </div>
-
       <div className="comment-actions">
-        <button
-          className={`comment-action-btn vote-btn ${isVoted ? "voted" : ""}`}
-          onClick={handleVote}
-        >
-          <ThumbsUp size={16} />
-          <span>{isVoted ? "Unlike" : "Like"}</span>
-          <span className="vote-count">({voteCount})</span>
-        </button>
-        
-        {hasReplies && (
+        <div className="comment-actions-left">
+          <span className="comment-time">{formatTime(comment.createdAt)}</span>
+          
           <button
-            className="comment-action-btn toggle-replies-btn"
-            onClick={() => setShowReplies(!showReplies)}
+            className="comment-action-btn"
+            onClick={() => setShowReplyForm(!showReplyForm)}
           >
-            {showReplies ? `Hide replies` : `Show replies (${replyCount})`}
+            Reply
           </button>
-        )}
+          
+          <button
+            className={`comment-action-btn vote-btn ${isVoted ? "voted" : ""}`}
+            onClick={handleVote}
+          >
+            <ThumbsUp size={16} />
+            <span>{isVoted ? "Liked" : "Like"}</span>
+            <span className="vote-count">({voteCount})</span>
+          </button>
+        </div>
         
-        <button
-          className="comment-action-btn"
-          onClick={() => setShowReplyForm(!showReplyForm)}
-        >
-          Reply
-        </button>
-
-        {/* Edit và Delete buttons - chỉ hiện cho owner */}
-        {user && comment.user && user.userId === comment.user.userId && (
-          <>
+        <div className="comment-actions-right">
+          {hasReplies && (
             <button
-              className="comment-action-btn edit-btn"
-              onClick={handleEditComment}
-              disabled={submitting}
+              className="comment-action-btn toggle-replies-btn"
+              onClick={() => setShowReplies(!showReplies)}
             >
-              <Edit size={16} />
-              Edit
+              {showReplies ? `Hide ${replyCount} replies` : `View all ${replyCount} replies`}
             </button>
-            <button
-              className="comment-action-btn delete-btn"
-              onClick={handleDeleteComment}
-              disabled={submitting}
-            >
-              <Trash2 size={16} />
-              Delete
-            </button>
-          </>
-        )}
+          )}
+          
+          {/* 3-dot menu */}
+          {user && comment.user && (
+            <div className="comment-menu">
+              <button
+                className="comment-action-btn menu-btn"
+                onClick={handleMenuClick}
+              >
+                <MoreHorizontal size={16} />
+              </button>
+              
+              {showMenu && (
+                <div className="comment-menu-dropdown">
+                  {/* Edit button - chỉ hiện cho owner của comment */}
+                  {user.userId === comment.user.userId && (
+                    <button
+                      className="menu-item"
+                      onClick={() => {
+                        handleEditComment();
+                        setShowMenu(false);
+                      }}
+                      disabled={submitting}
+                    >
+                      <Edit size={16} />
+                      Edit
+                    </button>
+                  )}
+                  
+                  {/* Delete button - hiện cho owner của comment HOẶC chủ bài viết */}
+                  {(user.userId === comment.user.userId || (postOwnerId && user.userId === postOwnerId)) && (
+                    <button
+                      className="menu-item delete-item"
+                      onClick={() => {
+                        handleDeleteComment();
+                        setShowMenu(false);
+                      }}
+                      disabled={submitting}
+                    >
+                      <Trash2 size={16} />
+                      Delete
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {showReplyForm && (
@@ -285,6 +341,8 @@ export default function CommentItem({ comment, onReply, level = 0, postId }) {
               comment={reply} 
               onReply={onReply}
               level={level + 1}
+              postId={postId}
+              postOwnerId={postOwnerId}
             />
           ))}
         </div>
