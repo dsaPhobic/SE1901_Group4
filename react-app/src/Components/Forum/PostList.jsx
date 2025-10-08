@@ -1,5 +1,6 @@
 import React from "react";
 import PostItem from "./PostItem";
+import NothingFound from "../Nothing/NothingFound";
 
 export default function PostList({ posts, loading, onLoadMore, hasMore, onPostUpdated, isInClosedSection = false }) {
   if (loading && posts.length === 0) {
@@ -12,9 +13,13 @@ export default function PostList({ posts, loading, onLoadMore, hasMore, onPostUp
 
   if (posts.length === 0) {
     return (
-      <div className="loading">
-        <div>No posts found</div>
-      </div>
+      <NothingFound
+        imageSrc="/src/assets/sad_cloud.png"
+        title="No posts found"
+        message="Be the first to start a discussion."
+        actionLabel="Create a post"
+        to="/create-post"
+      />
     );
   }
 

@@ -1,0 +1,47 @@
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+  /* background: #fff; */
+  /* border: 1px dashed #d0d7de;
+  border-radius: 12px; */
+}
+
+.emptyImage {
+  width: 140px;
+  height: auto;
+  opacity: 0.9;
+}
+
+.title {
+  margin: 4px 0 0;
+  font-size: 30px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.message {
+  margin: 0;
+  font-size: 20px;
+  color: #475569;
+}
+
+.emptyButton {
+  margin-top: 8px;
+  background: #f1f3f5;
+  color: #555;
+  border: none;
+  border-radius: 100px;
+  padding: 10px 10px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.emptyButton:hover {
+  background: #0b5ed7;
+  color: #f1f3f5;
+}

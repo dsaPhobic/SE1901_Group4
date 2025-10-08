@@ -6,6 +6,7 @@ import ExamCard from "../../Components/Exam/ExamCard";
 import ExamSkillModal from "../../Components/Exam/ExamPopup";
 import styles from "./WritingPage.module.css";
 import { useNavigate } from "react-router-dom";
+import NothingFound from "../../Components/Nothing/NothingFound";
 
 export default function WritingPage() {
   const navigate = useNavigate(); // ✅ Hook phải nằm bên trong function component
@@ -62,9 +63,7 @@ export default function WritingPage() {
         <h2 className={styles.pageTitle}>IELTS Writing</h2>
 
         {loading && <div className={styles.stateText}>Loading…</div>}
-        {!loading && error && (
-          <div className={styles.errorText}>{error}</div>
-        )}
+        {!loading && error && <div className={styles.errorText}>{error}</div>}
 
         {!loading && !error && (
           <div className={styles.grid}>
@@ -77,8 +76,12 @@ export default function WritingPage() {
                 />
               ))
             ) : (
-              <div className={styles.stateText}>
-                No writing exams available.
+              <div className={styles.centerWrapper}>
+                <NothingFound
+                  imageSrc="/src/assets/sad_cloud.png"
+                  title="No writing exams available"
+                  message="Please check back later or try another skill."
+                />
               </div>
             )}
           </div>

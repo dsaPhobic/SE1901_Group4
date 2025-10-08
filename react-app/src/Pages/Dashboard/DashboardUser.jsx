@@ -12,6 +12,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import NothingFound from "../../Components/Nothing/NothingFound";
 
 import * as AuthApi from "../../Services/AuthApi";
 import { getSubmittedDays } from "../../Services/ExamApi";
@@ -270,23 +271,13 @@ export default function DashboardUser() {
                 </div>
               ))
             ) : (
-              <div className={styles.emptyState}>
-                <img
-                  src="../../src/assets/sad_cloud.png"
-                  alt="No history"
-                  className={styles.emptyImage}
-                />
-                <p>
-                  You have not done any exercises yet! Choose the appropriate
-                  form and practice now!
-                </p>
-                <button
-                  className={styles.emptyButton}
-                  onClick={() => navigate("/reading")}
-                >
-                  Do your homework now!
-                </button>
-              </div>
+              <NothingFound
+                imageSrc="/src/assets/sad_cloud.png"
+                title="No practice history"
+                message="You have not done any exercises yet! Choose the appropriate form and practice now!"
+                actionLabel="Do your homework now!"
+                to="/reading"
+              />
             )}
           </div>
         </div>

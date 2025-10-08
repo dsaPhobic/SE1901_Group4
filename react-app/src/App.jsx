@@ -16,7 +16,8 @@ import Profile from "./Pages/Profile/Profile.jsx";
 import ExamManagement from "./Pages/Admin/ExamManagement.jsx";
 import AddReading from "./Pages/Admin/AddReading.jsx";
 import AdminDashboard from "./Pages/Admin/AdminDashBoard.jsx"; // ⚡ import admin dashboard
-import AddWriting from "./Pages/Admin/AddWriting.jsx";import ModeratorDashboard from "./Pages/Moderator/ModeratorDashboard.jsx"; // ⚡ import moderator dashboard
+import AddWriting from "./Pages/Admin/AddWriting.jsx";
+import ModeratorDashboard from "./Pages/Moderator/ModeratorDashboard.jsx"; // ⚡ import moderator dashboard
 import AppWrapper from "./Components/Layout/AppWrapper.jsx";
 import WritingTestPage from "./Pages/Writing/WritingTestPage.jsx"
 function App() {
@@ -25,15 +26,15 @@ function App() {
       <AppWrapper>
         <Routes>
           <Route path="/" element={<Login />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/verify-otp" element={<VerifyOtp />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/verify-otp" element={<VerifyOtp />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           <Route path="/home" element={<Home />} />
           <Route path="/dictionary" element={<Dictionary />} />
-        <Route path="/reading" element={<ReadingPage />} />
-        <Route path="/writing" element={<WritingPage />} />
+          <Route path="/reading" element={<ReadingPage />} />
+          <Route path="/writing" element={<WritingPage />} />
           <Route path="/forum" element={<Forum />} />
           <Route path="/create-post" element={<CreatePost />} />
           <Route path="/edit-post/:postId" element={<EditPost />} />
@@ -43,7 +44,7 @@ function App() {
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/exam" element={<ExamManagement />} />
           <Route path="/admin/exam/add-reading" element={<AddReading />} />
-        <Route path="/admin/exam/add-writing" element={<AddWriting />} />
+          <Route path="/admin/exam/add-writing" element={<AddWriting />} />
     <Route path="/writing-test" element={<WritingTestPage />} />
 
           <Route path="/moderator/dashboard" element={<ModeratorDashboard />} />

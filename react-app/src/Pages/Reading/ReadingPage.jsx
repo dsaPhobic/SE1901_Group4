@@ -5,6 +5,7 @@ import * as readingService from "../../Services/ReadingApi";
 import ExamCard from "../../Components/Exam/ExamCard";
 import ExamSkillModal from "../../Components/Exam/ExamPopup";
 import styles from "./ReadingPage.module.css";
+import NothingFound from "../../Components/Nothing/NothingFound";
 
 export default function ReadingPage() {
   const [exams, setExams] = useState([]);
@@ -59,9 +60,7 @@ export default function ReadingPage() {
         <h2 className={styles.pageTitle}>IELTS Reading</h2>
 
         {loading && <div className={styles.stateText}>Loading…</div>}
-        {!loading && error && (
-          <div className={styles.errorText}>{error}</div>
-        )}
+        {!loading && error && <div className={styles.errorText}>{error}</div>}
 
         {!loading && !error && (
           <div className={styles.grid}>
@@ -74,8 +73,12 @@ export default function ReadingPage() {
                 />
               ))
             ) : (
-              <div className={styles.stateText}>
-                No reading exams available.
+              <div className={styles.centerWrapper}>
+                <NothingFound
+                  imageSrc="/src/assets/sad_cloud.png"
+                  title="No reading exams available"
+                  message="Please check back later or try another skill."
+                />
               </div>
             )}
           </div>
