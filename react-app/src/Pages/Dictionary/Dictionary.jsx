@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from "react";
 import "./Dictionary.css";
-import Sidebar from "../../Components/Layout/GeneralSidebar";
-import HeaderBar from "../../Components/Layout/HeaderBar";
+import AppLayout from "../../Components/Layout/AppLayout";
 import {
   Trash2,
   Volume2,
@@ -15,6 +14,8 @@ import * as VocabGroupApi from "../../Services/VocabGroupApi";
 import SearchBar from "../../Components/Dictionary/SearchBar";
 import Popup from "../../Components/Dictionary/PopUp";
 import QuizPage from "../../Components/Dictionary/QuizPage";
+import NothingFound from "../../Components/Nothing/NothingFound";
+import sadCloud from "../../assets/sad_cloud.png";
 
 export default function Dictionary() {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -91,215 +92,236 @@ export default function Dictionary() {
         });
     }
   };
+
   const handleStartQuiz = () => {
     reloadGroups();
     setShowQuiz(true);
   };
 
   return (
-    <div className="home-container">
-      <Sidebar />
-      <main className="main-content">
-        <HeaderBar />
+    <AppLayout title="Dictionary">
+      {!showQuiz ? (
+        <div className="dictionary-container">
+          <h2>Vocabulary Notebook</h2>
 
-        {!showQuiz ? (
-          <div className="dictionary-container">
-            <h2>Vocabulary Notebook</h2>
+          {/* Search row with Quiz button */}
+          <div className="search-row">
+            <SearchBar
+              value={searchTerm}
+              onChange={setSearchTerm}
+              onSubmit={handleSearch}
+              placeholder="Search vocabulary..."
+              showButton={true}
+            />
 
-            {/* Search row with Quiz button */}
-            <div className="search-row">
-              <SearchBar
-                value={searchTerm}
-                onChange={setSearchTerm}
-                onSubmit={handleSearch}
-                placeholder="Search vocabulary..."
-                showButton={true}
-              />
-
-              {activeGroup && (
-                <button className="start-quiz-btn" onClick={handleStartQuiz}>
-                  Start Quiz
-                </button>
-              )}
-            </div>
-
-            {/* Tabs for groups */}
-            <div className="tabs">
-              {groups.map((g) => (
-                <div key={g.groupId} className="tab-wrapper">
-                  <button
-                    className={`tab ${
-                      activeGroup?.groupId === g.groupId ? "active" : ""
-                    }`}
-                    onClick={() => setActiveGroup(g)}
-                  >
-                    {g.groupname} ({g.wordIds.length})
-                  </button>
-                  <button
-                    className="delete-group-btn"
-                    onClick={() => handleDeleteGroup(g)}
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              ))}
-              <button
-                className="tab create"
-                onClick={() => setShowCreateGroup(true)}
-              >
-                <FolderPlus size={16} /> New Group
-              </button>
-            </div>
-
-            {/* Group search bar */}
             {activeGroup && (
-              <SearchBar
-                value={groupSearchTerm}
-                onChange={setGroupSearchTerm}
-                placeholder="Search in this group..."
-                showButton={false}
-              />
+              <button className="start-quiz-btn" onClick={handleStartQuiz}>
+                Start Quiz
+              </button>
             )}
-
-            {/* Dictionary table */}
-            <table className="dictionary-table">
-              <thead>
-                <tr>
-                  <th>Term</th>
-                  <th>Meaning</th>
-                  <th>Example</th>
-                  <th>Audio</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredWords.map((w) => (
-                  <tr key={w.wordId}>
-                    <td>{w.term}</td>
-                    <td>{w.meaning || "-"}</td>
-                    <td>{w.example || "-"}</td>
-                    <td>
-                      {w.audio ? (
-                        <button
-                          className="icon-btn"
-                          onClick={() => new Audio(w.audio).play()}
-                        >
-                          <Volume2 size={18} />
-                        </button>
-                      ) : (
-                        "-"
-                      )}
-                    </td>
-                    <td>
-                      <button
-                        className="icon-btn delete"
-                        onClick={() => handleRemoveWord(w.wordId)}
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
-        ) : (
-          <QuizPage groupWords={groupWords} onBack={() => setShowQuiz(false)} />
-        )}
 
-        {showCreateGroup && (
-          <Popup
-            title="Create New Group"
-            onClose={() => setShowCreateGroup(false)}
-            actions={
-              <>
-                <button onClick={handleCreateGroup}>
-                  <PlusCircle size={18} /> Create
+          {/* Tabs for groups */}
+          <div className="tabs">
+            {groups.map((g) => (
+              <div key={g.groupId} className="tab-wrapper">
+                <button
+                  className={`tab ${
+                    activeGroup?.groupId === g.groupId ? "active" : ""
+                  }`}
+                  onClick={() => setActiveGroup(g)}
+                >
+                  {g.groupname} ({g.wordIds.length})
                 </button>
                 <button
-                  className="cancel"
-                  onClick={() => setShowCreateGroup(false)}
+                  className="delete-group-btn"
+                  onClick={() => handleDeleteGroup(g)}
                 >
-                  <XCircle size={18} /> Cancel
+                  <X size={16} />
                 </button>
-              </>
-            }
-          >
-            <input
-              type="text"
-              placeholder="Group name"
-              value={newGroupName}
-              onChange={(e) => setNewGroupName(e.target.value)}
-            />
-          </Popup>
-        )}
-        {showPopup && (
-          <Popup
-            title="Search Result"
-            onClose={() => setShowPopup(false)}
-            actions={
-              <>
-                {searchResult && searchResult.term ? (
-                  <button
-                    onClick={handleAddToGroup}
-                    disabled={!selectedGroupId}
-                  >
-                    <PlusCircle size={18} /> Add to Group
-                  </button>
-                ) : null}
+              </div>
+            ))}
+            <button
+              className="tab create"
+              onClick={() => setShowCreateGroup(true)}
+            >
+              <FolderPlus size={16} /> New Group
+            </button>
+          </div>
 
-                <button className="cancel" onClick={() => setShowPopup(false)}>
-                  <XCircle size={18} /> Close
+          {/* Empty state for no groups */}
+          {groups.length === 0 ? (
+            <NothingFound
+              image={sadCloud}
+              title="No groups yet"
+              message="Create your first vocabulary group to get started."
+              actionLabel="Create group"
+              onAction={() => setShowCreateGroup(true)}
+            />
+          ) : (
+            <>
+              {/* Group search bar */}
+              {activeGroup && (
+                <SearchBar
+                  value={groupSearchTerm}
+                  onChange={setGroupSearchTerm}
+                  placeholder="Search in this group..."
+                  showButton={false}
+                />
+              )}
+
+              {/* Dictionary table or empty state */}
+              {filteredWords.length > 0 ? (
+                <table className="dictionary-table">
+                  <thead>
+                    <tr>
+                      <th>Term</th>
+                      <th>Meaning</th>
+                      <th>Example</th>
+                      <th>Audio</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredWords.map((w) => (
+                      <tr key={w.wordId}>
+                        <td>{w.term}</td>
+                        <td>{w.meaning || "-"}</td>
+                        <td>{w.example || "-"}</td>
+                        <td>
+                          {w.audio ? (
+                            <button
+                              className="icon-btn"
+                              onClick={() => new Audio(w.audio).play()}
+                            >
+                              <Volume2 size={18} />
+                            </button>
+                          ) : (
+                            "-"
+                          )}
+                        </td>
+                        <td>
+                          <button
+                            className="icon-btn delete"
+                            onClick={() => handleRemoveWord(w.wordId)}
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <NothingFound
+                  image={sadCloud}
+                  title={
+                    activeGroup ? "No words in this group" : "No words found"
+                  }
+                  message={
+                    activeGroup
+                      ? "Add words from search to this group."
+                      : "Try a different search term."
+                  }
+                />
+              )}
+            </>
+          )}
+        </div>
+      ) : (
+        <QuizPage groupWords={groupWords} onBack={() => setShowQuiz(false)} />
+      )}
+
+      {/* Create group popup */}
+      {showCreateGroup && (
+        <Popup
+          title="Create New Group"
+          onClose={() => setShowCreateGroup(false)}
+          actions={
+            <>
+              <button onClick={handleCreateGroup}>
+                <PlusCircle size={18} /> Create
+              </button>
+              <button
+                className="cancel"
+                onClick={() => setShowCreateGroup(false)}
+              >
+                <XCircle size={18} /> Cancel
+              </button>
+            </>
+          }
+        >
+          <input
+            type="text"
+            placeholder="Group name"
+            value={newGroupName}
+            onChange={(e) => setNewGroupName(e.target.value)}
+          />
+        </Popup>
+      )}
+
+      {/* Search popup */}
+      {showPopup && (
+        <Popup
+          title="Search Result"
+          onClose={() => setShowPopup(false)}
+          actions={
+            <>
+              {searchResult && searchResult.term ? (
+                <button onClick={handleAddToGroup} disabled={!selectedGroupId}>
+                  <PlusCircle size={18} /> Add to Group
                 </button>
-              </>
-            }
-          >
-            {errorMessage ? (
-              <p className="error">{errorMessage}</p>
-            ) : searchResult && searchResult.term ? (
-              <>
-                <div>
-                  <strong>Term:</strong> {searchResult.term}
-                </div>
-                <div>
-                  <strong>Meaning:</strong> {searchResult.meaning || "-"}
-                </div>
-                <div>
-                  <strong>Example:</strong> {searchResult.example || "-"}
-                </div>
-                <div>
-                  <strong>Audio:</strong>{" "}
-                  {searchResult.audio ? (
-                    <button
-                      className="icon-btn"
-                      onClick={() => new Audio(searchResult.audio).play()}
-                    >
-                      <Volume2 size={18} />
-                    </button>
-                  ) : (
-                    "Not available"
-                  )}
-                </div>
-                <select
-                  value={selectedGroupId || ""}
-                  onChange={(e) => setSelectedGroupId(Number(e.target.value))}
-                >
-                  <option value="" className="select-group">
-                    -- Select group --
+              ) : null}
+
+              <button className="cancel" onClick={() => setShowPopup(false)}>
+                <XCircle size={18} /> Close
+              </button>
+            </>
+          }
+        >
+          {errorMessage ? (
+            <p className="error">{errorMessage}</p>
+          ) : searchResult && searchResult.term ? (
+            <>
+              <div>
+                <strong>Term:</strong> {searchResult.term}
+              </div>
+              <div>
+                <strong>Meaning:</strong> {searchResult.meaning || "-"}
+              </div>
+              <div>
+                <strong>Example:</strong> {searchResult.example || "-"}
+              </div>
+              <div>
+                <strong>Audio:</strong>{" "}
+                {searchResult.audio ? (
+                  <button
+                    className="icon-btn"
+                    onClick={() => new Audio(searchResult.audio).play()}
+                  >
+                    <Volume2 size={18} />
+                  </button>
+                ) : (
+                  "Not available"
+                )}
+              </div>
+              <select
+                value={selectedGroupId || ""}
+                onChange={(e) => setSelectedGroupId(Number(e.target.value))}
+              >
+                <option value="">-- Select group --</option>
+                {groups.map((g) => (
+                  <option key={g.groupId} value={g.groupId}>
+                    {g.groupname}
                   </option>
-                  {groups.map((g) => (
-                    <option key={g.groupId} value={g.groupId}>
-                      {g.groupname}
-                    </option>
-                  ))}
-                </select>
-              </>
-            ) : (
-              <p style={{ color: "gray" }}> No word found to add.</p>
-            )}
-          </Popup>
-        )}
-      </main>
-    </div>
+                ))}
+              </select>
+            </>
+          ) : (
+            <p style={{ color: "gray" }}>No word found to add.</p>
+          )}
+        </Popup>
+      )}
+    </AppLayout>
   );
 }

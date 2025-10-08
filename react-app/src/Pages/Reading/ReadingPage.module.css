@@ -25,3 +25,10 @@
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 16px;
 }
+.centerWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh; /* chiếm 60% chiều cao màn hình */
+  grid-column: 1 / -1; /* nếu vẫn nằm trong grid, sẽ chiếm full width */
+}
