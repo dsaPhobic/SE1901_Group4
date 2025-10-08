@@ -23,7 +23,7 @@ namespace WebAPI.Services
                 .Include(p => p.User)
                 .Include(p => p.Comments)
                 .Include(p => p.PostLikes)
-                .Where(p => !p.IsHidden) // Không hiển thị posts đã bị ẩn
+                .Where(p => !p.IsHidden && p.Status == "approved") // Chỉ hiển thị posts đã được duyệt
                 .OrderByDescending(p => p.IsPinned) // Pinned posts lên đầu
                 .ThenByDescending(p => p.CreatedAt) // Sau đó sắp xếp theo thời gian
                 .Skip((page - 1) * limit)
@@ -51,11 +51,11 @@ namespace WebAPI.Services
 
             query = filter.ToLower() switch
             {
-                "new" => query.Where(p => !p.IsHidden && (userId == null || !_context.UserPostHide.Any(uph => uph.UserId == userId && uph.PostId == p.PostId))).OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.CreatedAt),
-                "top" => query.Where(p => !p.IsHidden && (userId == null || !_context.UserPostHide.Any(uph => uph.UserId == userId && uph.PostId == p.PostId))).OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.PostLikes.Count),
-                "hot" => query.Where(p => !p.IsHidden && (userId == null || !_context.UserPostHide.Any(uph => uph.UserId == userId && uph.PostId == p.PostId))).OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.ViewCount),
+                "new" => query.Where(p => !p.IsHidden && p.Status == "approved" && (userId == null || !_context.UserPostHide.Any(uph => uph.UserId == userId && uph.PostId == p.PostId))).OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.CreatedAt),
+                "top" => query.Where(p => !p.IsHidden && p.Status == "approved" && (userId == null || !_context.UserPostHide.Any(uph => uph.UserId == userId && uph.PostId == p.PostId))).OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.PostLikes.Count),
+                "hot" => query.Where(p => !p.IsHidden && p.Status == "approved" && (userId == null || !_context.UserPostHide.Any(uph => uph.UserId == userId && uph.PostId == p.PostId))).OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.ViewCount),
                 "closed" => userId.HasValue ? query.Where(p => _context.UserPostHide.Any(uph => uph.UserId == userId && uph.PostId == p.PostId)).OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.CreatedAt) : query.Where(p => false),
-                _ => query.Where(p => !p.IsHidden && (userId == null || !_context.UserPostHide.Any(uph => uph.UserId == userId && uph.PostId == p.PostId))).OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.CreatedAt)
+                _ => query.Where(p => !p.IsHidden && p.Status == "approved" && (userId == null || !_context.UserPostHide.Any(uph => uph.UserId == userId && uph.PostId == p.PostId))).OrderByDescending(p => p.IsPinned).ThenByDescending(p => p.CreatedAt)
             };
 
             var posts = query
@@ -103,7 +103,8 @@ namespace WebAPI.Services
                 Title = dto.Title,
                 Content = dto.Content,
                 CreatedAt = DateTime.UtcNow,
-                ViewCount = 0
+                ViewCount = 0,
+                Status = "pending" // Tất cả posts mới đều ở trạng thái pending
             };
 
             _context.Post.Add(post);
@@ -296,6 +297,7 @@ namespace WebAPI.Services
                 VoteCount = post.PostLikes.Count,
                 IsVoted = userId.HasValue ? IsPostVotedByUser(post.PostId, userId.Value) : false,
                 IsPinned = post.IsPinned,
+                RejectionReason = post.RejectionReason,
                 User = new UserDTO
                 {
                     UserId = post.User.UserId,
@@ -374,6 +376,155 @@ namespace WebAPI.Services
                 _context.UserPostHide.Remove(existingHide);
                 _context.SaveChanges();
             }
+        }
+
+        // Moderator methods
+        public ModeratorStatsDTO GetModeratorStats()
+        {
+            return new ModeratorStatsDTO
+            {
+                TotalPosts = _context.Post.Count(p => p.Status == "approved"),
+                PendingPosts = _context.Post.Count(p => p.Status == "pending"),
+                ReportedPosts = _context.Report.Count(),
+                RejectedPosts = _context.Post.Count(p => p.Status == "rejected")
+            };
+        }
+
+        public IEnumerable<PostDTO> GetPendingPosts(int page, int limit)
+        {
+            var posts = _context.Post
+                .Include(p => p.User)
+                .Include(p => p.Comments)
+                .Include(p => p.PostLikes)
+                .Where(p => p.Status == "pending")
+                .OrderByDescending(p => p.CreatedAt)
+                .Skip((page - 1) * limit)
+                .Take(limit)
+                .ToList();
+
+            return posts.Select(p => ToDTO(p));
+        }
+
+        public IEnumerable<ReportedPostDTO> GetReportedPosts(int page, int limit)
+        {
+            var reportedPosts = _context.Report
+                .Include(r => r.Post)
+                .ThenInclude(p => p.User)
+                .OrderByDescending(r => r.CreatedAt)
+                .Skip((page - 1) * limit)
+                .Take(limit)
+                .ToList();
+
+            return reportedPosts.Select(r => new ReportedPostDTO
+            {
+                PostId = r.PostId,
+                Title = r.Post?.Title ?? "",
+                Content = r.Post?.Content ?? "",
+                Author = r.Post?.User?.Username ?? "",
+                CreatedAt = r.Post?.CreatedAt ?? DateTime.UtcNow,
+                ReportReason = r.Content,
+                ReportCount = 1, // Mock count
+                Status = "Reported"
+            });
+        }
+
+        public IEnumerable<PostDTO> GetRejectedPosts(int page, int limit)
+        {
+            var posts = _context.Post
+                .Include(p => p.User)
+                .Include(p => p.Comments)
+                .Include(p => p.PostLikes)
+                .Where(p => p.Status == "rejected")
+                .OrderByDescending(p => p.CreatedAt)
+                .Skip((page - 1) * limit)
+                .Take(limit)
+                .ToList();
+
+            return posts.Select(p => ToDTO(p));
+        }
+
+        public void ApprovePost(int postId)
+        {
+            var post = _context.Post.Find(postId);
+            if (post == null) throw new KeyNotFoundException("Post not found");
+
+            post.Status = "approved";
+            post.RejectionReason = null; // Clear rejection reason if any
+            _context.SaveChanges();
+        }
+
+        public void RejectPost(int postId, string reason)
+        {
+            var post = _context.Post.Find(postId);
+            if (post == null) throw new KeyNotFoundException("Post not found");
+
+            post.Status = "rejected";
+            post.RejectionReason = reason;
+
+            // Tạo notification cho user
+            var notification = new Notification
+            {
+                UserId = post.UserId,
+                Content = $"Bài viết '{post.Title}' của bạn đã bị từ chối. Lý do: {reason}",
+                Type = "post_rejected",
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Notification.Add(notification);
+            _context.SaveChanges();
+        }
+
+        public IEnumerable<ChartDataDTO> GetPostsChartData(int month, int year)
+        {
+            var startDate = new DateTime(year, month, 1);
+            var endDate = startDate.AddMonths(1);
+
+            var posts = _context.Post
+                .Where(p => p.CreatedAt >= startDate && p.CreatedAt < endDate)
+                .GroupBy(p => p.CreatedAt.Date)
+                .Select(g => new ChartDataDTO
+                {
+                    Label = g.Key.ToString("M/d"),
+                    Value = g.Count(),
+                    Date = g.Key
+                })
+                .OrderBy(x => x.Date)
+                .ToList();
+
+            return posts;
+        }
+
+        public IEnumerable<NotificationDTO> GetModeratorNotifications()
+        {
+            // Mock notifications - in real implementation, you would have a notifications table
+            return new List<NotificationDTO>
+            {
+                new NotificationDTO
+                {
+                    NotificationId = 1,
+                    Title = "New pending post",
+                    Content = "A new post is waiting for approval",
+                    Type = "pending",
+                    IsRead = false,
+                    CreatedAt = DateTime.UtcNow.AddHours(-2)
+                },
+                new NotificationDTO
+                {
+                    NotificationId = 2,
+                    Title = "Post reported",
+                    Content = "A post has been reported by users",
+                    Type = "reported",
+                    IsRead = false,
+                    CreatedAt = DateTime.UtcNow.AddHours(-4)
+                }
+            };
+        }
+
+        public void MarkNotificationAsRead(int notificationId)
+        {
+            // Mock implementation - in real scenario, update notification status
+            Console.WriteLine($"Marking notification {notificationId} as read");
         }
 
     }

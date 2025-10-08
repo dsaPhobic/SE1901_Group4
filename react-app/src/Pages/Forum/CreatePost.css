@@ -48,7 +48,7 @@
   padding: 20px 24px;
   border: 2px solid #e8e8e8;
   border-radius: 12px;
-  font-size: 24px;
+  font-size: 32px;
   font-weight: 400;
   color: #1a1a1a;
   background: white;
@@ -73,7 +73,7 @@
   padding: 24px;
   border: 2px solid #e8e8e8;
   border-radius: 12px;
-  font-size: 24px;
+  font-size: 32px;
   font-weight: 400;
   color: #1a1a1a;
   background: white;
@@ -98,9 +98,10 @@
 
 .form-actions {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   margin-top: 32px;
+  gap: 16px;
 }
 
 .form-actions-left {
@@ -115,7 +116,7 @@
   padding: 16px 28px;
   border: none;
   border-radius: 8px;
-  font-size: 20px;
+  font-size: 28px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;

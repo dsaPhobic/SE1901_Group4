@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { votePost, unvotePost, deletePost, pinPost, unpinPost, hidePost, unhidePost, reportPost } from "../../Services/ForumApi";
 import useAuth from "../../Hook/UseAuth";
 import { MoreVertical, Trash2, Pin, EyeOff, Flag, Eye, MessageCircle, ThumbsUp, Edit } from "lucide-react";
+import { formatTimeVietnam } from "../../utils/date";
 
 export default function PostItem({ post, onPostUpdated, isInClosedSection = false }) {
   const navigate = useNavigate();
@@ -59,20 +60,7 @@ export default function PostItem({ post, onPostUpdated, isInClosedSection = fals
   };
 
   const formatTime = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInMinutes = Math.floor((now - date) / (1000 * 60));
-
-    if (diffInMinutes < 1) return "Just now";
-    if (diffInMinutes < 60) return `${diffInMinutes} min ago`;
-
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? "s" : ""} ago`;
-
-    const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 7) return `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
-
-    return date.toLocaleDateString();
+    return formatTimeVietnam(dateString);
   };
 
   // Check if current user is the owner of the post
@@ -86,15 +74,15 @@ export default function PostItem({ post, onPostUpdated, isInClosedSection = fals
 
   const handleDeletePost = (e) => {
     e.stopPropagation();
-    if (window.confirm("Bạn có chắc chắn muốn xóa bài viết này?")) {
+    if (window.confirm("Are you sure you want to delete this post?")) {
       deletePost(post.postId)
         .then(() => {
-          alert("Bài viết đã được xóa thành công!");
+          alert("Post deleted successfully!");
           window.location.reload(); // Reload để cập nhật danh sách
         })
         .catch(error => {
           console.error("Error deleting post:", error);
-          alert("Lỗi khi xóa bài viết. Vui lòng thử lại.");
+          alert("Error deleting post. Please try again.");
         });
       setShowMenu(false);
     }
@@ -102,13 +90,13 @@ export default function PostItem({ post, onPostUpdated, isInClosedSection = fals
 
   const handlePinPost = (e) => {
     e.stopPropagation();
-    if (window.confirm(isPinned ? "Bạn có chắc chắn muốn hủy ghim bài viết này?" : "Bạn có chắc chắn muốn ghim bài viết này lên đầu trang?")) {
+    if (window.confirm(isPinned ? "Are you sure you want to unpin this post?" : "Are you sure you want to pin this post to the top?")) {
       const apiCall = isPinned ? unpinPost(post.postId) : pinPost(post.postId);
       apiCall
         .then(() => {
           // Cập nhật state trước khi hiển thị thông báo
           setIsPinned(!isPinned);
-          alert(isPinned ? "Đã hủy ghim bài viết!" : "Đã ghim bài viết lên đầu trang!");
+          alert(isPinned ? "Post unpinned successfully!" : "Post pinned to top successfully!");
           // Gọi callback để refresh danh sách posts
           if (onPostUpdated) {
             onPostUpdated();
@@ -116,7 +104,7 @@ export default function PostItem({ post, onPostUpdated, isInClosedSection = fals
         })
         .catch(error => {
           console.error("Error pinning/unpinning post:", error);
-          alert("Lỗi khi ghim/hủy ghim bài viết. Vui lòng thử lại.");
+          alert("Error pinning/unpinning post. Please try again.");
         });
       setShowMenu(false);
     }
@@ -124,17 +112,17 @@ export default function PostItem({ post, onPostUpdated, isInClosedSection = fals
 
   const handleHidePost = (e) => {
     e.stopPropagation();
-    if (window.confirm("Bạn có chắc chắn muốn ẩn bài viết này?")) {
+    if (window.confirm("Are you sure you want to hide this post?")) {
       hidePost(post.postId)
         .then(() => {
-          alert("Bài viết đã được ẩn!");
+          alert("Post hidden successfully!");
           if (onPostUpdated) {
             onPostUpdated();
           }
         })
         .catch(error => {
           console.error("Error hiding post:", error);
-          alert("Lỗi khi ẩn bài viết. Vui lòng thử lại.");
+          alert("Error hiding post. Please try again.");
         });
       setShowMenu(false);
     }
@@ -142,17 +130,17 @@ export default function PostItem({ post, onPostUpdated, isInClosedSection = fals
 
   const handleUnhidePost = (e) => {
     e.stopPropagation();
-    if (window.confirm("Bạn có chắc chắn muốn hiện lại bài viết này?")) {
+    if (window.confirm("Are you sure you want to show this post again?")) {
       unhidePost(post.postId)
         .then(() => {
-          alert("Bài viết đã được hiện lại!");
+          alert("Post shown again successfully!");
           if (onPostUpdated) {
             onPostUpdated();
           }
         })
         .catch(error => {
           console.error("Error unhiding post:", error);
-          alert("Lỗi khi hiện lại bài viết. Vui lòng thử lại.");
+          alert("Error showing post. Please try again.");
         });
       setShowMenu(false);
     }
@@ -166,16 +154,16 @@ export default function PostItem({ post, onPostUpdated, isInClosedSection = fals
 
   const handleReportPost = (e) => {
     e.stopPropagation();
-    const reason = prompt("Vui lòng nhập lý do tố cáo:");
+    const reason = prompt("Please enter the reason for reporting:");
     if (reason && reason.trim()) {
-      if (window.confirm("Bạn có chắc chắn muốn tố cáo bài viết này với quản trị viên?")) {
+      if (window.confirm("Are you sure you want to report this post to moderators?")) {
         reportPost(post.postId, reason.trim())
           .then(() => {
-            alert("Đã gửi tố cáo thành công!");
+            alert("Report submitted successfully!");
           })
           .catch(error => {
             console.error("Error reporting post:", error);
-            alert("Lỗi khi gửi tố cáo. Vui lòng thử lại.");
+            alert("Error submitting report. Please try again.");
           });
         setShowMenu(false);
       }
@@ -226,15 +214,15 @@ export default function PostItem({ post, onPostUpdated, isInClosedSection = fals
                 <>
                   <button className="menu-item edit" onClick={handleEditPost}>
                     <Edit size={16} />
-                    Chỉnh sửa bài viết
+                    Edit Post
                   </button>
                   <button className="menu-item delete" onClick={handleDeletePost}>
                     <Trash2 size={16} />
-                    Xóa bài viết
+                    Delete Post
                   </button>
                   <button className="menu-item pin" onClick={handlePinPost}>
                     <Pin size={16} />
-                    {isPinned ? "Hủy ghim" : "Ghim bài viết"}
+                    {isPinned ? "Unpin Post" : "Pin Post"}
                   </button>
                 </>
               ) : (
@@ -243,17 +231,17 @@ export default function PostItem({ post, onPostUpdated, isInClosedSection = fals
                   {isInClosedSection ? (
                     <button className="menu-item unhide" onClick={handleUnhidePost}>
                       <Eye size={16} />
-                      Hiện lại bài viết
+                      Show Post
                     </button>
                   ) : (
                     <button className="menu-item hide" onClick={handleHidePost}>
                       <EyeOff size={16} />
-                      Ẩn bài viết
+                      Hide Post
                     </button>
                   )}
                   <button className="menu-item pin" onClick={handlePinPost}>
                     <Pin size={16} />
-                    {isPinned ? "Hủy ghim" : "Ghim bài viết"}
+                    {isPinned ? "Unpin Post" : "Pin Post"}
                   </button>
                   <button className="menu-item report" onClick={handleReportPost}>
                     <Flag size={16} />
@@ -310,7 +298,7 @@ export default function PostItem({ post, onPostUpdated, isInClosedSection = fals
           disabled={loading}
         >
           <ThumbsUp size={16} />
-          <span>{isVoted ? "Unlike" : "Like"}</span>
+          <span>{isVoted ? "Liked" : "Like"}</span>
           <span className="vote-count">({voteCount})</span>
         </button>
       </div>

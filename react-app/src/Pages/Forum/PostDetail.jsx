@@ -7,6 +7,7 @@ import CommentSection from "../../Components/Forum/CommentSection";
 import { getPost, votePost, unvotePost, reportPost, deletePost, pinPost, unpinPost, hidePost } from "../../Services/ForumApi";
 import useAuth from "../../Hook/UseAuth";
 import { MoreVertical, Trash2, Pin, EyeOff, Flag, ArrowLeft, MessageCircle, Image, Share, Download, ThumbsUp, Edit } from "lucide-react";
+import { formatFullDateVietnam } from "../../utils/date";
 
 // Không cần helper functions nữa - để view count tăng mỗi lần vào post
 
@@ -123,15 +124,15 @@ export default function PostDetail() {
 
   const handleDeletePost = (e) => {
     e.stopPropagation();
-    if (window.confirm("Bạn có chắc chắn muốn xóa bài viết này?")) {
+    if (window.confirm("Are you sure you want to delete this post?")) {
       deletePost(post.postId)
         .then(() => {
-          alert("Bài viết đã được xóa!");
+          alert("Post deleted successfully!");
           navigate('/forum');
         })
         .catch(error => {
           console.error("Error deleting post:", error);
-          alert("Lỗi khi xóa bài viết. Vui lòng thử lại.");
+          alert("Error deleting post. Please try again.");
         });
       setShowMenu(false);
     }
@@ -139,18 +140,18 @@ export default function PostDetail() {
 
   const handlePinPost = (e) => {
     e.stopPropagation();
-    if (window.confirm(isPinned ? "Bạn có chắc chắn muốn hủy ghim bài viết này?" : "Bạn có chắc chắn muốn ghim bài viết này lên đầu trang?")) {
+    if (window.confirm(isPinned ? "Are you sure you want to unpin this post?" : "Are you sure you want to pin this post to the top?")) {
       const apiCall = isPinned ? unpinPost(post.postId) : pinPost(post.postId);
       apiCall
         .then(() => {
           setIsPinned(!isPinned);
-          alert(isPinned ? "Đã hủy ghim bài viết!" : "Đã ghim bài viết lên đầu trang!");
+          alert(isPinned ? "Post unpinned successfully!" : "Post pinned to top successfully!");
           // Reload post để cập nhật data
           loadPost();
         })
         .catch(error => {
           console.error("Error pinning/unpinning post:", error);
-          alert("Lỗi khi ghim/hủy ghim bài viết. Vui lòng thử lại.");
+          alert("Error pinning/unpinning post. Please try again.");
         });
       setShowMenu(false);
     }
@@ -158,15 +159,15 @@ export default function PostDetail() {
 
   const handleHidePost = (e) => {
     e.stopPropagation();
-    if (window.confirm("Bạn có chắc chắn muốn ẩn bài viết này?")) {
+    if (window.confirm("Are you sure you want to hide this post?")) {
       hidePost(post.postId)
         .then(() => {
-          alert("Bài viết đã được ẩn!");
+          alert("Post hidden successfully!");
           navigate('/forum');
         })
         .catch(error => {
           console.error("Error hiding post:", error);
-          alert("Lỗi khi ẩn bài viết. Vui lòng thử lại.");
+          alert("Error hiding post. Please try again.");
         });
       setShowMenu(false);
     }
@@ -196,14 +197,7 @@ export default function PostDetail() {
   }, [showMenu]);
 
   const formatTime = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return formatFullDateVietnam(dateString);
   };
 
   if (loading) {
@@ -268,15 +262,15 @@ export default function PostDetail() {
                           <>
                             <button className="menu-item edit" onClick={handleEditPost}>
                               <Edit size={16} />
-                              Chỉnh sửa bài viết
+                              Edit Post
                             </button>
                             <button className="menu-item delete" onClick={handleDeletePost}>
                               <Trash2 size={16} />
-                              Xóa bài viết
+                              Delete Post
                             </button>
                             <button className="menu-item pin" onClick={handlePinPost}>
                               <Pin size={16} />
-                              {isPinned ? "Hủy ghim" : "Ghim bài viết"}
+                              {isPinned ? "Unpin Post" : "Pin Post"}
                             </button>
                           </>
                         ) : (
@@ -284,11 +278,11 @@ export default function PostDetail() {
                           <>
                             <button className="menu-item hide" onClick={handleHidePost}>
                               <EyeOff size={16} />
-                              Ẩn bài viết
+                              Hide Post
                             </button>
                             <button className="menu-item pin" onClick={handlePinPost}>
                               <Pin size={16} />
-                              {isPinned ? "Hủy ghim" : "Ghim bài viết"}
+                              {isPinned ? "Unpin Post" : "Pin Post"}
                             </button>
                             <button className="menu-item report" onClick={handleReportPost}>
                               <Flag size={16} />
@@ -330,13 +324,13 @@ export default function PostDetail() {
                   onClick={handleVote}
                 >
                   <ThumbsUp size={16} />
-                  <span>{isVoted ? "Unlike" : "Like"}</span>
+                  <span>{isVoted ? "Liked" : "Like"}</span>
                   <span className="vote-count">({voteCount})</span>
                 </button>
               </div>
             </div>
 
-            <CommentSection postId={postId} />
+            <CommentSection postId={postId} postOwnerId={post?.user?.userId} />
           </div>
 
           <div className="post-detail-sidebar">

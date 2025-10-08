@@ -3,7 +3,7 @@ import CommentItem from "./CommentItem";
 import { getComments, createComment } from "../../Services/ForumApi";
 import "./CommentSection.css";
 
-export default function CommentSection({ postId }) {
+export default function CommentSection({ postId, postOwnerId }) {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
@@ -146,6 +146,7 @@ export default function CommentSection({ postId }) {
                 onReply={handleCommentCreated}
                 level={0}
                 postId={postId}
+                postOwnerId={postOwnerId}
               />
             ))
         )}

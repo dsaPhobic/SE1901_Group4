@@ -39,17 +39,13 @@ namespace WebAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public ActionResult<PostDTO> GetPost(int id, [FromQuery] bool incrementView = true)
+        public ActionResult<PostDTO> GetPost(int id)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             var post = _postService.GetPostById(id, userId);
             if (post == null) return NotFound("Post not found");
 
-            // Only increment view count if incrementView is true
-            if (incrementView)
-            {
-                _postService.IncrementViewCount(id);
-            }
+            _postService.IncrementViewCount(id);
 
             return Ok(post);
         }
@@ -189,6 +185,31 @@ namespace WebAPI.Controllers
             }
         }
 
+        [HttpDelete("{postId}/comments/{commentId}")]
+        public IActionResult DeleteComment(int postId, int commentId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return Unauthorized("Please login to delete comments");
+
+            try
+            {
+                _commentService.DeleteComment(commentId, userId.Value);
+                return Ok(new { message = "Comment deleted successfully" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("{id}/pin")]
         public ActionResult PinPost(int id)
         {
@@ -228,11 +249,11 @@ namespace WebAPI.Controllers
         [HttpPost("{id}/hide")]
         public ActionResult HidePost(int id)
         {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return Unauthorized("Please login to hide posts");
+
             try
             {
-                var userId = HttpContext.Session.GetInt32("UserId");
-                if (userId == null) return Unauthorized("Please login to hide posts");
-
                 _postService.HidePost(id, userId.Value);
                 return Ok(new { message = "Post hidden successfully" });
             }
@@ -249,11 +270,11 @@ namespace WebAPI.Controllers
         [HttpPost("{id}/unhide")]
         public ActionResult UnhidePost(int id)
         {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return Unauthorized("Please login to unhide posts");
+
             try
             {
-                var userId = HttpContext.Session.GetInt32("UserId");
-                if (userId == null) return Unauthorized("Please login to unhide posts");
-
                 _postService.UnhidePost(id, userId.Value);
                 return Ok(new { message = "Post unhidden successfully" });
             }

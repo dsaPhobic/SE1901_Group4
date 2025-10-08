@@ -19,5 +19,16 @@ namespace WebAPI.Services
         void UnpinPost(int postId);
         void HidePost(int postId, int userId);
         void UnhidePost(int postId, int userId);
+        
+        // Moderator methods
+        ModeratorStatsDTO GetModeratorStats();
+        IEnumerable<PostDTO> GetPendingPosts(int page, int limit);
+        IEnumerable<ReportedPostDTO> GetReportedPosts(int page, int limit);
+        IEnumerable<PostDTO> GetRejectedPosts(int page, int limit);
+        void ApprovePost(int postId);
+        void RejectPost(int postId, string reason);
+        IEnumerable<ChartDataDTO> GetPostsChartData(int month, int year);
+        IEnumerable<NotificationDTO> GetModeratorNotifications();
+        void MarkNotificationAsRead(int notificationId);
     }
 }

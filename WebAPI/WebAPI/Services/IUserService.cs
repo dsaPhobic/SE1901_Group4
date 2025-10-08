@@ -22,5 +22,9 @@ namespace WebAPI.Services
         string SendPasswordResetOtp(string email);
         string VerifyOtp(string email, string otpCode);
         string ResetPassword(string email, string resetToken, string newPassword);
+        
+        // Moderator methods
+        IEnumerable<UserStatsDTO> GetUsersWithStats(int page, int limit);
+        UserStatsDTO? GetUserStats(int userId);
     }
 }

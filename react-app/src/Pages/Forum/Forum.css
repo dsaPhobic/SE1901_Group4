@@ -31,7 +31,7 @@
 .forum-header h1 {
   margin: 0;
   color: #374151;
-  font-size: 28px;
+  font-size: 36px;
   font-weight: 600;
   letter-spacing: -0.025em;
 }
@@ -43,9 +43,9 @@
   background: #3b82f6;
   color: white;
   border: none;
-  padding: 12px 20px;
+  padding: 16px 24px;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -334,15 +334,15 @@
   background: #f5f5f5;
   color: #8e8e8e;
   border: 1px solid #e8e8e8;
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
   font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   transition: all 0.2s ease;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .vote-btn:hover {
