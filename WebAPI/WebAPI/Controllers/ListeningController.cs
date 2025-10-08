@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs;
 using WebAPI.Services;
 
@@ -17,6 +18,7 @@ namespace WebAPI.Controllers
 
         // Create a new Listening question (admin only)
         [HttpPost]
+        [Authorize(Roles = "admin")]
         public ActionResult<ListeningDto> Create([FromBody] CreateListeningDto dto)
         {
             if (dto == null) return BadRequest("Invalid payload");
@@ -43,6 +45,7 @@ namespace WebAPI.Controllers
 
         // Update a Listening question (admin only)
         [HttpPut("{id}")]
+        [Authorize(Roles = "admin")]
         public ActionResult<ListeningDto> Update(int id, [FromBody] UpdateListeningDto dto)
         {
             if (dto == null) return BadRequest("Invalid payload");
@@ -53,6 +56,7 @@ namespace WebAPI.Controllers
 
         // Delete a Listening question
         [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")]
         public IActionResult Delete(int id)
         {
             var deleted = _ListeningService.Delete(id);
