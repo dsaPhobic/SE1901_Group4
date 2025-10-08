@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using WebAPI.DTOs;
 using WebAPI.Models;
 using WebAPI.Services;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace WebAPI.Controllers
 {
@@ -17,6 +18,7 @@ namespace WebAPI.Controllers
 
         // ========= CREATE EXAM =========
         [HttpPost]
+        [Authorize(Roles = "admin")]
         public ActionResult<ExamDto> Create([FromBody] CreateExamDto exam)
         {
             if (exam == null) return BadRequest("Invalid payload");
@@ -40,7 +42,6 @@ namespace WebAPI.Controllers
             return Ok(dto);
         }
 
-        // ========= GET ALL EXAMS =========
         [HttpGet]
         public ActionResult<IEnumerable<ExamDto>> GetAll()
         {
@@ -61,6 +62,7 @@ namespace WebAPI.Controllers
 
         // ========= UPDATE EXAM =========
         [HttpPut("{id}")]
+        [Authorize(Roles = "admin")]
         public ActionResult<ExamDto> Update(int id, [FromBody] UpdateExamDto exam)
         {
             if (exam == null) return BadRequest("Invalid payload");
@@ -72,6 +74,7 @@ namespace WebAPI.Controllers
 
         // ========= DELETE EXAM =========
         [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")]
         public IActionResult Delete(int id)
         {
             var deleted = _examService.Delete(id);

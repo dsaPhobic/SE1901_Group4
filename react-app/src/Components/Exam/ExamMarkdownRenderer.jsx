@@ -1,6 +1,6 @@
 import React from "react";
 import { marked } from "marked";
-import styles from "./ExamMarkdownRenderer.module.css";
+import "./ExamMarkdownRenderer.module.css"; // now plain CSS, not module
 
 function escapeHtml(s) {
   return String(s)
@@ -51,22 +51,24 @@ function splitBlocks(md) {
 
 // ✅ Allow single line breaks to render as <br/>
 marked.setOptions({
-  breaks: true,
   gfm: true,
+  breaks: true,
+  mangle: false,
+  headerIds: false,
 });
 
 function processQuestionBlock(lines, qIndex, showAnswers) {
-  let text = lines.join("\n"); // keep all \n intact
+  let text = lines.join("\n");
 
   // Inline text input
   text = text.replace(/\[T\*([^\]]+)\]/g, (_, ans) =>
     showAnswers
-      ? `<input type="text" value="${escapeHtml(ans)}" readonly class="${styles.inlineTextbox} ${styles.answerFilled}" />`
-      : `<input type="text" class="${styles.inlineTextbox}" name="q${qIndex}_text" />`
+      ? `<input type="text" value="${escapeHtml(ans)}" readonly class="inlineTextbox answerFilled" />`
+      : `<input type="text" class="inlineTextbox" name="q${qIndex}_text" />`
   );
   text = text.replace(
     /\[T\]/g,
-    `<input type="text" class="${styles.inlineTextbox}" name="q${qIndex}_text" />`
+    `<input type="text" class="inlineTextbox" name="q${qIndex}_text" />`
   );
 
   // Dropdown inline
@@ -79,7 +81,9 @@ function processQuestionBlock(lines, qIndex, showAnswers) {
     }));
     const longest = Math.min(Math.max(...options.map((o) => o.text.length)) + 2, 30);
     const html =
-      `<select name="q${qIndex}" class="${styles.dropdownInline}" style="width:${longest}ch" ${showAnswers ? "disabled" : ""}>` +
+      `<select name="q${qIndex}" class="dropdownInline" style="width:${longest}ch" ${
+        showAnswers ? "disabled" : ""
+      }>` +
       options
         .map(
           (o) =>
@@ -97,17 +101,14 @@ function processQuestionBlock(lines, qIndex, showAnswers) {
     const isMulti = (text.match(/\[\*\]/g) || []).length > 1;
     const type = isMulti ? "checkbox" : "radio";
     const checked = showAnswers && mark === "*" ? "checked" : "";
-    return `<label class="${styles.choiceItem}">
+    return `<label class="choiceItem">
       <input type="${type}" name="q${qIndex}" ${checked} ${showAnswers ? "disabled" : ""}/>
       ${escapeHtml(label.trim())}
     </label>`;
   });
 
   // Question numbering
-  text = text.replace(
-    /\[!num\]/g,
-    `<span class="${styles.numberIndex}">Q${qIndex}.</span>`
-  );
+  text = text.replace(/\[!num\]/g, `<span class="numberIndex">Q${qIndex}.</span>`);
 
   return marked.parse(text);
 }
@@ -127,7 +128,7 @@ export default function ExamMarkdownRenderer({ markdown = "", showAnswers = fals
     })
     .join("\n");
 
-  return <div className={styles.renderer} dangerouslySetInnerHTML={{ __html: html }} />;
+  return <div className="renderer" dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
 // ✅ Convert markdown to HTML + extract correct answers
