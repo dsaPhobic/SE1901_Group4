@@ -5,6 +5,7 @@ import * as readingService from "../../Services/ReadingApi";
 import ReadingCard from "../../Components/Exam/ExamCard";
 import ReadingModal from "../../Components/Exam/ExamPopup";
 import styles from "./ReadingPage.module.css";
+import "../../Components/Exam/ExamMarkdownRenderer.module.css";
 
 export default function ReadingPage() {
   const [exams, setExams] = useState([]);
