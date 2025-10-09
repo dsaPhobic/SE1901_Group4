@@ -26,7 +26,7 @@
 
 .sidebar-header h3 {
   margin: 0;
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 600;
   color: #333;
 }
@@ -69,7 +69,7 @@
   background-color: #fff3cd;
   border-left: 3px solid #ffc107;
   font-weight: 600;
-  font-size: 24px;
+  font-size: 22px;
 }
 
 .sidebar-item.pinned:hover {
@@ -86,7 +86,7 @@
 .post-title {
   font-weight: 500;
   margin-bottom: 6px;
-  font-size: 24px;
+  font-size: 22px;
 }
 
 .post-votes {

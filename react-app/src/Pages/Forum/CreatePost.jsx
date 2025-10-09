@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./CreatePost.css";
-import Sidebar from "../../Components/Layout/Sidebar";
+import GeneralSidebar from "../../Components/Layout/GeneralSidebar";
 import HeaderBar from "../../Components/Layout/HeaderBar";
 import RightSidebar from "../../Components/Forum/RightSidebar";
 import { createPost } from "../../Services/ForumApi";
@@ -58,7 +58,7 @@ export default function CreatePost({ onNavigate }) {
 
   return (
     <div className="create-post-container">
-      <Sidebar onNavigate={onNavigate} />
+      <GeneralSidebar />
       
       <main className="main-content">
         <HeaderBar onNavigate={onNavigate} currentPage="createPost" />

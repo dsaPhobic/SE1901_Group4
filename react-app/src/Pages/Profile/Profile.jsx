@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, refreshUser } = useAuth();
   const { attempts, loading: attemptsLoading } = useExamAttempts(user?.userId);
   const [activeTab, setActiveTab] = useState("profile");
   const [showPassword, setShowPassword] = useState(false);
@@ -131,11 +131,10 @@ export default function Profile() {
         setOriginalData({ ...profileData });
         setHasChanges(false);
         alert("Profile updated successfully!");
-        // ✅ Không reload — cập nhật UI trực tiếp
-        // Cập nhật avatar hiển thị ngay:
-        if (profileData.avatar) {
-          user.avatar = profileData.avatar;
-        }
+        // ✅ Refresh user data để cập nhật avatar trong toàn bộ app
+        refreshUser().then((updatedUser) => {
+          console.log("User data refreshed:", updatedUser);
+        });
       })
       .catch((error) => {
         console.error("Error saving profile:", error);

@@ -7,8 +7,6 @@ using WebAPI.DTOs;
 using WebAPI.Models;
 using WebAPI.Repositories;
 using WebAPI.ExternalServices;
-using WebAPI.Data;
-using Microsoft.EntityFrameworkCore;
 
 namespace WebAPI.Services
 {
@@ -301,6 +299,27 @@ namespace WebAPI.Services
                 RejectedPosts = user.Posts?.Count(p => p.Status == "rejected") ?? 0,
                 ReportedPosts = user.Reports?.Count ?? 0,
                 CreatedAt = user.CreatedAt
+            };
+        }
+
+        public UserProfileStatsDTO? GetUserProfileStats(int userId)
+        {
+            var user = _context.User
+                .Include(u => u.Posts)
+                .ThenInclude(p => p.PostLikes)
+                .FirstOrDefault(u => u.UserId == userId);
+            
+            if (user == null) return null;
+
+            var totalVotes = user.Posts?.Sum(p => p.PostLikes?.Count ?? 0) ?? 0;
+
+            return new UserProfileStatsDTO
+            {
+                UserId = user.UserId,
+                Username = user.Username,
+                Avatar = user.Avatar,
+                TotalPosts = user.Posts?.Count ?? 0,
+                TotalVotes = totalVotes
             };
         }
     }

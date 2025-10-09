@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Forum.css";
-import Sidebar from "../../Components/Layout/GeneralSidebar";
+import GeneralSidebar from "../../Components/Layout/GeneralSidebar";
 import HeaderBar from "../../Components/Layout/HeaderBar";
 import PostList from "../../Components/Forum/PostList";
 import RightSidebar from "../../Components/Forum/RightSidebar";
@@ -81,7 +81,7 @@ export default function Forum({ onNavigate }) {
 
   return (
     <div className="forum-container">
-      <Sidebar onNavigate={onNavigate} />
+      <GeneralSidebar />
 
       <main className="main-content">
         <HeaderBar onNavigate={onNavigate} currentPage="forum" />

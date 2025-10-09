@@ -305,7 +305,8 @@ namespace WebAPI.Services
                     Email = post.User.Email,
                     Firstname = post.User.Firstname,
                     Lastname = post.User.Lastname,
-                    Role = post.User.Role
+                    Role = post.User.Role,
+                    Avatar = post.User.Avatar
                 },
                 Tags = post.Tags.Select(t => new TagDTO
                 {

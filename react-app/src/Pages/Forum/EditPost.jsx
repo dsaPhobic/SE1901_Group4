@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./CreatePost.css";
-import Sidebar from "../../Components/Layout/Sidebar";
+import GeneralSidebar from "../../Components/Layout/GeneralSidebar";
 import HeaderBar from "../../Components/Layout/HeaderBar";
 import RightSidebar from "../../Components/Forum/RightSidebar";
 import { getPost, updatePost } from "../../Services/ForumApi";
@@ -84,7 +84,7 @@ export default function EditPost({ onNavigate }) {
   if (initialLoading) {
     return (
       <div className="create-post-container">
-        <Sidebar onNavigate={onNavigate} />
+        <GeneralSidebar />
         <main className="main-content">
           <HeaderBar onNavigate={onNavigate} currentPage="editPost" />
           <div className="create-post-content">
@@ -97,7 +97,7 @@ export default function EditPost({ onNavigate }) {
 
   return (
     <div className="create-post-container">
-      <Sidebar onNavigate={onNavigate} />
+      <GeneralSidebar />
       
       <main className="main-content">
         <HeaderBar onNavigate={onNavigate} currentPage="editPost" />
