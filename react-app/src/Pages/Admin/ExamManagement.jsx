@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import * as examService from "../../Services/ExamApi";
 import * as readingService from "../../Services/ReadingApi";
+import * as listeningService from "../../Services/ListeningApi";
 import * as writingService from "../../Services/WritingApi";
 import ExamSkillModal from "../../Components/Admin/ExamPopup.jsx";
 import Sidebar from "../../Components/Admin/AdminNavbar.jsx";
@@ -20,6 +21,7 @@ export default function ExamManagement() {
   // ====== Service mapping ======
   const serviceMap = {
     Reading: readingService,
+    Listening: listeningService,
     Writing: writingService,
   };
 
@@ -79,6 +81,7 @@ export default function ExamManagement() {
   const getExamPath = (type) => {
     const map = {
       Reading: "add-reading",
+      Listening: "add-listening",
       Writing: "add-writing",
     };
     return map[type] || "";
@@ -149,6 +152,7 @@ export default function ExamManagement() {
                   required
                 >
                   <option value="Reading">Reading</option>
+                  <option value="Listening">Listening</option>
                   <option value="Writing">Writing</option>
                 </select>
               </div>

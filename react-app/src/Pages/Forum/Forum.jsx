@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 import "./Forum.css";
-import GeneralSidebar from "../../Components/Layout/GeneralSidebar";
-import HeaderBar from "../../Components/Layout/HeaderBar";
+import AppLayout from "../../Components/Layout/AppLayout";
 import PostList from "../../Components/Forum/PostList";
 import RightSidebar from "../../Components/Forum/RightSidebar";
 import { getPostsByFilter } from "../../Services/ForumApi";
 import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
 
-export default function Forum({ onNavigate }) {
+export default function Forum() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("new");
@@ -28,10 +27,6 @@ export default function Forum({ onNavigate }) {
     loadPosts();
   }, [activeFilter]);
 
-  useEffect(() => {
-    loadPosts();
-  }, []);
-
   const loadPosts = () => {
     setLoading(true);
     getPostsByFilter(activeFilter, 1)
@@ -43,9 +38,7 @@ export default function Forum({ onNavigate }) {
       .catch((error) => {
         console.error("Error loading posts:", error);
       })
-      .finally(() => {
-        setLoading(false);
-      });
+      .finally(() => setLoading(false));
   };
 
   const loadMorePosts = () => {
@@ -58,74 +51,57 @@ export default function Forum({ onNavigate }) {
         setCurrentPage((prev) => prev + 1);
         setHasMore(response.data.length === 10);
       })
-      .catch((error) => {
-        console.error("Error loading more posts:", error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+      .catch((error) => console.error("Error loading more posts:", error))
+      .finally(() => setLoading(false));
   };
 
   const handleFilterChange = (filter) => {
     setActiveFilter(filter);
   };
 
-  const handlePostCreated = (newPost) => {
-    setPosts((prev) => [newPost, ...prev]);
-  };
-
-  const handlePostUpdated = () => {
-    // Reload posts khi có thay đổi (ghim, ẩn, etc.)
-    loadPosts();
-  };
+  const handlePostUpdated = () => loadPosts();
 
   return (
-    <div className="forum-container">
-      <GeneralSidebar />
-
-      <main className="main-content">
-        <HeaderBar onNavigate={onNavigate} currentPage="forum" />
-
-        <div className="forum-content">
-          <div className="forum-main">
-            <div className="forum-header">
-              <h1>FORUM</h1>
-              <button
-                className="ask-question-btn"
-                onClick={() => navigate("/create-post")}
-              >
-                <Plus size={16} />
-                Create a post
-              </button>
-            </div>
-
-            <div className="forum-filters">
-              {filters.map((filter) => (
-                <button
-                  key={filter.key}
-                  className={`filter-btn ${
-                    activeFilter === filter.key ? "active" : ""
-                  }`}
-                  onClick={() => handleFilterChange(filter.key)}
-                >
-                  {filter.label}
-                </button>
-              ))}
-            </div>
-
-            <PostList
-              posts={posts}
-              loading={loading}
-              onLoadMore={loadMorePosts}
-              hasMore={hasMore}
-              onPostUpdated={handlePostUpdated}
-              isInClosedSection={activeFilter === "closed"}
-            />
+    <AppLayout title="Forum">
+      <div className="forum-content">
+        <div className="forum-main">
+          <div className="forum-header">
+            <h1>FORUM</h1>
+            <button
+              className="ask-question-btn"
+              onClick={() => navigate("/create-post")}
+            >
+              <Plus size={16} />
+              Create a post
+            </button>
           </div>
 
-          <RightSidebar />
+          <div className="forum-filters">
+            {filters.map((filter) => (
+              <button
+                key={filter.key}
+                className={`filter-btn ${
+                  activeFilter === filter.key ? "active" : ""
+                }`}
+                onClick={() => handleFilterChange(filter.key)}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
+
+          <PostList
+            posts={posts}
+            loading={loading}
+            onLoadMore={loadMorePosts}
+            hasMore={hasMore}
+            onPostUpdated={handlePostUpdated}
+            isInClosedSection={activeFilter === "closed"}
+          />
         </div>
-      </main>
-    </div>
+
+        <RightSidebar />
+      </div>
+    </AppLayout>
   );
 }

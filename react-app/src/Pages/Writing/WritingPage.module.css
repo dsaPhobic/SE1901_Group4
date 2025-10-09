@@ -460,3 +460,10 @@
   color: #16a34a; /* Màu xanh dương nổi bật */
   font-weight: 600; /* In đậm nhẹ */
 }
+.centerWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh; /* chiếm 60% chiều cao màn hình */
+  grid-column: 1 / -1; /* nếu vẫn nằm trong grid, sẽ chiếm full width */
+}

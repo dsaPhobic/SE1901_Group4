@@ -81,7 +81,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
+  text-align: right;
   padding-bottom: 30px;
   border-bottom: 1px solid #f0f0f0;
 }
@@ -153,6 +153,7 @@
 
 .nav-item span {
   font-weight: 500;
+  font-size: 30px;
 }
 
 /* Main Content */
@@ -177,7 +178,7 @@
   border: 1px solid #e0e0e0;
   border-radius: 12px;
   padding: 20px;
-  max-width: 600px;
+  max-width: 500px;
 }
 
 .form-group {
@@ -194,6 +195,7 @@
   font-weight: 600;
   color: #333;
   margin-bottom: 8px;
+  text-align: left;
 }
 
 .form-group input {

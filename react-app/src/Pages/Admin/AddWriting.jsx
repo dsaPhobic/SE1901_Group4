@@ -32,13 +32,14 @@ export default function AddWriting() {
   const [status, setStatus] = useState({ icon: null, message: "" });
   const [uploading, setUploading] = useState(false);
 
+  // === Nếu có skill (edit mode) thì load dữ liệu ===
   useEffect(() => {
     if (skill) {
       setForm({
         examId: skill.examId ?? exam?.examId,
         writingQuestion: skill.writingQuestion ?? "",
         writingType: skill.writingType ?? "Task 1",
-        displayOrder: skill.displayOrder ?? 1,
+        displayOrder: 1,
         imageUrl: skill.imageUrl ?? "",
       });
     }
@@ -88,14 +89,16 @@ export default function AddWriting() {
     setStatus({ icon: <Upload size={16} />, message: "Processing..." });
 
     try {
+      const payload = { ...form, displayOrder: 1 };
+
       if (skill) {
-        await WritingApi.update(skill.writingId, form);
+        await WritingApi.update(skill.writingId, payload);
         setStatus({
           icon: <CheckCircle color="green" size={16} />,
           message: "Updated writing question successfully!",
         });
       } else {
-        await WritingApi.add(form);
+        await WritingApi.add(payload);
         setStatus({
           icon: <CheckCircle color="green" size={16} />,
           message: "Writing question added successfully!",
@@ -155,19 +158,6 @@ export default function AddWriting() {
             </select>
           </div>
 
-          {/* Display Order */}
-          <div className={styles.group}>
-            <label>Display Order</label>
-            <input
-              type="number"
-              name="displayOrder"
-              value={form.displayOrder}
-              onChange={handleChange}
-              min={1}
-              required
-            />
-          </div>
-
           {/* Writing Question */}
           <div className={styles.group}>
             <label>Question Content</label>
@@ -181,9 +171,8 @@ export default function AddWriting() {
             />
           </div>
 
-          {/* Upload Button */}
-          <div className={styles.group}>
-            <label>Attach Image (optional)</label>
+          {/* Upload + Submit cùng hàng */}
+          <div className={styles.actionRow}>
             <div className={styles.uploadBox}>
               <input
                 type="file"
@@ -197,19 +186,19 @@ export default function AddWriting() {
                 {uploading ? "Uploading..." : "Choose Image"}
               </label>
             </div>
-          </div>
 
-          <button type="submit" className={styles.btnPrimary}>
-            {skill ? (
-              <>
-                <Pencil size={16} style={{ marginRight: 6 }} /> Update Writing
-              </>
-            ) : (
-              <>
-                <PlusCircle size={16} style={{ marginRight: 6 }} /> Add Writing
-              </>
-            )}
-          </button>
+            <button type="submit" className={styles.btnPrimary}>
+              {skill ? (
+                <>
+                  <Pencil size={16} style={{ marginRight: 6 }} /> Update Writing
+                </>
+              ) : (
+                <>
+                  <PlusCircle size={16} style={{ marginRight: 6 }} /> Add Writing
+                </>
+              )}
+            </button>
+          </div>
         </form>
 
         {status.message && (

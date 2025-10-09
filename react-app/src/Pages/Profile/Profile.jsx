@@ -1,16 +1,10 @@
 import React, { useState, useEffect } from "react";
-import {
-  User,
-  Eye,
-  EyeOff,
-  ClipboardList,
-  CreditCard,
-  LogIn,
-} from "lucide-react";
+import { User, ClipboardList, CreditCard, LogIn } from "lucide-react";
 import "./Profile.css";
 import useAuth from "../../Hook/UseAuth";
 import useExamAttempts from "../../Hook/UseExamAttempts";
 import AppLayout from "../../Components/Layout/AppLayout";
+import NothingFound from "../../Components/Nothing/NothingFound";
 import { updateUser } from "../../Services/UserApi";
 import { uploadImage } from "../../Services/UploadApi";
 import { useNavigate } from "react-router-dom";
@@ -20,7 +14,6 @@ export default function Profile() {
   const { user, loading, refreshUser } = useAuth();
   const { attempts, loading: attemptsLoading } = useExamAttempts(user?.userId);
   const [activeTab, setActiveTab] = useState("profile");
-  const [showPassword, setShowPassword] = useState(false);
 
   const [profileData, setProfileData] = useState({
     name: "",
@@ -125,16 +118,14 @@ export default function Profile() {
       email: profileData.gmail,
       username: profileData.accountName,
       password: profileData.password || undefined,
-      avatar: profileData.avatar || undefined,
+      avatar: profileData.avatar === "" ? null : profileData.avatar,
     })
       .then(() => {
         setOriginalData({ ...profileData });
         setHasChanges(false);
         alert("Profile updated successfully!");
-        // ✅ Refresh user data để cập nhật avatar trong toàn bộ app
-        refreshUser().then((updatedUser) => {
-          console.log("User data refreshed:", updatedUser);
-        });
+        user.avatar = profileData.avatar || null;
+        window.location.reload();
       })
       .catch((error) => {
         console.error("Error saving profile:", error);
@@ -277,16 +268,13 @@ export default function Profile() {
           return (
             <div className="profile-content">
               <h2>Test History</h2>
-              <div className="empty-test-history">
-                <div className="empty-icon">
-                  <ClipboardList size={64} />
-                </div>
-                <h3>No tests taken yet</h3>
-                <p>Start your learning journey by taking your first exam!</p>
-                <button className="start-test-btn">
-                  Start Your First Test
-                </button>
-              </div>
+              <NothingFound
+                imageSrc="/src/assets/sad_cloud.png"
+                title="No tests taken yet"
+                message="Start your learning journey by taking your first exam!"
+                actionLabel="Start Your First Test"
+                to="/reading"
+              />
             </div>
           );
         }
@@ -416,9 +404,11 @@ export default function Profile() {
         return (
           <div className="profile-content">
             <h2>Payment History</h2>
-            <div className="empty-state">
-              <p>No payments made yet.</p>
-            </div>
+            <NothingFound
+              imageSrc="/src/assets/sad_cloud.png"
+              title="No payments yet"
+              message="When you purchase services, your transactions will appear here."
+            />
           </div>
         );
 
@@ -426,9 +416,11 @@ export default function Profile() {
         return (
           <div className="profile-content">
             <h2>Sign In History</h2>
-            <div className="empty-state">
-              <p>No sign in history available yet.</p>
-            </div>
+            <NothingFound
+              imageSrc="/src/assets/sad_cloud.png"
+              title="No sign-ins yet"
+              message="Your recent sign-in activity will show up here."
+            />
           </div>
         );
 

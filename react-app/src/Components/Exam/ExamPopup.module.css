@@ -1,0 +1,321 @@
+/* ===== Overlay and Modal Container ===== */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 50;
+  animation: fadeIn 180ms ease-out;
+}
+
+.modal {
+  width: 100%;
+  max-width: 680px;
+  background: linear-gradient(180deg, #ffffff, #fbfbfb);
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.15), 0 4px 12px rgba(2, 6, 23, 0.12);
+  overflow: hidden;
+  transform: translateY(6px);
+  animation: slideUp 220ms ease-out;
+}
+
+/* ===== Header ===== */
+.modalHeader {
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.modalTitle {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.iconBtn {
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+  color: #64748b;
+  border-radius: 8px;
+  transition: background-color 120ms ease, color 120ms ease, transform 80ms ease;
+}
+.iconBtn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+.iconBtn:active {
+  transform: scale(0.96);
+}
+
+/* ===== Modal Layout ===== */
+.modalContent {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modalGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 780px) {
+  .modalGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.modalColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== Inner Block Cards ===== */
+.blockCard {
+  flex: 1;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.blockHeader {
+  background: linear-gradient(180deg, #f9fafb, #f3f4f6);
+  padding: 12px 14px;
+  font-weight: 600;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.blockBody {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-grow: 1;
+}
+
+.blockActions {
+  padding: 16px 12px;
+  border-top: 1px solid #f3f4f6;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.centerActions {
+  min-height: 72px;
+}
+
+/* ===== Dropdown (Time Editing) ===== */
+.dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  z-index: 10;
+  min-width: 50px;
+  padding: 4px 0;
+  animation: dropdownSlide 0.15s ease-out;
+}
+
+.dropdownItem {
+  padding: 5px 5px;
+  font-size: 20px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  text-align: center;
+}
+
+.dropdownItem:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+.timeRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ===== Task List ===== */
+.taskList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.taskOption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  transition: border-color 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
+}
+.taskOption:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+  box-shadow: 0 1px 0 rgba(2, 6, 23, 0.04);
+}
+
+.taskMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.taskTitle {
+  font-weight: 600;
+}
+
+/* ===== Buttons ===== */
+.inlineEditBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #475569;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+.inlineEditBtn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+.inlineEditBtn:active {
+  transform: translateY(1px);
+}
+
+.secondaryBtn {
+  background: #f3f4f6;
+  color: #111827;
+  border: 1px solid #e5e7eb;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 20px;
+  transition: background-color 140ms ease, border-color 140ms ease, transform 80ms ease;
+}
+.secondaryBtn:hover {
+  background: #e5e7eb;
+  border-color: #d1d5db;
+}
+.secondaryBtn:active {
+  transform: translateY(1px);
+}
+
+.primaryBtn {
+  background: #2563eb;
+  color: #fff;
+  border: 1px solid #1d4ed8;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 20px;
+  transition: background-color 140ms ease, box-shadow 140ms ease, transform 80ms ease;
+}
+.primaryBtn:hover {
+  background: #1d4ed8;
+  box-shadow: 0 6px 14px rgba(29, 78, 216, 0.28);
+}
+.primaryBtn:disabled {
+  background: #93c5fd;
+  border-color: #93c5fd;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.primaryBtn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.elevatedBtn {
+  box-shadow: 0 8px 16px rgba(29, 78, 216, 0.25);
+}
+
+/* ===== Info / Text ===== */
+.infoRow {
+  display: flex;
+  gap: 8px;
+  font-size: 20px;
+}
+
+.infoLabel {
+  width: 100px;
+  color: #6b7280;
+}
+
+.infoValue {
+  flex: 1;
+  color: #111827;
+}
+
+.list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.highlightNumber {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+/* ===== Animations ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
