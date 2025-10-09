@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { resetPassword } from '../../Services/AuthApi';
+import BrandPanel from '../../Components/Layout/BrandPanel.jsx';
+import AuthLayout from '../../Components/Layout/AuthLayout';
+import Button from '../../Components/Auth/Button';
+import { Loader2, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
 import './ResetPassword.css';
 
 const ResetPassword = () => {
@@ -101,110 +105,117 @@ const ResetPassword = () => {
   }
 
   return (
-    <div className="reset-password-container">
-      <div className="reset-password-card">
-        <div className="reset-password-header">
-          <h2>Reset Your Password</h2>
-          <p>Enter your new password below</p>
-        </div>
+    <div className="reset-password-page">
+      <BrandPanel />
+      <div className="right-part">
+        <div className="auth-card">
+          <AuthLayout title="Reset Your Password">
+            <div className="reset-password-header">
+              <p>Enter your new password below</p>
+            </div>
 
-        <form onSubmit={handleSubmit} className="reset-password-form">
-          <div className="form-group">
-            <label htmlFor="newPassword">New Password</label>
-            <input
-              type="password"
-              id="newPassword"
-              name="newPassword"
-              value={formData.newPassword}
-              onChange={handleInputChange}
-              placeholder="Enter new password"
-              required
-              disabled={loading}
-            />
-            {formData.newPassword && (
-              <div className="password-strength">
-                <div className="strength-bar">
-                  <div 
-                    className="strength-fill"
-                    style={{ 
-                      width: `${passwordStrength}%`,
-                      backgroundColor: getPasswordStrengthColor()
-                    }}
-                  ></div>
+            <form onSubmit={handleSubmit} className="reset-password-form">
+              <div className="form-group">
+                <label htmlFor="newPassword">New Password</label>
+                <input
+                  type="password"
+                  id="newPassword"
+                  name="newPassword"
+                  value={formData.newPassword}
+                  onChange={handleInputChange}
+                  placeholder="Enter new password"
+                  required
+                  disabled={loading}
+                />
+                {formData.newPassword && (
+                  <div className="password-strength">
+                    <div className="strength-bar">
+                      <div 
+                        className="strength-fill"
+                        style={{ 
+                          width: `${passwordStrength}%`,
+                          backgroundColor: getPasswordStrengthColor()
+                        }}
+                      ></div>
+                    </div>
+                    <span 
+                      className="strength-text"
+                      style={{ color: getPasswordStrengthColor() }}
+                    >
+                      {getPasswordStrengthText()}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="confirmPassword">Confirm Password</label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  placeholder="Confirm new password"
+                  required
+                  disabled={loading}
+                />
+                {formData.confirmPassword && formData.newPassword !== formData.confirmPassword && (
+                  <div className="password-mismatch">
+                    <AlertCircle size={16} />
+                    Passwords do not match
+                  </div>
+                )}
+              </div>
+
+              {message && (
+                <div className="success-message">
+                  <div className="success-icon">
+                    <CheckCircle size={16} />
+                  </div>
+                  <div className="success-text">{message}</div>
+                  <p>Redirecting to login page...</p>
                 </div>
-                <span 
-                  className="strength-text"
-                  style={{ color: getPasswordStrengthColor() }}
+              )}
+
+              {error && (
+                <div className="error-message">
+                  <div className="error-icon">
+                    <AlertCircle size={16} />
+                  </div>
+                  <div className="error-text">{error}</div>
+                </div>
+              )}
+
+              <div className="button-location">
+                <Button 
+                  type="submit" 
+                  variant="yellow"
+                  disabled={loading || formData.newPassword !== formData.confirmPassword || formData.newPassword.length < 6}
                 >
-                  {getPasswordStrengthText()}
-                </span>
+                  {loading ? (
+                    <div className="loading-content">
+                      <Loader2 size={10} className="loading-spinner" />
+                      <span>Resetting Password...</span>
+                    </div>
+                  ) : (
+                    "Reset Password"
+                  )}
+                </Button>
               </div>
-            )}
-          </div>
+            </form>
 
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleInputChange}
-              placeholder="Confirm new password"
-              required
-              disabled={loading}
-            />
-            {formData.confirmPassword && formData.newPassword !== formData.confirmPassword && (
-              <div className="password-mismatch">
-                <i className="fas fa-exclamation-circle"></i>
-                Passwords do not match
-              </div>
-            )}
-          </div>
-
-          {message && (
-            <div className="success-message">
-              <i className="fas fa-check-circle"></i>
-              {message}
-              <p>Redirecting to login page...</p>
+            <div className="reset-password-footer">
+              <button 
+                type="button"
+                className="back-btn"
+                onClick={() => navigate('/verify-otp', { state: { email } })}
+              >
+                <ArrowLeft size={16} />
+                Back to Verification
+              </button>
             </div>
-          )}
-
-          {error && (
-            <div className="error-message">
-              <i className="fas fa-exclamation-circle"></i>
-              {error}
-            </div>
-          )}
-
-          <button 
-            type="submit" 
-            className="reset-btn"
-            disabled={loading || formData.newPassword !== formData.confirmPassword || formData.newPassword.length < 6}
-          >
-            {loading ? (
-              <>
-                <i className="fas fa-spinner fa-spin"></i>
-                Resetting Password...
-              </>
-            ) : (
-              <>
-                <i className="fas fa-key"></i>
-                Reset Password
-              </>
-            )}
-          </button>
-        </form>
-
-        <div className="reset-password-footer">
-          <button 
-            type="button"
-            className="back-btn"
-            onClick={() => navigate('/verify-otp', { state: { email } })}
-          >
-            <i className="fas fa-arrow-left"></i>
-            Back to Verification
-          </button>
+          </AuthLayout>
         </div>
       </div>
     </div>
