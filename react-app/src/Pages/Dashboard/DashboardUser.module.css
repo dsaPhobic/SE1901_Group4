@@ -1,50 +1,44 @@
+/* ================================
+   DASHBOARD LAYOUT
+================================ */
+:root {
+  --font-main: "Dongle", sans-serif;
+  --font-color: #333;
+  --color-green: #28a745;
+  --color-orange: #fd7e14;
+  --color-blue: #007bff;
+  --color-purple: #6f42c1;
+  --color-red: #dc3545;
+  --color-gray: #f1f3f5;
+}
+
 .dashboardContent {
   padding: 10px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto auto;
   grid-template-areas:
     "calendar goals"
     "history goals"
     "history balance";
-  gap: 5px;
-  box-sizing: border-box;
+  gap: 8px;
   align-items: start;
   overflow-x: hidden;
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
-/* Font chữ responsive */
+/* Typography scaling */
 .cardTitle,
 .sectionTitle,
 .goalLabel,
 .historyRow,
 .avatarItem,
 .enjoyText {
-  font-size: 30px;
+  font-size: 26px;
+  font-family: var(--font-main);
 }
 
-.goalScore {
-  font-size: 30px;
-  font-weight: 700;
-}
-
-.calendarWeekLabel,
-.calendarWeekday,
-.calendarDay {
-  font-size: 25px;
-}
-.monthYear {
-  font-size: 25px;
-}
-.submitted {
-  background: #28a745;
-  color: #fff;
-  font-weight: 700;
-  border-radius: 50%;
-}
-
-/* Card Generic */
+/* Generic Card */
 .card {
   background: #fff;
   border-radius: 14px;
@@ -52,7 +46,9 @@
   padding: 10px;
 }
 
-/* Calendar */
+/* ================================
+   CALENDAR SECTION
+================================ */
 .calendarCard {
   grid-area: calendar;
 }
@@ -64,31 +60,22 @@
   margin-bottom: 5px;
 }
 
-.cardTitle {
-  margin: 0;
-}
-
 .status {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-.statusText {
-  font-size: 25px;
-}
-.statLabel {
-  font-size: 25px;
-}
-.statValue {
-  font-size: 25px;
+  gap: 6px;
 }
 
 .statusDot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #28a745;
-  display: inline-block;
+  background: var(--color-green);
+}
+
+.statusText {
+  font-size: 20px;
+  color: var(--color-green);
 }
 
 .calendarGrid {
@@ -125,31 +112,32 @@
   background: #f1f3f5;
 }
 
-/* Goals + Stats */
-/* Goals Wrapper */
+.submitted {
+  background: var(--color-green);
+  color: #fff;
+  font-weight: 700;
+  border-radius: 50%;
+}
+
+/* ================================
+   GOALS SECTION
+================================ */
 .goalsWrapper {
   grid-area: goals;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-}
-
-.goalsSection {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+  gap: 12px;
 }
 
 .sectionTitle {
-  font-size: 30px;
+  font-size: 26px;
   font-weight: 700;
-  margin-bottom: 10px;
+  margin: 0 0 5px;
 }
 
-/* Goals Cards */
 .goalsCards {
   display: flex;
-  gap: 30px;
+  gap: 20px;
   justify-content: center;
 }
 
@@ -159,7 +147,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  max-width: 100px;
+  width: 100px;
   height: 100px;
   border-radius: 20px;
   background: #fff;
@@ -174,39 +162,33 @@
     -10px -10px 20px rgba(255, 255, 255, 1);
 }
 
-/* Label và Score */
 .goalLabel {
-  font-size: 25px;
+  font-size: 22px;
   color: #666;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .goalScore {
-  font-size: 25px;
+  font-size: 24px;
   font-weight: 800;
   color: #000;
 }
 
-/* Overall đặc biệt */
+/* Overall card highlight */
 .overall {
   background: linear-gradient(135deg, #00ff66, #00e65c);
   color: #fff;
   box-shadow: 0 6px 15px rgba(0, 255, 102, 0.4);
 }
 
-.overall .goalLabel {
-  color: #fff;
-}
-
+.overall .goalLabel,
 .overall .goalScore {
   color: #fff;
 }
 
-.sectionTitle {
-  margin: 0 0 0px;
-}
-
-/* Stats */
+/* ================================
+   STATS SECTION
+================================ */
 .statItem {
   display: flex;
   align-items: center;
@@ -214,9 +196,10 @@
   background: #fff;
   border-radius: 10px;
   padding: 15px;
-  margin-bottom: 11px;
+  margin-bottom: 10px;
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
 }
+
 .iconBox {
   width: 36px;
   height: 36px;
@@ -227,35 +210,44 @@
 }
 
 .readingBg {
-  background-color: #ffe5d0; /* cam nhạt */
+  background-color: #ffe5d0;
 }
-
 .listeningBg {
-  background-color: #d6f5df; /* xanh lá nhạt */
+  background-color: #d6f5df;
 }
-
+.writingBg {
+  background-color: rgba(220, 53, 69, 0.1);
+}
+.speakingBg {
+  background-color: rgba(111, 66, 193, 0.1);
+}
 .overallBg {
-  background-color: #d9ecff; /* xanh dương nhạt */
+  background-color: #d9ecff;
 }
 
-/* thanh nền */
+.statLabel,
+.statValue {
+  font-size: 22px;
+}
+
+/* Progress bar */
 .progressBar {
   flex: 1;
   height: 12px;
   background: #e9ecef;
   border-radius: 6px;
   overflow: hidden;
-  position: relative;
 }
 
-/* thanh tiến trình chạy */
 .progressFill {
   height: 100%;
   border-radius: 6px;
-  transition: width 0.4s ease; /* hiệu ứng mượt */
+  transition: width 0.4s ease;
 }
 
-/* History */
+/* ================================
+   HISTORY SECTION
+================================ */
 .historySection {
   grid-area: history;
 }
@@ -263,16 +255,17 @@
 .historyRow {
   display: grid;
   grid-template-columns: 100px 2fr 120px 120px 80px;
-  /* Status rộng hơn, Exam Name to hơn, Score vừa */
   padding: 10px 8px;
   border-bottom: 1px solid #f1f3f5;
   align-items: center;
-  text-align: left; /* căn chữ trái cho đẹp */
+  text-align: left;
 }
 
 .historyRow:last-child {
   border-bottom: none;
 }
+
+/* Empty state */
 .emptyState {
   text-align: center;
   padding: 30px;
@@ -294,11 +287,10 @@
 }
 
 .emptyButton {
-  background: #f1f3f5;
+  background: var(--color-gray);
   border: none;
   padding: 10px 20px;
   border-radius: 20px;
-  font-family: "Dongle", sans-serif;
   font-size: 20px;
   font-weight: 600;
   cursor: pointer;
@@ -309,7 +301,9 @@
   background: #e0e0e0;
 }
 
-/* Balance + Enjoy */
+/* ================================
+   BALANCE + ENJOY SECTION
+================================ */
 .balanceWrapper {
   grid-area: balance;
   display: flex;
@@ -326,13 +320,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  font-size: 30px;
-}
-
-.balanceHeader h3 {
-  margin-bottom: 15px;
-  font-size: 30px;
-  font-weight: 600;
+  font-size: 24px;
 }
 
 .userAvatars {
@@ -346,7 +334,7 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: #f1f3f5;
+  background: var(--color-gray);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -355,7 +343,7 @@
 }
 
 .avatarItem span {
-  font-size: 25px;
+  font-size: 20px;
   color: #555;
 }
 
@@ -364,6 +352,7 @@
   color: #fff;
 }
 
+/* Balance input */
 .balanceInputSection {
   display: flex;
   justify-content: space-between;
@@ -371,14 +360,13 @@
 }
 
 .balanceInput {
-  width: 100px; /* đặt width cố định thay vì flex */
-  padding: 6px 10px; /* giảm padding */
+  width: 100px;
+  padding: 6px 10px;
   border: 2px solid #e9ecef;
   border-radius: 6px;
-  font-size: 30px; /* chữ nhỏ gọn */
+  font-size: 24px;
   font-weight: 600;
   text-align: center;
-  font-family: "Dongle", sans-serif;
 }
 
 .transferButton {
@@ -387,17 +375,17 @@
   padding: 10px 18px;
   border-radius: 8px;
   border: none;
-  font-size: 30px;
+  font-size: 22px;
   font-weight: 600;
   cursor: pointer;
   transition: 0.2s;
-  font-family: "Dongle", sans-serif;
 }
 
 .transferButton:hover {
-  background: #0056b3;
+  background: var(--color-blue);
 }
 
+/* Enjoy card */
 .enjoyCard {
   flex: 1;
   min-height: 200px;
@@ -413,10 +401,10 @@
 
 .enjoyIcons {
   font-size: 30px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .enjoyText {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 600;
 }

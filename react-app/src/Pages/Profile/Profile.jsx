@@ -233,7 +233,7 @@ export default function Profile() {
                   }}
                   onClick={() => navigate("/?mode=forgot")}
                 >
-                  Go to Forgot Password
+                  Change Password
                 </button>
               </div>
 
