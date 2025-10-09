@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AppLayout from "../../Components/Layout/AppLayout";
 import * as examService from "../../Services/ExamApi";
 import * as writingService from "../../Services/WritingApi";
 import ExamCard from "../../Components/Exam/ExamCard";
 import ExamSkillModal from "../../Components/Exam/ExamPopup";
-import styles from "./WritingPage.module.css";
-import { useNavigate } from "react-router-dom";
 import NothingFound from "../../Components/Nothing/NothingFound";
+import styles from "./WritingPage.module.css";
 
 export default function WritingPage() {
-  const navigate = useNavigate(); // ✅ Hook phải nằm bên trong function component
+  const navigate = useNavigate();
 
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -57,6 +57,32 @@ export default function WritingPage() {
       .finally(() => setLoadingDetail(false));
   };
 
+  // ====== Callbacks from Modal ======
+  const handleStartFullTest = (exam, duration) => {
+    navigate("/writing/test", {
+      state: {
+        exam,
+        tasks: examTasks,
+        mode: "full",
+        duration,
+      },
+    });
+  };
+
+  const handleStartIndividual = (exam, task) => {
+    const duration = task.writingType === "Task 1" ? 20 : 40;
+    navigate("/writing/test", {
+      state: {
+        exam,
+        task,
+        tasks: [task],
+        mode: "single",
+        duration,
+      },
+    });
+  };
+
+  // ====== Render ======
   return (
     <AppLayout title="Writing">
       <div className={styles.container}>
@@ -94,6 +120,8 @@ export default function WritingPage() {
           tasks={examTasks}
           loading={loadingDetail}
           onClose={() => setActiveExam(null)}
+          onStartFullTest={handleStartFullTest}
+          onStartIndividual={handleStartIndividual}
         />
       )}
     </AppLayout>

@@ -22,6 +22,7 @@ import AddWriting from "./Pages/Admin/AddWriting.jsx";
 import ModeratorDashboard from "./Pages/Moderator/ModeratorDashboard.jsx"; // ⚡ import moderator dashboard
 import AppWrapper from "./Components/Layout/AppWrapper.jsx";
 import WritingTestPage from "./Pages/Writing/WritingTestPage.jsx"
+import ReadingExamPage from "./Pages/Reading/ReadingExamPage.jsx";
 function App() {
   return (
     <BrowserRouter>
@@ -49,7 +50,8 @@ function App() {
           <Route path="/admin/exam/add-reading" element={<AddReading />} />
           <Route path="/admin/exam/add-listening" element={<AddListening />} />
           <Route path="/admin/exam/add-writing" element={<AddWriting />} />
-          <Route path="/writing-test" element={<WritingTestPage />} />
+          <Route path="/writing/test" element={<WritingTestPage />} />
+          <Route path="/reading/test" element={<ReadingExamPage />} />
 
           <Route path="/moderator/dashboard" element={<ModeratorDashboard />} />
         </Routes>
