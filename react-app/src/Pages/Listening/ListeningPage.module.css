@@ -1,0 +1,34 @@
+.container {
+  padding: 16px;
+}
+
+.pageTitle {
+  font-size: 30px;
+  font-weight: 600;
+  margin: 8px 0 16px;
+}
+
+.stateText {
+  color: #6b7280;
+  font-size: 20px;
+  padding: 12px 0;
+}
+
+.errorText {
+  color: #b91c1c;
+  font-size: 20px;
+  padding: 12px 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+.centerWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh; /* chiếm 60% chiều cao màn hình */
+  grid-column: 1 / -1; /* nếu vẫn nằm trong grid, sẽ chiếm full width */
+}
