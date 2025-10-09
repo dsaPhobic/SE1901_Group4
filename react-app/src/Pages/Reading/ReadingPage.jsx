@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AppLayout from "../../Components/Layout/AppLayout";
 import * as examService from "../../Services/ExamApi";
 import * as readingService from "../../Services/ReadingApi";
@@ -8,6 +9,8 @@ import styles from "./ReadingPage.module.css";
 import NothingFound from "../../Components/Nothing/NothingFound";
 
 export default function ReadingPage() {
+  const navigate = useNavigate();
+
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -54,6 +57,30 @@ export default function ReadingPage() {
       .finally(() => setLoadingDetail(false));
   };
 
+  // ====== Callbacks from Modal ======
+  const handleStartFullTest = (exam, duration) => {
+    navigate("/reading/test", {
+      state: {
+        exam,
+        tasks: examQuestions,
+        mode: "full",
+        duration,
+      },
+    });
+  };
+
+  const handleStartIndividual = (exam, task) => {
+    navigate("/reading/test", {
+      state: {
+        exam,
+        tasks: [task],
+        mode: "single",
+        duration: 20, // or task-based if you prefer
+      },
+    });
+  };
+
+  // ====== Render ======
   return (
     <AppLayout title="Reading">
       <div className={styles.container}>
@@ -91,6 +118,9 @@ export default function ReadingPage() {
           tasks={examQuestions}
           loading={loadingDetail}
           onClose={() => setActiveExam(null)}
+          // ✅ new props for reusability
+          onStartFullTest={handleStartFullTest}
+          onStartIndividual={handleStartIndividual}
         />
       )}
     </AppLayout>

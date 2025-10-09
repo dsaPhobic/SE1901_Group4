@@ -2,7 +2,14 @@ import React, { useState, useEffect, useRef } from "react";
 import { Edit2 } from "lucide-react";
 import styles from "./ExamPopup.module.css";
 
-export default function ExamSkillModal({ exam, tasks, loading, onClose }) {
+export default function ExamSkillModal({
+  exam,
+  tasks,
+  loading,
+  onClose,
+  onStartFullTest,     // ✅ new prop
+  onStartIndividual,   // ✅ new prop
+}) {
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [duration, setDuration] = useState(60);
   const [isEditingTime, setIsEditingTime] = useState(false);
@@ -47,19 +54,15 @@ export default function ExamSkillModal({ exam, tasks, loading, onClose }) {
       ).join(", ")
     : "";
 
-  const getDisplayOrder = (t) =>
-    t.displayOrder ?? t.DisplayOrder ?? 0;
-
+  const getDisplayOrder = (t) => t.displayOrder ?? t.DisplayOrder ?? 0;
   const getTaskId = (t) =>
     t.readingId || t.listeningId || t.writingId || t.speakingId;
-
   const getTaskLabel = (t) =>
     t.readingType ||
     t.listeningType ||
     t.writingType ||
     t.speakingType ||
     "Task";
-
   const getTaskDurationMinutes = (t) => {
     const order = Number(getDisplayOrder(t));
     if (order === 1) return 20;
@@ -68,20 +71,23 @@ export default function ExamSkillModal({ exam, tasks, loading, onClose }) {
   };
 
   // ======= start test actions =======
-  const startFullTest = () => {
+  const handleStartFullTest = () => {
     onClose();
-    alert(`Start full ${exam.examType} test`);
+    if (typeof onStartFullTest === "function") {
+      onStartFullTest(exam, duration); // ✅ pass data out
+    }
   };
 
-  const startIndividual = () => {
+  const handleStartIndividual = () => {
     const task = Array.isArray(tasks)
       ? tasks.find((t) => String(getTaskId(t)) === String(selectedTaskId))
       : null;
     if (!task) return;
+
     onClose();
-    alert(
-      `Start ${getTaskLabel(task)} - Task ${getDisplayOrder(task)} (${exam.examType})`
-    );
+    if (typeof onStartIndividual === "function") {
+      onStartIndividual(exam, task); // ✅ pass data out
+    }
   };
 
   // ======= render =======
@@ -149,9 +155,7 @@ export default function ExamSkillModal({ exam, tasks, loading, onClose }) {
 
                       <ul className={styles.list}>
                         <li>Answer all questions</li>
-                        <li>
-                          You can switch between tasks during the test.
-                        </li>
+                        <li>You can switch between tasks during the test.</li>
                       </ul>
                     </div>
                   </div>
@@ -161,9 +165,10 @@ export default function ExamSkillModal({ exam, tasks, loading, onClose }) {
                     <div className={styles.infoValue}>
                       There are{" "}
                       <span className={styles.highlightNumber}>
-                        {totalTasks || "N/A"} tasks
+                        {totalTasks || "N/A"}
                       </span>{" "}
-                      in the test{taskTypes ? ` (${taskTypes})` : ""}.
+                      tasks in the test
+                      {taskTypes ? ` (${taskTypes})` : ""}.
                     </div>
                   </div>
                 </div>
@@ -173,7 +178,7 @@ export default function ExamSkillModal({ exam, tasks, loading, onClose }) {
                 >
                   <button
                     className={`${styles.primaryBtn} ${styles.elevatedBtn}`}
-                    onClick={startFullTest}
+                    onClick={handleStartFullTest}
                   >
                     Start Full Test
                   </button>
@@ -190,8 +195,7 @@ export default function ExamSkillModal({ exam, tasks, loading, onClose }) {
                     {Array.isArray(tasks) && tasks.length > 0 ? (
                       tasks
                         .sort(
-                          (a, b) =>
-                            getDisplayOrder(a) - getDisplayOrder(b)
+                          (a, b) => getDisplayOrder(a) - getDisplayOrder(b)
                         )
                         .map((t) => {
                           const id = getTaskId(t);
@@ -201,9 +205,7 @@ export default function ExamSkillModal({ exam, tasks, loading, onClose }) {
                                 type="radio"
                                 name="task"
                                 value={id}
-                                checked={
-                                  String(selectedTaskId) === String(id)
-                                }
+                                checked={String(selectedTaskId) === String(id)}
                                 onChange={() => setSelectedTaskId(id)}
                               />
                               <div className={styles.taskMeta}>
@@ -229,7 +231,7 @@ export default function ExamSkillModal({ exam, tasks, loading, onClose }) {
                   <button
                     className={`${styles.primaryBtn} ${styles.elevatedBtn}`}
                     disabled={!selectedTaskId}
-                    onClick={startIndividual}
+                    onClick={handleStartIndividual}
                   >
                     Start Task
                   </button>
