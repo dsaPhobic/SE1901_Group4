@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import AuthLayout from "../../Components/Layout/AuthLayout";
 import FormInput from "../../Components/Auth/InputField";
 import Button from "../../Components/Auth/Button";
-import { login, register, loginWithGoogle } from "../../Services/AuthApi.js";
+import { login, register, loginWithGoogle, forgotPassword } from "../../Services/AuthApi.js";
 import userIcon from "../../assets/auth_user.png";
 import lockIcon from "../../assets/auth_lock.png";
 import google from "../../assets/google.png";
@@ -100,6 +100,13 @@ const Login = () => {
       if (!form.password) {
         errors.password = "Password is required";
       }
+    } else if (mode === "forgot") {
+      // Forgot password validation
+      if (!form.email) {
+        errors.email = "Email is required";
+      } else if (!validateEmail(form.email)) {
+        errors.email = "Please enter a valid email address";
+      }
     }
     
     return errors;
@@ -177,11 +184,8 @@ const Login = () => {
         .then((res) => {
           console.log("Register success:", res.data);
           setSuccess("Account created successfully! Please login with your credentials.");
-          // Auto switch to login mode after 2 seconds
-          setTimeout(() => {
-            setMode("login");
-            setSuccess("");
-          }, 2000);
+          // Clear the form data so user needs to enter credentials manually
+          setForm({ email: "", password: "", username: "", confirmPassword: "" });
         })
         .catch((err) => {
           console.error("Auth error:", err.response?.data || err.message);
@@ -192,9 +196,23 @@ const Login = () => {
           setIsLoading(false);
         });
     } else if (mode === "forgot") {
-      console.log("Send reset link to:", form.email);
-      alert("Reset link sent (mock)");
-      setIsLoading(false);
+      forgotPassword(form.email)
+        .then((res) => {
+          console.log("OTP sent successfully:", res.data);
+          setSuccess("OTP sent successfully to your email address");
+          // Navigate to OTP verification page
+          setTimeout(() => {
+            navigate("/verify-otp", { state: { email: form.email } });
+          }, 1500);
+        })
+        .catch((err) => {
+          console.error("Forgot password error:", err.response?.data || err.message);
+          const errorMessage = err.response?.data?.message || err.message || "Failed to send OTP. Please try again.";
+          setError(errorMessage);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
     }
   }
 
@@ -299,7 +317,7 @@ const Login = () => {
                 <Button type="submit" variant="yellow" disabled={isLoading}>
                   {isLoading ? (
                     <div className="loading-content">
-                      <Loader2 size={16} className="loading-spinner" />
+                      <Loader2 size={10} className="loading-spinner" />
                       <span>Loading...</span>
                     </div>
                   ) : (
@@ -315,12 +333,13 @@ const Login = () => {
 
             {mode === "login" && (
               <>
-                <Link
-                  to="/forgot-password"
+                <button
+                  type="button"
                   className="forgot-password"
+                  onClick={() => switchMode("forgot")}
                 >
                   Forgot your password?
-                </Link>
+                </button>
                 <div className="divider">
                   <span>or</span>
                 </div>
