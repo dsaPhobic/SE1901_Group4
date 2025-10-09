@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, refreshUser } = useAuth();
   const { attempts, loading: attemptsLoading } = useExamAttempts(user?.userId);
   const [activeTab, setActiveTab] = useState("profile");
 

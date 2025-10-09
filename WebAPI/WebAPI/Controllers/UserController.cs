@@ -108,6 +108,27 @@ namespace WebAPI.Controllers
             }
         }
 
+        // GET /users/{id}/stats
+        [HttpGet("{id:int}/stats")]
+        public ActionResult<object> GetUserStats(int id)
+        {
+            var user = _users.GetById(id);
+            if (user == null) return NotFound("Không tìm thấy user");
+
+            var stats = _users.GetUserStats(id);
+            return Ok(stats);
+        }
+
+        // GET /users/{id}/profile-stats
+        [HttpGet("{id:int}/profile-stats")]
+        public ActionResult<object> GetUserProfileStats(int id)
+        {
+            var stats = _users.GetUserProfileStats(id);
+            if (stats == null) return NotFound("Không tìm thấy user");
+
+            return Ok(stats);
+        }
+
         // DELETE /users/{id}
         [HttpDelete("{id:int}")]
         public IActionResult Delete(int id)

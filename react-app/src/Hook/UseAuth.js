@@ -6,10 +6,11 @@ export default function useAuth() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    getMe()
+  const refreshUser = () => {
+    return getMe()
       .then((res) => {
         setUser(res.data);
+        return res.data;
       })
       .catch((err) => {
         if (err.response?.status === 401) {
@@ -17,8 +18,12 @@ export default function useAuth() {
         } else {
           console.error("Failed to fetch user:", err);
         }
-      })
-      .finally(() => setLoading(false));
+        throw err;
+      });
+  };
+
+  useEffect(() => {
+    refreshUser().finally(() => setLoading(false));
   }, []);
 
   function handleLogin(data) {
@@ -62,5 +67,6 @@ export default function useAuth() {
     handleLogin,
     handleRegister,
     handleLogout,
+    refreshUser,
   };
 }

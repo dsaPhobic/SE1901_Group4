@@ -276,6 +276,15 @@
   object-fit: cover;
   margin: 0 auto 16px;
   display: block;
+  border: 3px solid #f0f0f0;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.profile-avatar:hover {
+  transform: scale(1.05);
+  border-color: #007bff;
+  box-shadow: 0 6px 20px rgba(0, 123, 255, 0.25);
 }
 
 .profile-username {
@@ -287,12 +296,37 @@
 
 .profile-stats {
   margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.profile-votes {
-  font-size: 24px;
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.stat-label {
+  font-size: 14px;
   color: #666;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 18px;
+  color: #333;
   font-weight: 600;
+}
+
+.loading-stats {
+  font-size: 14px;
+  color: #999;
+  font-style: italic;
 }
 
 .profile-actions {

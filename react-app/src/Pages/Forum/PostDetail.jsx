@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./PostDetail.css";
-import Sidebar from "../../Components/Layout/Sidebar";
+import GeneralSidebar from "../../Components/Layout/GeneralSidebar";
 import HeaderBar from "../../Components/Layout/HeaderBar";
 import CommentSection from "../../Components/Forum/CommentSection";
 import { getPost, votePost, unvotePost, reportPost, deletePost, pinPost, unpinPost, hidePost } from "../../Services/ForumApi";
+import { getUserProfileStats } from "../../Services/UserApi";
 import useAuth from "../../Hook/UseAuth";
 import { MoreVertical, Trash2, Pin, EyeOff, Flag, ArrowLeft, MessageCircle, Image, Share, Download, ThumbsUp, Edit } from "lucide-react";
 import { formatFullDateVietnam } from "../../utils/date";
@@ -23,6 +24,7 @@ export default function PostDetail() {
   const [reportReason, setReportReason] = useState("");
   const [showMenu, setShowMenu] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
+  const [userStats, setUserStats] = useState(null);
   const menuRef = useRef(null);
   const hasLoadedRef = useRef(false);
 
@@ -40,6 +42,16 @@ export default function PostDetail() {
       setIsPinned(post.isPinned || false);
     }
   }, [post]);
+
+  const loadUserStats = (userId) => {
+    getUserProfileStats(userId)
+      .then(response => {
+        setUserStats(response.data);
+      })
+      .catch(error => {
+        console.error("Error loading user stats:", error);
+      });
+  };
 
   const loadPost = () => {
     // Tránh gọi API nhiều lần do React StrictMode
@@ -60,6 +72,11 @@ export default function PostDetail() {
         setIsVoted(response.data.isVoted || false);
         setVoteCount(response.data.voteCount || 0);
         setIsPinned(response.data.isPinned || false);
+        
+        // Load user stats for the post owner
+        if (response.data.user?.userId) {
+          loadUserStats(response.data.user.userId);
+        }
       })
       .catch(error => {
         console.error("Error loading post:", error);
@@ -203,7 +220,7 @@ export default function PostDetail() {
   if (loading) {
     return (
       <div className="post-detail-container">
-        <Sidebar />
+        <GeneralSidebar />
         <main className="main-content">
           <HeaderBar />
           <div className="loading">Loading post...</div>
@@ -215,7 +232,7 @@ export default function PostDetail() {
   if (!post) {
     return (
       <div className="post-detail-container">
-        <Sidebar />
+        <GeneralSidebar />
         <main className="main-content">
           <HeaderBar />
           <div className="error">Post not found</div>
@@ -226,7 +243,7 @@ export default function PostDetail() {
 
   return (
     <div className="post-detail-container">
-      <Sidebar />
+      <GeneralSidebar />
       <main className="main-content">
         <HeaderBar />
         <div className="post-detail-content">
@@ -342,18 +359,20 @@ export default function PostDetail() {
               />
               <h3 className="profile-username">@{post.user?.username}</h3>
               <div className="profile-stats">
-                <span className="profile-votes">125 [8]</span>
-              </div>
-              <div className="profile-actions">
-                <button className="profile-action-btn">
-                  <MessageCircle size={16} />
-                </button>
-                <button className="profile-action-btn">
-                  <Image size={16} />
-                </button>
-                <button className="profile-action-btn">
-                  <Download size={16} />
-                </button>
+                {userStats ? (
+                  <>
+                    <div className="stat-item">
+                      <span className="stat-label">Posts</span>
+                      <span className="stat-value">{userStats.totalPosts}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">Votes</span>
+                      <span className="stat-value">{userStats.totalVotes}</span>
+                    </div>
+                  </>
+                ) : (
+                  <span className="loading-stats">Loading stats...</span>
+                )}
               </div>
             </div>
           </div>

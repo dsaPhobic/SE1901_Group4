@@ -229,7 +229,8 @@ namespace WebAPI.Services
                     Email = comment.User.Email,
                     Firstname = comment.User.Firstname,
                     Lastname = comment.User.Lastname,
-                    Role = comment.User.Role
+                    Role = comment.User.Role,
+                    Avatar = comment.User.Avatar
                 },
                 Replies = new List<CommentDTO>() // Don't load replies in ToDTO, use ToDTOWithReplies instead
             };
@@ -266,7 +267,8 @@ namespace WebAPI.Services
                     Email = comment.User.Email,
                     Firstname = comment.User.Firstname,
                     Lastname = comment.User.Lastname,
-                    Role = comment.User.Role
+                    Role = comment.User.Role,
+                    Avatar = comment.User.Avatar
                 },
                 Replies = replies
             };

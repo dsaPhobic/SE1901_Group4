@@ -16,3 +16,7 @@ export function updateUser(id, data) {
 export function deleteUser(id) {
   return API.delete(`/${id}`);
 }
+
+export function getUserProfileStats(id) {
+  return API.get(`/${id}/profile-stats`);
+}
