@@ -1,5 +1,4 @@
-// src/Pages/Dashboard/DashboardUser.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import AppLayout from "../../Components/Layout/AppLayout";
 import styles from "./DashboardUser.module.css";
 import {
@@ -10,6 +9,8 @@ import {
   Wallet,
   CheckCircle,
   XCircle,
+  Pen,
+  Mic,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import NothingFound from "../../Components/Nothing/NothingFound";
@@ -17,6 +18,48 @@ import NothingFound from "../../Components/Nothing/NothingFound";
 import * as AuthApi from "../../Services/AuthApi";
 import { getSubmittedDays } from "../../Services/ExamApi";
 import useExamAttempts from "../../Hook/UseExamAttempts";
+import { isDaySubmitted } from "../../utils/date";
+
+/* ================================
+   Configs for stats display
+================================ */
+const STAT_CONFIGS = [
+  {
+    key: "Reading",
+    label: "Reading",
+    color: "#fd7e14",
+    icon: <Book size={18} color="#fd7e14" />,
+    bg: "readingBg",
+  },
+  {
+    key: "Listening",
+    label: "Listening",
+    color: "#28a745",
+    icon: <Headphones size={18} color="#28a745" />,
+    bg: "listeningBg",
+  },
+  {
+    key: "Writing",
+    label: "Writing",
+    color: "#dc3545",
+    icon: <Pen size={18} color="#dc3545" />,
+    bg: "writingBg",
+  },
+  {
+    key: "Speaking",
+    label: "Speaking",
+    color: "#6f42c1",
+    icon: <Mic size={18} color="#6f42c1" />,
+    bg: "speakingBg",
+  },
+  {
+    key: "Overall",
+    label: "Overall",
+    color: "#007bff",
+    icon: <BarChart2 size={18} color="#007bff" />,
+    bg: "overallBg",
+  },
+];
 
 export default function DashboardUser() {
   const navigate = useNavigate();
@@ -24,55 +67,47 @@ export default function DashboardUser() {
   // ===== Calendar logic =====
   const today = new Date();
   const year = today.getFullYear();
-  const month = today.getMonth(); // 0-based
+  const month = today.getMonth();
   const monthName = today.toLocaleString("default", { month: "long" });
 
   const firstDay = new Date(year, month, 1).getDay(); // Sun=0
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const startOffset = firstDay === 0 ? 6 : firstDay - 1; // Mon=0
 
-  const days = Array.from({ length: startOffset }, () => null).concat(
-    Array.from({ length: daysInMonth }, (_, i) => i + 1)
-  );
-  const weeks = [];
-  for (let i = 0; i < days.length; i += 7) weeks.push(days.slice(i, i + 7));
+  const weeks = useMemo(() => {
+    const days = Array.from({ length: startOffset }, () => null).concat(
+      Array.from({ length: daysInMonth }, (_, i) => i + 1)
+    );
+    const result = [];
+    for (let i = 0; i < days.length; i += 7) result.push(days.slice(i, i + 7));
+    return result;
+  }, [month, year]);
 
   // ===== State =====
   const [userId, setUserId] = useState(null);
   const [submittedDays, setSubmittedDays] = useState([]);
   const [historyData, setHistoryData] = useState([]);
-  const [stats, setStats] = useState({ Reading: 0, Listening: 0, Overall: 0 });
 
   // ===== Get current user =====
   useEffect(() => {
     AuthApi.getMe()
-      .then((meRes) => {
-        setUserId(meRes.data.userId);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch user:", err);
-      });
+      .then((meRes) => setUserId(meRes.data.userId))
+      .catch((err) => console.error("Failed to fetch user:", err));
   }, []);
 
   // ===== Submitted days =====
   useEffect(() => {
     if (!userId) return;
     getSubmittedDays(userId)
-      .then((days) => {
-        setSubmittedDays(days);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch submitted days:", err);
-      });
+      .then((days) => setSubmittedDays(days))
+      .catch((err) => console.error("Failed to fetch submitted days:", err));
   }, [userId]);
 
-  // ===== History + Stats (dùng hook useExamAttempts) =====
-  const { attempts, loading } = useExamAttempts(userId);
+  // ===== History + Stats =====
+  const { attempts, stats } = useExamAttempts(userId);
 
   useEffect(() => {
     if (!attempts || attempts.length === 0) return;
-
-    // History rows
     const rows = attempts.map((a) => [
       a.submittedAt ? (
         <CheckCircle size={18} color="#28a745" />
@@ -86,42 +121,13 @@ export default function DashboardUser() {
         : "In progress",
       a.totalScore?.toFixed(1) ?? a.score?.toFixed(1) ?? "-",
     ]);
-
     setHistoryData(rows);
-
-    // Stats từ dữ liệu
-    const grouped = attempts.reduce(
-      (acc, a) => {
-        const score = a.totalScore ?? a.score ?? 0;
-        if (a.examType === "Reading") acc.Reading += score;
-        if (a.examType === "Listening") acc.Listening += score;
-        acc.count++;
-        acc.Overall += score;
-        return acc;
-      },
-      { Reading: 0, Listening: 0, Overall: 0, count: 0 }
-    );
-    const avg = grouped.count > 0 ? grouped.Overall / grouped.count : 0;
-    setStats({
-      Reading: grouped.Reading,
-      Listening: grouped.Listening,
-      Overall: avg,
-    });
   }, [attempts]);
-
-  // check ngày có trong submittedDays không
-  function isSubmitted(day) {
-    if (!day) return false;
-    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(
-      day
-    ).padStart(2, "0")}`;
-    return submittedDays.includes(dateStr);
-  }
 
   return (
     <AppLayout title="Summary of your hard work">
       <div className={styles.dashboardContent}>
-        {/* Calendar */}
+        {/* ===== Calendar Section ===== */}
         <div className={`${styles.card} ${styles.calendarCard}`}>
           <div className={styles.cardHeader}>
             <h3 className={styles.cardTitle}>Your dedication for studying</h3>
@@ -152,7 +158,9 @@ export default function DashboardUser() {
                     <div
                       key={di}
                       className={`${styles.calendarDay} ${
-                        isSubmitted(d) ? styles.submitted : ""
+                        isDaySubmitted(d, month, year, submittedDays)
+                          ? styles.submitted
+                          : ""
                       }`}
                     >
                       {d || ""}
@@ -164,91 +172,54 @@ export default function DashboardUser() {
           </div>
         </div>
 
-        {/* Goals + Stats */}
+        {/* ===== Goals + Stats ===== */}
         <div className={styles.goalsWrapper}>
-          {/* Goals */}
+          {/* Goals Section */}
           <div className={styles.goalsSection}>
             <h3 className={styles.sectionTitle}>Goals</h3>
             <div className={styles.goalsCards}>
-              <div className={styles.goalCard}>
-                <div className={styles.goalLabel}>Reading</div>
-                <div className={styles.goalScore}>9.0</div>
-              </div>
-              <div className={styles.goalCard}>
-                <div className={styles.goalLabel}>Listening</div>
-                <div className={styles.goalScore}>9.0</div>
-              </div>
-              <div className={`${styles.goalCard} ${styles.overall}`}>
-                <div className={styles.goalLabel}>Overall</div>
-                <div className={styles.goalScore}>9.0</div>
-              </div>
+              {["Reading", "Listening", "Writing", "Speaking", "Overall"].map(
+                (label) => (
+                  <div
+                    key={label}
+                    className={`${styles.goalCard} ${
+                      label === "Overall" ? styles.overall : ""
+                    }`}
+                  >
+                    <div className={styles.goalLabel}>{label}</div>
+                    <div className={styles.goalScore}>9.0</div>
+                  </div>
+                )
+              )}
             </div>
           </div>
 
-          {/* Stats */}
+          {/* Stats Section */}
           <div className={styles.statsSection}>
             <h3 className={styles.sectionTitle}>Outcome Statistics</h3>
 
-            <div className={styles.statItem}>
-              <div className={`${styles.iconBox} ${styles.readingBg}`}>
-                <Book size={18} color="#fd7e14" />
+            {STAT_CONFIGS.map(({ key, label, color, icon, bg }) => (
+              <div key={key} className={styles.statItem}>
+                <div className={`${styles.iconBox} ${styles[bg]}`}>{icon}</div>
+                <span className={styles.statLabel}>{label}</span>
+                <div className={styles.progressBar}>
+                  <div
+                    className={styles.progressFill}
+                    style={{
+                      width: `${(stats[key] / 9) * 100}%`,
+                      background: color,
+                    }}
+                  />
+                </div>
+                <span className={styles.statValue}>
+                  {stats[key]?.toFixed(1) ?? "0.0"}/9
+                </span>
               </div>
-              <span className={styles.statLabel}>Reading</span>
-              <div className={styles.progressBar}>
-                <div
-                  className={styles.progressFill}
-                  style={{
-                    width: `${(stats.Reading / 9) * 100}%`,
-                    background: "#fd7e14",
-                  }}
-                ></div>
-              </div>
-              <span className={styles.statValue}>
-                {stats.Reading.toFixed(1)}/9
-              </span>
-            </div>
-
-            <div className={styles.statItem}>
-              <div className={`${styles.iconBox} ${styles.listeningBg}`}>
-                <Headphones size={18} color="#28a745" />
-              </div>
-              <span className={styles.statLabel}>Listening</span>
-              <div className={styles.progressBar}>
-                <div
-                  className={styles.progressFill}
-                  style={{
-                    width: `${(stats.Listening / 9) * 100}%`,
-                    background: "#28a745",
-                  }}
-                ></div>
-              </div>
-              <span className={styles.statValue}>
-                {stats.Listening.toFixed(1)}/9
-              </span>
-            </div>
-
-            <div className={styles.statItem}>
-              <div className={`${styles.iconBox} ${styles.overallBg}`}>
-                <BarChart2 size={18} color="#007bff" />
-              </div>
-              <span className={styles.statLabel}>Overall</span>
-              <div className={styles.progressBar}>
-                <div
-                  className={styles.progressFill}
-                  style={{
-                    width: `${(stats.Overall / 9) * 100}%`,
-                    background: "#007bff",
-                  }}
-                ></div>
-              </div>
-              <span className={styles.statValue}>
-                {stats.Overall.toFixed(1)}/9
-              </span>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* History */}
+        {/* ===== History Section ===== */}
         <div className={styles.historySection}>
           <h3 className={styles.sectionTitle}>Practice History</h3>
           <div className={styles.historyTable}>
@@ -282,7 +253,7 @@ export default function DashboardUser() {
           </div>
         </div>
 
-        {/* Balance + Enjoy */}
+        {/* ===== Balance + Enjoy Section ===== */}
         <div className={styles.balanceWrapper}>
           <div className={styles.balanceSection}>
             <h3>Account Balance</h3>
@@ -303,7 +274,7 @@ export default function DashboardUser() {
                 <input className={styles.balanceInput} value="1997" readOnly />
                 <button
                   className={styles.transferButton}
-                  onClick={() => navigate("/transction")}
+                  onClick={() => navigate("/transaction")}
                 >
                   Send the transfer
                 </button>

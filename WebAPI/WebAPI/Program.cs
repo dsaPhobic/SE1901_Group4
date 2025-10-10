@@ -63,6 +63,7 @@ builder.Services.AddScoped<IListeningRepository, ListeningRepository>();
 builder.Services.AddScoped<IListeningService, ListeningService>();
 builder.Services.AddScoped<IWritingRepository, WritingRepository>();
 builder.Services.AddScoped<IWritingService, WritingService>();
+builder.Services.AddScoped<ISignInHistoryService, SignInHistoryService>();
 // ====== Authentication ======
 builder.Services.AddAuthentication(options =>
 {

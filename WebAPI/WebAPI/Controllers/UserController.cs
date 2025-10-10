@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using WebAPI.Data;
 using WebAPI.DTOs;
 using WebAPI.Models;
 using WebAPI.Services;
@@ -10,7 +11,13 @@ namespace WebAPI.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _users;
-        public UserController(IUserService users) => _users = users;
+        private readonly ISignInHistoryService _signInHistory;
+
+        public UserController(IUserService users, ISignInHistoryService signInHistory) 
+        { 
+            _users = users; 
+            _signInHistory = signInHistory;
+        }
 
         // GET /users/me
         [HttpGet("profile")]
@@ -150,5 +157,13 @@ namespace WebAPI.Controllers
                 return Forbid(ex.Message);
             }
         }
+
+        [HttpGet("{userId:int}/signin-history")]
+        public IActionResult GetSignInHistory(int userId)
+        {
+            var history = _signInHistory.GetUserHistory(userId, 30);
+            return Ok(history);
+        }
+
     }
 }

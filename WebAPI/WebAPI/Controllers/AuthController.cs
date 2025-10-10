@@ -2,10 +2,11 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using WebAPI.Data;
 using WebAPI.DTOs;
+using WebAPI.ExternalServices;
 using WebAPI.Models;
 using WebAPI.Services;
-using WebAPI.ExternalServices;
 
 namespace WebAPI.Controllers
 {
@@ -16,12 +17,14 @@ namespace WebAPI.Controllers
         private readonly IUserService _userService;
         private readonly IConfiguration _configuration;
         private readonly IEmailService _emailService;
-        
-        public AuthController(IUserService userService, IConfiguration configuration, IEmailService emailService)
+        private readonly ISignInHistoryService _signInHistoryService;
+
+        public AuthController(IUserService userService, IConfiguration configuration, IEmailService emailService, ISignInHistoryService signInHistoryService)
         {
             _userService = userService;
             _configuration = configuration;
             _emailService = emailService;
+            _signInHistoryService = signInHistoryService;
         }
 
         [HttpPost("register")]
@@ -69,6 +72,17 @@ namespace WebAPI.Controllers
                     }).GetAwaiter().GetResult();
 
                 HttpContext.Session.SetInt32("UserId", user.UserId);
+                try
+                {
+                    var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+                    var device = Request.Headers["User-Agent"].ToString();
+                    _signInHistoryService.LogSignIn(user.UserId, ip, device);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[AuthController] Failed to log sign-in: {ex.Message}");
+                }
+
 
                 return Ok(ToDto(user));
             }
@@ -140,6 +154,17 @@ namespace WebAPI.Controllers
                        .GetAwaiter().GetResult();
 
             HttpContext.Session.SetInt32("UserId", user.UserId);
+            try
+            {
+                var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+                var device = Request.Headers["User-Agent"].ToString();
+                _signInHistoryService.LogSignIn(user.UserId, ip, device);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[AuthController] Failed to log Google sign-in: {ex.Message}");
+            }
+
 
             return Redirect($"http://localhost:5173?login=success&email={user.Email}&username={user.Username}&role={user.Role}");
         }

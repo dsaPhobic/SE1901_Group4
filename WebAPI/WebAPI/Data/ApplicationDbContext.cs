@@ -3,10 +3,10 @@ using WebAPI.Models;
 
 namespace WebAPI.Data
 {
-  
+
     public partial class ApplicationDbContext : DbContext
     {
-        
+
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {
         }
@@ -29,6 +29,8 @@ namespace WebAPI.Data
         public virtual DbSet<CommentLike> CommentLike { get; set; }
         public virtual DbSet<UserPostHide> UserPostHide { get; set; }
         public virtual DbSet<PasswordResetOtp> PasswordResetOtp { get; set; }
+        public virtual DbSet<UserSignInHistory> UserSignInHistory { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -414,6 +416,35 @@ namespace WebAPI.Data
                     .HasMaxLength(100)
                     .HasColumnName("username");
             });
+
+            modelBuilder.Entity<UserSignInHistory>(entity =>
+            {
+                entity.HasKey(e => e.SigninId).HasName("PK__UserSignInHistory__SignInId");
+                entity.ToTable("UserSignInHistory");
+
+                entity.Property(e => e.SigninId).HasColumnName("signin_id");
+                entity.Property(e => e.UserId).HasColumnName("user_id");
+                entity.Property(e => e.IpAddress)
+                    .HasMaxLength(50)
+                    .HasColumnName("ip_address");
+                entity.Property(e => e.DeviceInfo)
+                    .HasMaxLength(200)
+                    .HasColumnName("device_info");
+                entity.Property(e => e.Location)
+                    .HasMaxLength(200)
+                    .HasColumnName("location");
+                entity.Property(e => e.SignedInAt)
+                    .HasPrecision(0)
+                    .HasDefaultValueSql("(sysdatetime())")
+                    .HasColumnName("signed_in_at");
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.SignInHistories)
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("FK_UserSignInHistory_User");
+            });
+
 
             modelBuilder.Entity<VocabGroup>(entity =>
             {
