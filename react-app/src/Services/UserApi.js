@@ -20,3 +20,7 @@ export function deleteUser(id) {
 export function getUserProfileStats(id) {
   return API.get(`/${id}/profile-stats`);
 }
+export function getSignInHistory(userId) {
+  if (!userId) throw new Error("UserId is required");
+  return API.get(`/${userId}/signin-history`);
+}
