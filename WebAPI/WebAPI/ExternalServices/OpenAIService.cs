@@ -1,55 +1,63 @@
-//using CloudinaryDotNet.Actions;
 using OpenAI;
-//using OpenAI.Chat;
-//using System.Threading.Tasks;
+using OpenAI.Chat;
+using System.Text.Json;
+using Microsoft.Extensions.Logging;
 
-//namespace WebAPI.ExternalServices
-//{
-//    public class OpenAIService
-//    {
-//        private readonly OpenAIClient _client;
+namespace WebAPI.ExternalServices
+{
+    public class OpenAIService
+    {
+        private readonly OpenAIClient _client;
+        private readonly ILogger<OpenAIService> _logger;
 
-//        public OpenAIService(IConfiguration config)
-//        {
-//            var apiKey = config["OpenAI:ApiKey"];
-//            _client = new OpenAIClient(apiKey);
-//        }
+        public OpenAIService(IConfiguration config, ILogger<OpenAIService> logger)
+        {
+            var apiKey = config["OpenAI:ApiKey"];
+            if (string.IsNullOrEmpty(apiKey))
+                throw new ArgumentException("OpenAI API key is not configured.");
 
-////        public async Task<string> GradeWritingAsync(string question, string answer)
-////        {
-////            string prompt = $@"
-////You are an IELTS examiner. Grade the following writing task.
-////Provide band scores (Task Achievement, Coherence & Cohesion, Lexical Resource, Grammar),
-////and give short feedback.
+            _client = new OpenAIClient(apiKey);
+            _logger = logger;
+        }
 
-////### Question:
-////{question}
+        public JsonDocument GradeWriting(string question, string answer)
+        {
+            string prompt = $@"
+You are an IELTS Writing examiner and English teacher...
+### Essay Question:
+{question}
 
-////### Student's answer:
-////{answer}
+### Student's Answer:
+{answer}";
 
-////Return result strictly in JSON format like this:
-////{{
-////  ""taskAchievement"": 7.0,
-////  ""coherenceAndCohesion"": 7.5,
-////  ""lexicalResource"": 6.5,
-////  ""grammar"": 7.0,
-////  ""overall"": 7.0,
-////  ""feedback"": ""Clear structure, but vocabulary range can be improved.""
-////}}
-////";
+            try
+            {
+                var chatClient = _client.GetChatClient("gpt-4o-mini");
 
-////            var chatRequest = new ChatRequest(
-////                new[]
-////                {
-////                    new Message(Role.System, "You are an IELTS examiner."),
-////                    new Message(Role.User, prompt)
-////                },
-////                model: "gpt-4o-mini" // hoặc "gpt-4-turbo"
-////            );
+                // ✅ Dùng mảng kiểu rõ ràng
+                var messages = new ChatMessage[]
+                {
+                    new SystemChatMessage("You are an IELTS Writing examiner."),
+                    new UserChatMessage(prompt)
+                };
 
-////            var response = await _client.ChatEndpoint.GetCompletionAsync(chatRequest);
-////            return response.FirstChoice.Message.Content[0].Text;
-////        }
-//        }
-//}
+                // ✅ Gọi đồng bộ (không async/await)
+                var result = chatClient.CompleteChat(messages);
+
+                // ✅ Lấy text từ Value.Content
+                var jsonText = result.Value.Content[0].Text ?? "{}";
+                return JsonDocument.Parse(jsonText);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Failed to parse JSON from OpenAI");
+                return JsonDocument.Parse($"{{\"error\":\"Invalid JSON returned from OpenAI\",\"raw\":\"{ex.Message}\"}}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "OpenAI call failed");
+                return JsonDocument.Parse($"{{\"error\":\"{ex.Message}\"}}");
+            }
+        }
+    }
+}

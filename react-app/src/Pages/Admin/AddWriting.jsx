@@ -24,8 +24,7 @@ export default function AddWriting() {
   const [form, setForm] = useState({
     examId: exam?.examId ?? exam?.ExamId ?? "",
     writingQuestion: "",
-    writingType: "Task 1",
-    displayOrder: 1,
+    displayOrder: "",
     imageUrl: "",
   });
 
@@ -38,18 +37,19 @@ export default function AddWriting() {
       setForm({
         examId: skill.examId ?? exam?.examId,
         writingQuestion: skill.writingQuestion ?? "",
-        writingType: skill.writingType ?? "Task 1",
-        displayOrder: 1,
+        displayOrder: skill.displayOrder ?? 1,
         imageUrl: skill.imageUrl ?? "",
       });
     }
   }, [skill, exam]);
 
+  // === Handle input change ===
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
 
+  // === Upload image ===
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -75,6 +75,7 @@ export default function AddWriting() {
       .finally(() => setUploading(false));
   };
 
+  // === Submit form ===
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -86,10 +87,18 @@ export default function AddWriting() {
       return;
     }
 
+    if (!form.displayOrder) {
+      setStatus({
+        icon: <XCircle color="red" size={16} />,
+        message: "Please enter display order.",
+      });
+      return;
+    }
+
     setStatus({ icon: <Upload size={16} />, message: "Processing..." });
 
     try {
-      const payload = { ...form, displayOrder: 1 };
+      const payload = { ...form };
 
       if (skill) {
         await WritingApi.update(skill.writingId, payload);
@@ -144,18 +153,21 @@ export default function AddWriting() {
         )}
 
         <form onSubmit={handleSubmit} className={styles.form}>
-          {/* Writing Type */}
+          {/* Display Order */}
           <div className={styles.group}>
-            <label>Writing Type</label>
-            <select
-              name="writingType"
-              value={form.writingType}
+            <label>Display Order</label>
+            <input
+              type="number"
+              name="displayOrder"
+              value={form.displayOrder}
               onChange={handleChange}
+              placeholder="1 for Task 1, 2 for Task 2"
+              min={1}
               required
-            >
-              <option value="Task 1">Task 1</option>
-              <option value="Task 2">Task 2</option>
-            </select>
+            />
+            <small className={styles.note}>
+              Determines task order (e.g., 1 = Task 1, 2 = Task 2)
+            </small>
           </div>
 
           {/* Writing Question */}
@@ -220,6 +232,11 @@ export default function AddWriting() {
           Preview
         </h3>
 
+        <div className={styles.previewText}>
+          <h4>Writing Question Preview</h4>
+          <p>{form.writingQuestion || "(Question content will appear here)"}</p>
+        </div>
+
         {form.imageUrl ? (
           <img
             src={form.imageUrl}
@@ -229,11 +246,6 @@ export default function AddWriting() {
         ) : (
           <p className={styles.placeholder}>No image uploaded yet.</p>
         )}
-
-        <div className={styles.previewText}>
-          <h4>Writing Question Preview</h4>
-          <p>{form.writingQuestion || "(Question content will appear here)"}</p>
-        </div>
       </div>
     </div>
   );

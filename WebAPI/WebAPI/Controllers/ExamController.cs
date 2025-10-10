@@ -167,7 +167,6 @@ namespace WebAPI.Controllers
                     WritingId = r.WritingId,
                     ExamId = r.ExamId,
                     WritingQuestion = r.WritingQuestion,
-                    WritingType = r.WritingType,
                     DisplayOrder = r.DisplayOrder,
                     CreatedAt = r.CreatedAt
                 }).ToList() ?? new List<WritingDTO>()

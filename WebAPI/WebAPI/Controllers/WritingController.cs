@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 using WebAPI.DTOs;
 using WebAPI.Services;
+using WebAPI.ExternalServices;
 
 namespace WebAPI.Controllers
 {
@@ -10,10 +12,12 @@ namespace WebAPI.Controllers
     public class WritingController : ControllerBase
     {
         private readonly IWritingService _writingService;
+        private readonly OpenAIService _aiService;
 
-        public WritingController(IWritingService service)
+        public WritingController(IWritingService service, OpenAIService aiService)
         {
             _writingService = service;
+            _aiService = aiService;
         }
 
         [HttpPost]
@@ -65,5 +69,27 @@ namespace WebAPI.Controllers
                 return NotFound();
             return NoContent();
         }
+
+      /*  [HttpPost("grade")]
+        [AllowAnonymous]
+        public IActionResult GradeWriting([FromBody] WritingSubmissionDto dto)
+        {
+            if (dto == null || string.IsNullOrWhiteSpace(dto.Answer))
+                return BadRequest("Answer cannot be empty.");
+
+            try
+            {
+                var result = _aiService.GradeWriting(dto.Question, dto.Answer);
+
+                var json = JsonDocument.Parse(result.RootElement.GetRawText());
+                var response = JsonSerializer.Deserialize<object>(json.RootElement.GetRawText());
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }*/
     }
 }

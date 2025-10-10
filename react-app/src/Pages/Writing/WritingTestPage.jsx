@@ -3,40 +3,15 @@ import { useLocation, useNavigate } from "react-router-dom";
 import AppLayout from "../../Components/Layout/AppLayout";
 import styles from "./WritingTestPage.module.css";
 
-export default function WritingTestPage() {
+export default function WritingTest() {
   const { state } = useLocation();
   const navigate = useNavigate();
 
-  const { exam, tasks = [], task, mode, duration } = state || {};
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [answers, setAnswers] = useState({});
 
-  const [timeLeft, setTimeLeft] = useState(duration ? duration * 60 : 0);
-  const [answer, setAnswer] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-
-  // ===== Timer =====
-  useEffect(() => {
-    if (timeLeft <= 0 || submitted) return;
-    const timer = setInterval(() => setTimeLeft((t) => Math.max(0, t - 1)), 1000);
-    return () => clearInterval(timer);
-  }, [timeLeft, submitted]);
-
-  const formatTime = (sec) => {
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return `${m}:${s.toString().padStart(2, "0")}`;
-  };
-
-  const handleSubmit = () => {
-    const attempt = {
-      examId: exam.examId,
-      answerText: answer,
-      startedAt: new Date().toISOString(),
-    };
-    console.log("Writing attempt:", attempt);
-    setSubmitted(true);
-  };
-
-  if (!exam) {
+  if (!state) {
     return (
       <AppLayout title="Writing Test">
         <div className={styles.center}>
@@ -49,83 +24,151 @@ export default function WritingTestPage() {
     );
   }
 
+  const { exam, tasks, task, mode } = state;
+
+  // Set timer theo displayOrder
+  useEffect(() => {
+    if (mode === "full") setTimeLeft(60 * 60); // 60 minutes
+    else if (task?.displayOrder === 1) setTimeLeft(20 * 60);
+    else if (task?.displayOrder === 2) setTimeLeft(40 * 60);
+  }, [mode, task]);
+
+  // Countdown
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+    const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+    return () => clearInterval(timer);
+  }, [timeLeft]);
+
+  const formatTime = (sec) => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
+
+  // Lấy đề hiện tại
+  const currentTask =
+    mode === "full" && Array.isArray(tasks)
+      ? tasks[currentIndex]
+      : task;
+
+  const currentId =
+    mode === "full" ? currentTask?.writingId : task?.writingId;
+  const currentAnswer = answers[currentId] || "";
+
+  // === Word count logic ===
+  const getWordCount = (text) =>
+    text.trim().length === 0
+      ? 0
+      : text
+          .trim()
+          .split(/\s+/)
+          .filter((w) => w.length > 0).length;
+
+  const wordCount = getWordCount(currentAnswer);
+  const wordLimit = currentTask?.displayOrder === 1 ? 150 : 250;
+  const isEnough = wordCount >= wordLimit;
+
+  // Khi gõ bài → lưu riêng từng task
+  const handleChange = (e) => {
+    const text = e.target.value;
+    setAnswers((prev) => ({
+      ...prev,
+      [currentId]: text,
+    }));
+  };
+
+  // Chuyển task
+  const handleNext = () => {
+    if (currentIndex < tasks.length - 1) setCurrentIndex((i) => i + 1);
+  };
+  const handlePrev = () => {
+    if (currentIndex > 0) setCurrentIndex((i) => i - 1);
+  };
+
+  const handleSubmit = () => {
+    console.log("Submit answers:", answers);
+    alert("Your answers have been submitted!");
+  };
+
   return (
-    <AppLayout title={`Writing Test - ${exam.examName}`}>
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <h2>
-            {mode === "full"
-              ? "Full Writing Test"
-              : `Writing ${task?.writingType || "Task"}`}{" "}
-            — {exam.examName}
-          </h2>
-          <div className={styles.timer}>⏰ {formatTime(timeLeft)}</div>
-        </div>
+    <div className={styles.container}>
+      {/* Header */}
+      <div className={styles.header}>
+        <h2>
+          {mode === "full"
+            ? `Full Writing Test — ${exam.examName}`
+            : `Task ${task.displayOrder} — ${exam.examName}`}
+        </h2>
+        <div className={styles.timer}>⏰ {formatTime(timeLeft)}</div>
+      </div>
 
-        {!submitted ? (
-          <>
-            <div className={styles.questionArea}>
-              {mode === "full"
-                ? tasks.map((t) => (
-                    <div key={t.writingId} className={styles.taskBlock}>
-                      <h3>{t.writingType}</h3>
-                      <p>{t.writingQuestion}</p>
-                      {t.imageUrl && (
-                        <img
-                          src={t.imageUrl}
-                          alt="Task"
-                          className={styles.taskImage}
-                        />
-                      )}
-                    </div>
-                  ))
-                : (
-                    <div className={styles.taskBlock}>
-                      <h3>{task.writingType}</h3>
-                      <p>{task.writingQuestion}</p>
-                      {task.imageUrl && (
-                        <img
-                          src={task.imageUrl}
-                          alt="Task"
-                          className={styles.taskImage}
-                        />
-                      )}
-                    </div>
-                  )}
-            </div>
-
-            <div className={styles.answerArea}>
-              <h4>Your Answer:</h4>
-              <textarea
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                placeholder="Start writing your essay here..."
-                className={styles.textarea}
-              />
-            </div>
-
-            <div className={styles.actions}>
-              <button onClick={handleSubmit} className={styles.submitBtn}>
-                Submit
-              </button>
-              <button className={styles.backBtn} onClick={() => navigate(-1)}>
-                ← Back
-              </button>
-            </div>
-          </>
-        ) : (
-          <div className={styles.submittedBox}>
-            <h3>✅ Writing Submitted Successfully!</h3>
-            <p>Your writing attempt has been recorded.</p>
-            <button
-              onClick={() => navigate("/writing")}
-              className={styles.backBtn}
+      {/* ========== TWO COLUMN LAYOUT ========== */}
+      <div className={styles.splitLayout}>
+        {/* ===== LEFT: Answer area ===== */}
+        <div className={styles.leftPane}>
+          <div className={styles.answerHeader}>
+            <h4>Your Answer:</h4>
+            <div
+              className={`${styles.wordCount} ${
+                isEnough ? styles.wordOK : styles.wordLow
+              }`}
             >
-              ← Back to Writing List
+              Words: {wordCount} / {wordLimit}
+            </div>
+          </div>
+
+          <textarea
+            placeholder="Start writing your essay here..."
+            className={styles.textarea}
+            value={currentAnswer}
+            onChange={handleChange}
+          />
+
+          <div className={styles.actions}>
+            <button className={styles.submitBtn} onClick={handleSubmit}>
+              Submit
+            </button>
+            <button className={styles.backBtn} onClick={() => navigate(-1)}>
+              ← Back
             </button>
           </div>
-        )}
+        </div>
+
+        {/* ===== RIGHT: Question area ===== */}
+        <div className={styles.rightPane}>
+          <div className={styles.taskBlock}>
+            <h3>Task {currentTask?.displayOrder}</h3>
+            <p>{currentTask?.writingQuestion}</p>
+            {currentTask?.imageUrl && (
+              <img
+                src={currentTask.imageUrl}
+                alt="Task"
+                className={styles.taskImage}
+              />
+            )}
+          </div>
+
+          {/* Nút chuyển Task (nếu là Full Test) */}
+          {mode === "full" && (
+            <div className={styles.switchButtons}>
+              {/* Prev */}
+              {currentIndex > 0 && (
+                <button onClick={handlePrev} className={styles.switchBtn}>
+                  ← Task {currentIndex}
+                </button>
+              )}
+
+              {/* Next */}
+              {currentIndex < tasks.length - 1 && (
+                <button onClick={handleNext} className={styles.switchBtn}>
+                  Task {currentIndex + 2} →
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </AppLayout>
+    </div>
   );
 }

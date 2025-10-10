@@ -539,9 +539,7 @@ namespace WebAPI.Data
                 entity.Property(e => e.DisplayOrder).HasColumnName("display_order");
                 entity.Property(e => e.ExamId).HasColumnName("exam_id");
                 entity.Property(e => e.WritingQuestion).HasColumnName("writing_question");
-                entity.Property(e => e.WritingType)
-                    .HasMaxLength(50)
-                    .HasColumnName("writing_type");
+                
 
                 entity.HasOne(d => d.Exam).WithMany(p => p.Writings)
                     .HasForeignKey(d => d.ExamId)

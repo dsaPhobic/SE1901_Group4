@@ -1,19 +1,23 @@
 ﻿using WebAPI.DTOs;
 using WebAPI.Models;
 using WebAPI.Repositories;
+using WebAPI.ExternalServices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 
 namespace WebAPI.Services
 {
     public class WritingService : IWritingService
     {
         private readonly IWritingRepository _repo;
+        private readonly OpenAIService _openAI;
 
-        public WritingService(IWritingRepository repo)
+        public WritingService(IWritingRepository repo, OpenAIService openAI)
         {
             _repo = repo;
+            _openAI = openAI;
         }
 
         public WritingDTO? GetById(int id)
@@ -33,7 +37,6 @@ namespace WebAPI.Services
             {
                 ExamId = dto.ExamId,
                 WritingQuestion = dto.WritingQuestion,
-                WritingType = dto.WritingType,
                 DisplayOrder = dto.DisplayOrder,
                 CreatedAt = DateTime.UtcNow,
                 ImageUrl = dto.ImageUrl
@@ -49,7 +52,6 @@ namespace WebAPI.Services
             if (existing == null) return null;
 
             if (dto.WritingQuestion != null) existing.WritingQuestion = dto.WritingQuestion;
-            if (dto.WritingType != null) existing.WritingType = dto.WritingType;
             if (dto.DisplayOrder > 0) existing.DisplayOrder = dto.DisplayOrder;
             if (dto.ImageUrl != null) existing.ImageUrl = dto.ImageUrl;
 
@@ -67,13 +69,23 @@ namespace WebAPI.Services
             return true;
         }
 
+        public JsonDocument GradeWriting(int examId, int userId, string answer)
+        {
+            var question = _repo.GetByExamId(examId).FirstOrDefault()?.WritingQuestion;
+            if (string.IsNullOrEmpty(question))
+                throw new Exception("No writing question found for this exam.");
+
+            var feedback = _openAI.GradeWriting(question, answer);
+
+            return feedback;
+        }
+
         private static WritingDTO MapToDto(Writing w) =>
             new WritingDTO
             {
                 WritingId = w.WritingId,
                 ExamId = w.ExamId,
                 WritingQuestion = w.WritingQuestion,
-                WritingType = w.WritingType,
                 DisplayOrder = w.DisplayOrder,
                 CreatedAt = w.CreatedAt,
                 ImageUrl = w.ImageUrl
