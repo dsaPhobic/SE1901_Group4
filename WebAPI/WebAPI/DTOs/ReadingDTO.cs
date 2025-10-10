@@ -36,5 +36,20 @@
         public string? CorrectAnswer { get; set; }
         public string? QuestionHtml { get; set; }
     }
+    public class SubmitReadingAttemptDto
+    {
+        public int ExamId { get; set; }
+        public string Mode { get; set; } = "full";
+        public DateTime StartedAt { get; set; } = DateTime.UtcNow;
+        public List<ReadingAnswerDto> Answers { get; set; } = new();
+    }
+
+    public class ReadingAnswerDto
+    {
+        public int ReadingId { get; set; }
+        public int DisplayOrder { get; set; }
+        public string? AnswerText { get; set; }
+    }
+
 }
 

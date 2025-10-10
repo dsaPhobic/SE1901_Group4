@@ -16,11 +16,6 @@
   font-weight: 600;
 }
 
-.timer {
-  font-size: 18px;
-  color: #2563eb;
-}
-
 .questionCard {
   background: #fff;
   border: 1px solid #e5e7eb;
@@ -31,13 +26,6 @@
 
 .questionTitle {
   font-weight: 600;
-  margin-bottom: 10px;
-}
-
-.readingContent {
-  background: #f9fafb;
-  padding: 10px;
-  border-radius: 6px;
   margin-bottom: 10px;
 }
 
@@ -93,3 +81,88 @@
   text-align: center;
   padding: 40px;
 }
+
+.examWrapper {
+  min-height: 100vh;
+  background: #fdfdfd;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+}
+
+.topBar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #004aad;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.examTitle {
+  flex: 1;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.timer {
+  font-weight: bold;
+}
+
+.examForm {
+  width: 100%;
+  max-width: 900px;
+}
+
+.questionPage {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.readingContent {
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.navigation {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.navBtn,
+.submitBtn,
+.backBtn {
+  background: #004aad;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+
+.navBtn:hover,
+.submitBtn:hover,
+.backBtn:hover {
+  background: #023b8c;
+}
+
+.fullscreenCenter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #f7f9fc;
+  gap: 1rem;
+}
+

@@ -99,14 +99,18 @@ namespace WebAPI.Controllers
             return Ok(attempt);
         }
 
-        [HttpPost("attempt/submit")]
-        public ActionResult<ExamAttemptDto> SubmitAttempt([FromBody] SubmitAttemptDto dto)
+        [HttpPost("submit")]
+        public ActionResult<ExamAttemptDto> SubmitReadingAnswers([FromBody] ExamAttemptDto dto)
         {
+            if (dto == null || string.IsNullOrEmpty(dto.AnswerText))
+                return BadRequest("Invalid payload");
+
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return Unauthorized("Please login to submit exam");
 
             try
             {
+                // Reuse ExamService logic
                 var attempt = _examService.SubmitAttempt(dto.ExamId, userId.Value, dto.AnswerText, dto.StartedAt);
                 var result = new ExamAttemptDto
                 {
@@ -115,17 +119,24 @@ namespace WebAPI.Controllers
                     SubmittedAt = attempt.SubmittedAt,
                     ExamId = attempt.ExamId,
                     ExamName = attempt.Exam?.ExamName ?? string.Empty,
-                    ExamType = attempt.Exam?.ExamType ?? string.Empty,
+                    ExamType = attempt.Exam?.ExamType ?? "Reading",
                     TotalScore = attempt.Score ?? 0,
                     AnswerText = attempt.AnswerText ?? string.Empty
                 };
-                return CreatedAtAction(nameof(GetExamAttemptDetail), new { attemptId = result.AttemptId }, result);
+                return Ok(result);
             }
             catch (KeyNotFoundException)
             {
                 return NotFound("Exam not found");
             }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error submitting reading answers: {ex.Message}");
+            }
         }
+
+
+
 
         // ========= PRIVATE HELPER =========
         private static ExamDto ConvertToDto(Exam exam)

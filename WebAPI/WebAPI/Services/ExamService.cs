@@ -8,6 +8,7 @@ namespace WebAPI.Services
     public class ExamService : IExamService
     {
         private readonly IExamRepository _repo;
+        private readonly IReadingService _reading;
 
         public ExamService(IExamRepository repo)
         {
@@ -60,20 +61,48 @@ namespace WebAPI.Services
 
         public ExamAttempt SubmitAttempt(int examId, int userId, string answerText, DateTime startedAt)
         {
-            var exam = _repo.GetById(examId)
-                ?? throw new KeyNotFoundException("Exam not found");
+            var exam = _repo.GetById(examId);
+            if (exam == null)
+                throw new KeyNotFoundException("Exam not found");
+
             var attempt = new ExamAttempt
             {
                 ExamId = examId,
                 UserId = userId,
-                AnswerText = answerText,
                 StartedAt = startedAt,
-                SubmittedAt = DateTime.UtcNow
+                SubmittedAt = DateTime.UtcNow,
+                AnswerText = answerText
             };
+
+            switch (exam.ExamType.ToLower())
+            {
+                case "reading":
+                    attempt.Score = _reading.Evaluate(examId, answerText);
+                    break;
+
+                //case "listening":
+                //    attempt.Score = _listeningEvaluator.Evaluate(examId, answerText);
+                //    break;
+
+                //case "writing":
+                //    attempt.Score = _writingEvaluator.Evaluate(examId, answerText, userId);
+                //    break;
+
+                //case "speaking":
+                //    attempt.Score = _speakingEvaluator.Evaluate(examId, answerText, userId);
+                //    break;
+
+                default:
+                    attempt.Score = 0;
+                    break;
+            }
+
             _repo.AddAttempt(attempt);
             _repo.SaveChanges();
+
             return attempt;
         }
+
 
         public ExamAttempt? GetAttemptById(long attemptId) => _repo.GetAttemptById(attemptId);
 

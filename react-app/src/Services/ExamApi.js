@@ -48,8 +48,10 @@ export function getExamAttemptDetail(attemptId) {
   return API.get(`/attempt/${attemptId}`).then((res) => res.data);
 }
 
-export function submitExamAttempt(examId, answers) {
-  return API.post(`/attempt/submit`, { examId, answers }).then((res) => res.data);
+export function submitAttempt(attempt) {
+  return API.post("/submit", attempt, {
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
 export function getSubmittedDays(userId) {

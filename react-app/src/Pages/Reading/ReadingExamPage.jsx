@@ -1,17 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import AppLayout from "../../Components/Layout/AppLayout";
 import styles from "./ReadingExamPage.module.css";
+import { submitAttempt } from "../../Services/ExamApi";
 
 export default function ReadingExamPage() {
   const { state } = useLocation();
   const navigate = useNavigate();
 
-  const { exam, tasks = [], mode, duration } = state || {};
+  const { exam, tasks = [], duration } = state || {};
 
-  const [answers, setAnswers] = useState({});
+  const [page, setPage] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(duration ? duration * 60 : 0);
+
+  const formRefs = useRef([]);
 
   // ========== TIMER ==========
   useEffect(() => {
@@ -26,93 +29,136 @@ export default function ReadingExamPage() {
     return `${m}:${s < 10 ? "0" + s : s}`;
   };
 
-  // ========== EVENT HANDLERS ==========
-  const handleChange = (taskId, value) => {
-    setAnswers((prev) => ({ ...prev, [taskId]: value }));
+  const handleNext = () => {
+    if (page < tasks.length - 1) setPage((p) => p + 1);
+  };
+  const handlePrev = () => {
+    if (page > 0) setPage((p) => p - 1);
   };
 
-  const handleSubmit = () => {
-    const attempt = {
-      examId: exam.examId,
-      answerText: JSON.stringify(answers),
-      startedAt: new Date().toISOString(),
-    };
-    console.log("User Reading Attempt:", attempt);
-    setSubmitted(true);
+  const handleSubmit = async (e) => {
+    e?.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
+    try {
+      const allAnswers = [];
+
+      tasks.forEach((_, index) => {
+        const form = formRefs.current[index];
+        if (!form) return;
+        const formData = new FormData(form);
+        for (let [, value] of formData.entries()) {
+          if (value && value.trim() !== "") allAnswers.push(value.trim());
+        }
+      });
+
+      if (allAnswers.length === 0) {
+        alert("Please complete all questions before submitting.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const answerText = JSON.stringify(allAnswers);
+      const attempt = {
+        examId: exam.examId,
+        answerText,
+        startedAt: new Date().toISOString(),
+      };
+
+      const res = await submitAttempt(attempt);
+      console.log("✅ Submitted:", res.data);
+      setSubmitted(true);
+    } catch (err) {
+      console.error("❌ Submit failed:", err);
+      alert("Failed to submit your reading attempt. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!exam) {
     return (
-      <AppLayout title="Reading Test">
-        <div className={styles.center}>
-          <h2>No exam selected</h2>
-          <button className={styles.backBtn} onClick={() => navigate(-1)}>
-            ← Back
-          </button>
-        </div>
-      </AppLayout>
+      <div className={styles.fullscreenCenter}>
+        <h2>No exam selected</h2>
+        <button className={styles.backBtn} onClick={() => navigate(-1)}>
+          ← Back
+        </button>
+      </div>
     );
   }
 
-  // ========== RENDER ==========
+  if (submitted) {
+    return (
+      <div className={styles.fullscreenCenter}>
+        <h3>✅ Reading Test Submitted!</h3>
+        <p>Your answers have been recorded successfully.</p>
+        <button className={styles.backBtn} onClick={() => navigate("/reading")}>
+          ← Back to Reading List
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <AppLayout title="Reading Test">
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <h2 className={styles.title}>{exam.examName}</h2>
-          <div className={styles.timer}>⏱️ {formatTime(timeLeft)}</div>
-        </div>
+    <div className={styles.examWrapper}>
+      <div className={styles.topBar}>
+        <button className={styles.backBtn} onClick={() => navigate("/reading")}>
+          ← Back
+        </button>
+        <h2 className={styles.examTitle}>{exam.examName}</h2>
+        <div className={styles.timer}>⏱️ {formatTime(timeLeft)}</div>
+      </div>
 
-        {!submitted ? (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSubmit();
-            }}
-          >
-            {tasks.map((q, idx) => (
-              <div key={idx} className={styles.questionCard}>
-                <h3 className={styles.questionTitle}>
-                  {q.readingType || "Reading Task"} #{q.displayOrder || idx + 1}
-                </h3>
+      {tasks.map((task, idx) => (
+        <form
+          key={idx}
+          ref={(el) => (formRefs.current[idx] = el)}
+          className={`${styles.examForm} ${
+            idx === page ? styles.activeForm : styles.hiddenForm
+          }`}
+        >
+          <div className={styles.questionPage}>
+            <h3 className={styles.questionTitle}>
+              {task.readingType || "Reading Task"} #{task.displayOrder || idx + 1}
+            </h3>
 
-                <div
-                  className={styles.readingContent}
-                  dangerouslySetInnerHTML={{ __html: q.readingContent || "" }}
-                />
+            <div
+              className={styles.readingContent}
+              dangerouslySetInnerHTML={{ __html: task.readingContent || "" }}
+            />
 
-                <div
-                  className={styles.question}
-                  dangerouslySetInnerHTML={{
-                    __html: q.questionHtml || q.readingQuestion,
-                  }}
-                />
-
-                <textarea
-                  className={styles.answerBox}
-                  placeholder="Type your answer here..."
-                  value={answers[q.readingId] || ""}
-                  onChange={(e) => handleChange(q.readingId, e.target.value)}
-                />
-              </div>
-            ))}
-
-            <div className={styles.actions}>
-              <button type="submit" className={styles.submitBtn}>
-                Submit Answers
-              </button>
-            </div>
-          </form>
-        ) : (
-          <div className={styles.submittedBox}>
-            <h3>✅ Reading Test Submitted!</h3>
-            <p>Your answers have been recorded successfully.</p>
-            <button className={styles.backBtn} onClick={() => navigate("/reading")}>
-              ← Back to Reading List
-            </button>
+            <div
+              className={styles.question}
+              dangerouslySetInnerHTML={{
+                __html: task.questionHtml || task.readingQuestion,
+              }}
+            />
           </div>
+        </form>
+      ))}
+
+      <div className={styles.navigation}>
+        {page > 0 && (
+          <button type="button" className={styles.navBtn} onClick={handlePrev}>
+            ← Previous
+          </button>
+        )}
+        {page < tasks.length - 1 ? (
+          <button type="button" className={styles.navBtn} onClick={handleNext}>
+            Next →
+          </button>
+        ) : (
+          <button
+            type="button"
+            className={styles.submitBtn}
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Submitting..." : "Submit All"}
+          </button>
         )}
       </div>
-    </AppLayout>
+    </div>
   );
 }
