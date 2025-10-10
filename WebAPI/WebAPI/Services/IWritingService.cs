@@ -11,7 +11,6 @@ namespace WebAPI.Services
         WritingDTO Create(WritingDTO dto);
         WritingDTO? Update(int id, WritingDTO dto);
         bool Delete(int id);
-
-        JsonDocument GradeWriting(int examId, int userId, string answer);
+        JsonDocument GradeWriting(WritingGradeRequestDTO dto, int userId);
     }
 }

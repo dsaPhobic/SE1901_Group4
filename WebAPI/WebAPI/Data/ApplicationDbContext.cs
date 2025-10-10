@@ -30,6 +30,7 @@ namespace WebAPI.Data
         public virtual DbSet<UserPostHide> UserPostHide { get; set; }
         public virtual DbSet<PasswordResetOtp> PasswordResetOtp { get; set; }
         public virtual DbSet<UserSignInHistory> UserSignInHistory { get; set; }
+        public virtual DbSet<WritingFeedback> WritingFeedback { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

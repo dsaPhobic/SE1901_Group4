@@ -56,7 +56,6 @@ export default function WritingTest() {
     mode === "full" ? currentTask?.writingId : task?.writingId;
   const currentAnswer = answers[currentId] || "";
 
-  // === Word count logic ===
   const getWordCount = (text) =>
     text.trim().length === 0
       ? 0
@@ -69,7 +68,6 @@ export default function WritingTest() {
   const wordLimit = currentTask?.displayOrder === 1 ? 150 : 250;
   const isEnough = wordCount >= wordLimit;
 
-  // Khi gõ bài → lưu riêng từng task
   const handleChange = (e) => {
     const text = e.target.value;
     setAnswers((prev) => ({
@@ -93,7 +91,6 @@ export default function WritingTest() {
 
   return (
     <div className={styles.container}>
-      {/* Header */}
       <div className={styles.header}>
         <h2>
           {mode === "full"
@@ -103,7 +100,6 @@ export default function WritingTest() {
         <div className={styles.timer}>⏰ {formatTime(timeLeft)}</div>
       </div>
 
-      {/* ========== TWO COLUMN LAYOUT ========== */}
       <div className={styles.splitLayout}>
         {/* ===== LEFT: Answer area ===== */}
         <div className={styles.leftPane}>
@@ -135,7 +131,6 @@ export default function WritingTest() {
           </div>
         </div>
 
-        {/* ===== RIGHT: Question area ===== */}
         <div className={styles.rightPane}>
           <div className={styles.taskBlock}>
             <h3>Task {currentTask?.displayOrder}</h3>
@@ -149,7 +144,6 @@ export default function WritingTest() {
             )}
           </div>
 
-          {/* Nút chuyển Task (nếu là Full Test) */}
           {mode === "full" && (
             <div className={styles.switchButtons}>
               {/* Prev */}
@@ -159,7 +153,6 @@ export default function WritingTest() {
                 </button>
               )}
 
-              {/* Next */}
               {currentIndex < tasks.length - 1 && (
                 <button onClick={handleNext} className={styles.switchBtn}>
                   Task {currentIndex + 2} →

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using WebAPI.DTOs;
 using WebAPI.Services;
-using WebAPI.ExternalServices;
 
 namespace WebAPI.Controllers
 {
@@ -12,20 +11,17 @@ namespace WebAPI.Controllers
     public class WritingController : ControllerBase
     {
         private readonly IWritingService _writingService;
-        private readonly OpenAIService _aiService;
 
-        public WritingController(IWritingService service, OpenAIService aiService)
+        public WritingController(IWritingService writingService)
         {
-            _writingService = service;
-            _aiService = aiService;
+            _writingService = writingService;
         }
 
         [HttpPost]
         [Authorize(Roles = "admin")]
         public ActionResult<WritingDTO> Create([FromBody] WritingDTO dto)
         {
-            if (dto == null)
-                return BadRequest("Invalid payload.");
+            if (dto == null) return BadRequest("Invalid payload.");
             var result = _writingService.Create(dto);
             return CreatedAtAction(nameof(GetById), new { id = result.WritingId }, result);
         }
@@ -35,9 +31,7 @@ namespace WebAPI.Controllers
         public ActionResult<WritingDTO> GetById(int id)
         {
             var result = _writingService.GetById(id);
-            if (result == null)
-                return NotFound();
-            return Ok(result);
+            return result == null ? NotFound() : Ok(result);
         }
 
         [HttpGet("exam/{examId}")]
@@ -52,12 +46,8 @@ namespace WebAPI.Controllers
         [Authorize(Roles = "admin")]
         public ActionResult<WritingDTO> Update(int id, [FromBody] WritingDTO dto)
         {
-            if (dto == null)
-                return BadRequest("Invalid payload.");
             var result = _writingService.Update(id, dto);
-            if (result == null)
-                return NotFound();
-            return Ok(result);
+            return result == null ? NotFound() : Ok(result);
         }
 
         [HttpDelete("{id}")]
@@ -65,31 +55,34 @@ namespace WebAPI.Controllers
         public IActionResult Delete(int id)
         {
             var deleted = _writingService.Delete(id);
-            if (!deleted)
-                return NotFound();
-            return NoContent();
+            return deleted ? NoContent() : NotFound();
         }
 
-      /*  [HttpPost("grade")]
+
+        [HttpPost("grade")]
         [AllowAnonymous]
-        public IActionResult GradeWriting([FromBody] WritingSubmissionDto dto)
+        public IActionResult GradeWriting([FromBody] WritingGradeRequestDTO dto)
         {
-            if (dto == null || string.IsNullOrWhiteSpace(dto.Answer))
-                return BadRequest("Answer cannot be empty.");
+            if (dto == null || dto.Answers == null || dto.Answers.Count == 0)
+                return BadRequest("Invalid or empty answers.");
 
             try
             {
-                var result = _aiService.GradeWriting(dto.Question, dto.Answer);
+                var userIdStr = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+                if (userIdStr == null) return Unauthorized("User not logged in.");
+                int userId = int.Parse(userIdStr);
 
-                var json = JsonDocument.Parse(result.RootElement.GetRawText());
-                var response = JsonSerializer.Deserialize<object>(json.RootElement.GetRawText());
+                var result = _writingService.GradeWriting(dto, userId);
 
-                return Ok(response);
+                var parsed = JsonDocument.Parse(result.RootElement.GetRawText());
+                return Ok(parsed);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { error = ex.Message });
             }
-        }*/
+        }
+
+
     }
 }
