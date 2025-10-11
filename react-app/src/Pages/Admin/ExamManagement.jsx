@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { formatTimeVietnam } from "../../utils/date";
 import * as examService from "../../Services/ExamApi";
 import * as readingService from "../../Services/ReadingApi";
 import * as listeningService from "../../Services/ListeningApi";
@@ -187,7 +188,7 @@ export default function ExamManagement() {
                         <td>{exam.examType}</td>
                         <td>
                           {exam.createdAt
-                            ? new Date(exam.createdAt).toLocaleDateString()
+                            ? formatTimeVietnam(exam.createdAt)
                             : ""}
                         </td>
                         <td>

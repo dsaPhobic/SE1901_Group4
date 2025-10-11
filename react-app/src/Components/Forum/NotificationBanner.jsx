@@ -1,5 +1,6 @@
 import React from 'react';
 import { AlertCircle, CheckCircle, X } from 'lucide-react';
+import { formatTimeVietnam } from '../../utils/date';
 import './NotificationBanner.css';
 
 export default function NotificationBanner({ notifications, onClose }) {
@@ -19,7 +20,7 @@ export default function NotificationBanner({ notifications, onClose }) {
           <div className="notification-content">
             <p className="notification-text">{notification.content}</p>
             <span className="notification-time">
-              {new Date(notification.createdAt).toLocaleString()}
+              {formatTimeVietnam(notification.createdAt)}
             </span>
           </div>
           <button 

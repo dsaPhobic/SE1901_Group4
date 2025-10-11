@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ModeratorSidebar from "../../Components/Moderator/ModeratorSidebar";
+import { formatTimeVietnam } from "../../utils/date";
 import {
   FileText,
   AlertTriangle,
@@ -406,8 +407,8 @@ export default function ModeratorDashboard() {
               <span className="post-status pending">Pending</span>
             </div>
             <div className="post-meta">
-              <span>By: {post.author}</span>
-              <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+              <span>By: {post.user?.username || 'Unknown'}</span>
+              <span>{formatTimeVietnam(post.createdAt)}</span>
             </div>
             <div className="post-content">
               {post.content.substring(0, 200)}...
@@ -457,8 +458,8 @@ export default function ModeratorDashboard() {
               <span className="post-status reported">Reported ({post.reportCount})</span>
             </div>
             <div className="post-meta">
-              <span>By: {post.author}</span>
-              <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+              <span>By: {post.user?.username || 'Unknown'}</span>
+              <span>{formatTimeVietnam(post.createdAt)}</span>
             </div>
             <div className="post-content">
               {post.content.substring(0, 200)}...
@@ -492,8 +493,8 @@ export default function ModeratorDashboard() {
               <span className="post-status rejected">Rejected</span>
             </div>
             <div className="post-meta">
-              <span>Author: {post.author}</span>
-              <span>Date: {new Date(post.createdAt).toLocaleDateString()}</span>
+              <span>Author: {post.user?.username || 'Unknown'}</span>
+              <span>Date: {formatTimeVietnam(post.createdAt)}</span>
               {post.rejectionReason && (
                 <span className="rejection-reason">Reason: {post.rejectionReason}</span>
               )}
@@ -572,7 +573,7 @@ export default function ModeratorDashboard() {
             <div className="modal-body">
               <div className="post-meta">
                 <span>Author: {selectedPost.author}</span>
-                <span>Date: {new Date(selectedPost.createdAt).toLocaleDateString()}</span>
+                <span>Date: {formatTimeVietnam(selectedPost.createdAt)}</span>
               </div>
               
               <div className="post-content-full">
