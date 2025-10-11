@@ -118,7 +118,6 @@ export default function ReadingPage() {
           tasks={examQuestions}
           loading={loadingDetail}
           onClose={() => setActiveExam(null)}
-          // ✅ new props for reusability
           onStartFullTest={handleStartFullTest}
           onStartIndividual={handleStartIndividual}
         />
