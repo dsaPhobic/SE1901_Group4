@@ -1,17 +1,22 @@
+/* ===== GLOBAL EXAM RENDERER STYLES ===== */
+
 .renderer {
   line-height: 1.7;
   font-size: 17px;
   color: #222;
   font-family: "Nunito Sans", "Segoe UI", sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
-/* paragraph layout - only break on double newlines */
-p {
+/* Paragraph layout */
+.renderer p {
   margin: 0.75rem 0;
   white-space: normal;
   display: block;
 }
 
+/* Question numbering */
 .numberIndex {
   font-weight: 700;
   color: #007bff;
@@ -52,11 +57,6 @@ p {
   width: auto;
   max-width: 30ch;
   line-height: normal;
-}
-
-/* Never break inline controls */
-.inlineTextbox, .dropdownInline {
-  white-space: nowrap;
 }
 
 /* Choices (radio/checkbox) */

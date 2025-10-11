@@ -15,7 +15,7 @@ namespace WebAPI.Services
         ExamAttempt? GetAttemptById(long attemptId);
         List<ExamAttemptSummaryDto> GetExamAttemptsByUser(int userId);
         ExamAttemptDto? GetExamAttemptDetail(long attemptId);
-        ExamAttempt SubmitAttempt(int examId, int userId, string answerText, DateTime startedAt);
+        ExamAttempt SubmitAttempt(SubmitAttemptDto dto, int userId);
         void Save();
     }
 }

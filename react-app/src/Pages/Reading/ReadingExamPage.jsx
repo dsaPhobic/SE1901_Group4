@@ -36,47 +36,60 @@ export default function ReadingExamPage() {
     if (page > 0) setPage((p) => p - 1);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e?.preventDefault();
     if (isSubmitting) return;
     setIsSubmitting(true);
 
-    try {
-      const allAnswers = [];
+    // ✅ Build structured answers by task/skill
+    const structuredAnswers = tasks.map((task, index) => {
+      const form = formRefs.current[index];
+      if (!form) return { skillId: task.readingId, answers: [] };
 
-      tasks.forEach((_, index) => {
-        const form = formRefs.current[index];
-        if (!form) return;
-        const formData = new FormData(form);
-        for (let [, value] of formData.entries()) {
-          if (value && value.trim() !== "") allAnswers.push(value.trim());
-        }
-      });
-
-      if (allAnswers.length === 0) {
-        alert("Please complete all questions before submitting.");
-        setIsSubmitting(false);
-        return;
+      const formData = new FormData(form);
+      const values = [];
+      for (let [, value] of formData.entries()) {
+        if (value && value.trim() !== "") values.push(value.trim());
       }
 
-      const answerText = JSON.stringify(allAnswers);
-      const attempt = {
-        examId: exam.examId,
-        answerText,
-        startedAt: new Date().toISOString(),
+      return {
+        skillId: task.readingId,
+        answers: values,
       };
+    });
 
-      const res = await submitAttempt(attempt);
-      console.log("✅ Submitted:", res.data);
-      setSubmitted(true);
-    } catch (err) {
-      console.error("❌ Submit failed:", err);
-      alert("Failed to submit your reading attempt. Please try again.");
-    } finally {
+    // ✅ Validation check
+    const anyEmpty = structuredAnswers.some((x) => x.answers.length === 0);
+    if (anyEmpty) {
+      alert("Please complete all questions before submitting.");
       setIsSubmitting(false);
+      return;
     }
+
+    // ✅ Convert to JSON string (keeps it inside dto.AnswerText)
+    const answerText = JSON.stringify(structuredAnswers);
+    const attempt = {
+      examId: exam.examId,
+      answerText,
+      startedAt: new Date().toISOString(),
+    };
+
+    // ✅ Non-async version (Promise chain)
+    submitAttempt(attempt)
+      .then((res) => {
+        console.log("✅ Submitted structured attempt:", res.data);
+        setSubmitted(true);
+      })
+      .catch((err) => {
+        console.error("❌ Submit failed:", err);
+        alert("Failed to submit your reading attempt. Please try again.");
+      })
+      .finally(() => {
+        setIsSubmitting(false);
+      });
   };
 
+  // ========== RENDER ==========
   if (!exam) {
     return (
       <div className={styles.fullscreenCenter}>

@@ -9,6 +9,5 @@ namespace WebAPI.Services
         ReadingDto Create(CreateReadingDto dto);
         ReadingDto? Update(int id, UpdateReadingDto dto);
         bool Delete(int id);
-        decimal Evaluate(int examId, string answerText);
     }
 }
