@@ -45,6 +45,12 @@
   color: #6c757d;
   cursor: pointer;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s;
 }
 
 .notificationIcon:hover {

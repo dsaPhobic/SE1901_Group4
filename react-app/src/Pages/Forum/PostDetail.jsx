@@ -44,8 +44,10 @@ export default function PostDetail() {
   }, [post]);
 
   const loadUserStats = (userId) => {
+    console.log("Loading user stats for userId:", userId);
     getUserProfileStats(userId)
       .then(response => {
+        console.log("User stats loaded:", response.data);
         setUserStats(response.data);
       })
       .catch(error => {
@@ -363,15 +365,24 @@ export default function PostDetail() {
                   <>
                     <div className="stat-item">
                       <span className="stat-label">Posts</span>
-                      <span className="stat-value">{userStats.totalPosts}</span>
+                      <span className="stat-value">{userStats.totalPosts || 0}</span>
                     </div>
                     <div className="stat-item">
                       <span className="stat-label">Votes</span>
-                      <span className="stat-value">{userStats.totalVotes}</span>
+                      <span className="stat-value">{userStats.totalVotes || 0}</span>
                     </div>
                   </>
                 ) : (
-                  <span className="loading-stats">Loading stats...</span>
+                  <>
+                    <div className="stat-item">
+                      <span className="stat-label">Posts</span>
+                      <span className="stat-value">0</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">Votes</span>
+                      <span className="stat-value">0</span>
+                    </div>
+                  </>
                 )}
               </div>
             </div>

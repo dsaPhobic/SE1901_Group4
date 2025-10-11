@@ -9,6 +9,8 @@
   flex: 1;
   gap: 20px;
   padding: 20px;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .forum-main {
@@ -17,6 +19,8 @@
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .forum-header {
@@ -118,6 +122,9 @@
 /* Post List Styles */
 .posts-container {
   padding: 0;
+  flex: 1;
+  overflow-y: auto;
+  max-height: calc(100vh - 200px);
 }
 
 .post-item {

@@ -1,3 +1,6 @@
+// ==============================
+// 📅 Tạo lưới lịch tháng
+// ==============================
 export function getMonthGrid(date = new Date()) {
   const year = date.getFullYear();
   const month = date.getMonth(); // 0-based
@@ -22,17 +25,24 @@ export function getMonthGrid(date = new Date()) {
   return { year, month, monthName, currentDate, weeks };
 }
 
+// ==============================
+// 🕐 Format thời gian kiểu "x phút trước" theo giờ Việt Nam
+// ==============================
 export function formatTimeVietnam(dateInput) {
   if (!dateInput) return "";
 
-  const date = new Date(dateInput);
+  // Xử lý giống như formatFullDateVietnam để đảm bảo consistency
+  let dateStr = String(dateInput).trim();
+  // Nếu không có ký tự Z hoặc offset, ép coi là UTC
+  if (!/[zZ]|[+\-]\d{2}:?\d{2}$/.test(dateStr)) {
+    dateStr += "Z";
+  }
+
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "";
+
   const now = new Date();
-
-  const UTC_OFFSET = 7 * 60 * 60 * 1000;
-  const vietnamDate = new Date(date.getTime() + UTC_OFFSET);
-  const vietnamNow = new Date(now.getTime() + UTC_OFFSET);
-
-  const diffInMinutes = Math.floor((vietnamNow - vietnamDate) / (1000 * 60));
+  const diffInMinutes = Math.floor((now - date) / (1000 * 60));
 
   if (diffInMinutes < 1) return "Just now";
   if (diffInMinutes < 60) return `${diffInMinutes} min ago`;
@@ -45,31 +55,45 @@ export function formatTimeVietnam(dateInput) {
   if (diffInDays < 7)
     return `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
 
-  return vietnamDate.toLocaleDateString("en-US", {
+  // Hiển thị ngày, giờ đúng theo múi giờ Việt Nam
+  return date.toLocaleString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "Asia/Ho_Chi_Minh",
   });
 }
 
+// ==============================
+// 📆 Format đầy đủ ngày giờ Việt Nam
+// ==============================
 export function formatFullDateVietnam(dateInput) {
   if (!dateInput) return "";
 
-  const date = new Date(dateInput);
-  const UTC_OFFSET = 7 * 60 * 60 * 1000;
-  const vietnamDate = new Date(date.getTime() + UTC_OFFSET);
+  let dateStr = String(dateInput).trim();
+  // Nếu không có ký tự Z hoặc offset, ép coi là UTC
+  if (!/[zZ]|[+\-]\d{2}:?\d{2}$/.test(dateStr)) {
+    dateStr += "Z";
+  }
 
-  return vietnamDate.toLocaleDateString("en-US", {
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "";
+
+  return date.toLocaleString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "Asia/Ho_Chi_Minh",
   });
 }
 
+// ==============================
+// 🔍 Kiểm tra ngày đã submit chưa
+// ==============================
 export function isDaySubmitted(day, month, year, submittedDays = []) {
   if (!day) return false;
   const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(
