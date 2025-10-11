@@ -451,6 +451,18 @@ namespace WebAPI.Services
 
             post.Status = "approved";
             post.RejectionReason = null; // Clear rejection reason if any
+
+            // Tạo notification cho user
+            var notification = new Notification
+            {
+                UserId = post.UserId,
+                Content = $"Bài viết '{post.Title}' của bạn đã được duyệt và hiển thị công khai.",
+                Type = "post_approved",
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Notification.Add(notification);
             _context.SaveChanges();
         }
 
