@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.DataProtection;
 using WebAPI.Data;
 using WebAPI.ExternalServices;
 using WebAPI.Repositories;
@@ -8,47 +8,51 @@ using WebAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ======================================
+// Controllers & JSON config
+// ======================================
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
     });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// ======================================
+// Session (must allow cross-site cookies)
+// ======================================
 builder.Services.AddDistributedMemoryCache();
+
 builder.Services.AddSession(options =>
 {
-    var timeout = builder.Configuration.GetValue<int>("Session:IdleTimeoutMinutes", 60);
-    options.IdleTimeout = TimeSpan.FromMinutes(timeout);
+    options.IdleTimeout = TimeSpan.FromMinutes(60);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
-
     options.Cookie.SameSite = SameSiteMode.None;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
-builder.Services.AddHttpContextAccessor();
 
+// ======================================
+// Data Protection (for OAuth cookies)
+// ======================================
+builder.Services.AddDataProtection()
+    .SetApplicationName("IELTSWebApplication");
+
+// ======================================
+// Database
+// ======================================
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// ======================================
+// Dependency Injection
+// ======================================
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddHttpClient<DictionaryApiClient>();
 builder.Services.AddScoped<IEmailService, EmailService>();
-
-// Add CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowReactApp", policy =>
-    {
-        policy.WithOrigins("http://localhost:5173", "https://localhost:5173", "http://localhost:3000", "https://localhost:3000")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
-    });
-});
-
 builder.Services.AddScoped<IWordRepository, WordRepository>();
 builder.Services.AddScoped<IWordService, WordService>();
 builder.Services.AddScoped<IVocabGroupRepository, VocabGroupRepository>();
@@ -67,7 +71,26 @@ builder.Services.AddScoped<ISignInHistoryService, SignInHistoryService>();
 builder.Services.AddScoped<OpenAIService>();
 builder.Services.AddScoped<IWritingFeedbackRepository, WritingFeedbackRepository>();
 
-// ====== Authentication ======
+// ======================================
+// CORS (must allow credentials)
+// ======================================
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp", policy =>
+    {
+        policy.WithOrigins(
+            "https://localhost:5173",
+            "http://localhost:5173"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
+    });
+});
+
+// ======================================
+// Authentication (Google + Cookie)
+// ======================================
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -75,21 +98,25 @@ builder.Services.AddAuthentication(options =>
 })
 .AddCookie(options =>
 {
-    options.Cookie.SameSite = SameSiteMode.None;      
+    options.Cookie.SameSite = SameSiteMode.None;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-    options.LoginPath = "/api/auth/google/login";       
+    options.LoginPath = "/api/auth/google/login";
 })
 .AddGoogle("Google", options =>
 {
     options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
     options.CallbackPath = "/api/auth/google/response";
+    options.SaveTokens = true;
 });
 
-
+// ======================================
+// Cookie Policy
+// ======================================
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
     options.MinimumSameSitePolicy = SameSiteMode.None;
+    options.Secure = CookieSecurePolicy.Always;
 });
 
 builder.Logging.AddConsole();
@@ -97,6 +124,9 @@ builder.Logging.SetMinimumLevel(LogLevel.Debug);
 
 var app = builder.Build();
 
+// ======================================
+// Middleware order (important!)
+// ======================================
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -105,14 +135,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Use CORS
 app.UseCors("AllowReactApp");
 
-app.UseRouting();
-
+// Must be before Authentication
 app.UseCookiePolicy();
-
 app.UseSession();
+
+// Authentication & Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 

@@ -22,7 +22,7 @@ export function getMe() {
 }
 
 export function loginWithGoogle() {
-  window.location.href = "/api/auth/google/login";
+  window.location.href = "https://localhost:7264/api/auth/google/login";
 }
 
 export function forgotPassword(email) {
