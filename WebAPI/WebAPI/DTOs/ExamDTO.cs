@@ -67,5 +67,6 @@ namespace WebAPI.DTOs
         public int ExamId { get; set; }
         public string AnswerText { get; set; } = string.Empty;
         public DateTime StartedAt { get; set; }
+        public decimal Score { get; set; }
     }
 }

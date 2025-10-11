@@ -33,15 +33,6 @@
   margin-bottom: 10px;
 }
 
-.answerBox {
-  width: 100%;
-  min-height: 80px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  padding: 10px;
-  resize: vertical;
-}
-
 .actions {
   text-align: center;
   margin-top: 24px;

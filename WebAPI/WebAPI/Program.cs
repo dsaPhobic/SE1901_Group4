@@ -55,8 +55,6 @@ builder.Services.AddScoped<IVocabGroupRepository, VocabGroupRepository>();
 builder.Services.AddScoped<IVocabGroupService, VocabGroupService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
-builder.Services.AddScoped<IExamRepository, ExamRepository>();
-builder.Services.AddScoped<IExamService, ExamService>();
 builder.Services.AddScoped<IReadingRepository, ReadingRepository>();
 builder.Services.AddScoped<IReadingService, ReadingService>();
 builder.Services.AddScoped<IListeningRepository, ListeningRepository>();
@@ -66,6 +64,8 @@ builder.Services.AddScoped<IWritingService, WritingService>();
 builder.Services.AddScoped<ISignInHistoryService, SignInHistoryService>();
 builder.Services.AddScoped<OpenAIService>();
 builder.Services.AddScoped<IWritingFeedbackRepository, WritingFeedbackRepository>();
+builder.Services.AddScoped<IExamRepository, ExamRepository>();
+builder.Services.AddScoped<IExamService, ExamService>();
 
 // ====== Authentication ======
 builder.Services.AddAuthentication(options =>

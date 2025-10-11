@@ -84,22 +84,5 @@ namespace WebAPI.Services
                 CorrectAnswer = r.CorrectAnswer,
                 QuestionHtml = r.QuestionHtml
             };
-
-        public decimal Evaluate(int examId, string answerText)
-        {
-            var readings = _repo.GetByExamId(examId);
-            if (readings.Count == 0) return 0m;
-            var answers = answerText.Split('|', StringSplitOptions.RemoveEmptyEntries);
-            if (answers.Length != readings.Count) return 0m;
-            int correctCount = 0;
-            for (int i = 0; i < readings.Count; i++)
-            {
-                if (string.Equals(readings[i].CorrectAnswer?.Trim(), answers[i].Trim(), StringComparison.OrdinalIgnoreCase))
-                {
-                    correctCount++;
-                }
-            }
-            return (decimal)correctCount / readings.Count * 100m;
-        }
     }
 }

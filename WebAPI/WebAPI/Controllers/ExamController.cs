@@ -13,8 +13,9 @@ namespace WebAPI.Controllers
     public class ExamController : ControllerBase
     {
         private readonly IExamService _examService;
+        private readonly IReadingService _readingService;
 
-        public ExamController(IExamService service) => _examService = service;
+        public ExamController(IExamService service,IReadingService readingService) => (_examService,_readingService) = (service,readingService);
 
         // ========= CREATE EXAM =========
         [HttpPost]
@@ -100,18 +101,77 @@ namespace WebAPI.Controllers
         }
 
         [HttpPost("submit")]
-        public ActionResult<ExamAttemptDto> SubmitReadingAnswers([FromBody] ExamAttemptDto dto)
+        public ActionResult<ExamAttemptDto> SubmitAnswers([FromBody] SubmitAttemptDto dto)
         {
             if (dto == null || string.IsNullOrEmpty(dto.AnswerText))
-                return BadRequest("Invalid payload");
+                return BadRequest("Invalid or empty payload.");
 
             var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return Unauthorized("Please login to submit exam");
+            if (userId == null)
+                return Unauthorized("Please login to submit exam.");
 
             try
             {
-                // Reuse ExamService logic
-                var attempt = _examService.SubmitAttempt(dto.ExamId, userId.Value, dto.AnswerText, dto.StartedAt);
+                var exam = _examService.GetById(dto.ExamId);
+                if (exam == null)
+                    return NotFound("Exam not found.");
+
+                decimal score = 0;
+
+                if (exam.ExamType.Equals("reading", StringComparison.OrdinalIgnoreCase))
+                {
+                    // ✅ 1. Parse the new JSON structure: [{ skillId, answers: [] }]
+                    var userGroups = System.Text.Json.JsonSerializer
+                        .Deserialize<List<UserAnswerGroup>>(dto.AnswerText)
+                        ?? new List<UserAnswerGroup>();
+
+                    // ✅ 2. Fetch all reading tasks
+                    var readings = _readingService.GetByExam(dto.ExamId);
+
+                    int totalQuestions = 0;
+                    int correctCount = 0;
+
+                    foreach (var reading in readings)
+                    {
+                        // find user’s submitted group
+                        var userGroup = userGroups.FirstOrDefault(g => g.SkillId == reading.ReadingId);
+                        if (userGroup == null) continue;
+
+                        // parse correct answers
+                        List<string> correctAnswers = new();
+                        if (!string.IsNullOrEmpty(reading.CorrectAnswer))
+                        {
+                            try
+                            {
+                                correctAnswers = System.Text.Json.JsonSerializer
+                                    .Deserialize<List<string>>(reading.CorrectAnswer)
+                                    ?? new();
+                            }
+                            catch { }
+                        }
+
+                        // ✅ compare arrays
+                        totalQuestions += correctAnswers.Count;
+                        foreach (var ans in userGroup.Answers)
+                        {
+                            if (correctAnswers.Any(c =>
+                                string.Equals(ans?.Trim(), c?.Trim(), StringComparison.OrdinalIgnoreCase)))
+                            {
+                                correctCount++;
+                            }
+                        }
+                    }
+
+                    // ✅ 3. Compute IELTS-style 0–9 score
+                    score = totalQuestions > 0
+                        ? Math.Round((decimal)correctCount / totalQuestions * 9, 2)
+                        : 0;
+                }
+
+                // attach score and save
+                dto.Score = score;
+                var attempt = _examService.SubmitAttempt(dto, userId.Value);
+
                 var result = new ExamAttemptDto
                 {
                     AttemptId = attempt.AttemptId,
@@ -119,23 +179,26 @@ namespace WebAPI.Controllers
                     SubmittedAt = attempt.SubmittedAt,
                     ExamId = attempt.ExamId,
                     ExamName = attempt.Exam?.ExamName ?? string.Empty,
-                    ExamType = attempt.Exam?.ExamType ?? "Reading",
+                    ExamType = attempt.Exam?.ExamType ?? string.Empty,
                     TotalScore = attempt.Score ?? 0,
                     AnswerText = attempt.AnswerText ?? string.Empty
                 };
+
                 return Ok(result);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound("Exam not found");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error submitting reading answers: {ex.Message}");
+                return StatusCode(500, new
+                {
+                    Message = "Error submitting answers.",
+                    Exception = ex.Message,
+                    StackTrace = ex.StackTrace
+                });
             }
         }
 
-
+        // ✅ Local record to parse the nested JSON answer structure
+        private record UserAnswerGroup(int SkillId, List<string> Answers);
 
 
         // ========= PRIVATE HELPER =========
