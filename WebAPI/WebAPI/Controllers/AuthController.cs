@@ -108,16 +108,32 @@ namespace WebAPI.Controllers
         [HttpGet("google/login")]
         public IActionResult GoogleLogin()
         {
-            var redirectUrl = Url.Action("GoogleResponse", "Auth", null, Request.Scheme);
-            var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+            // Use absolute URL for the callback
+            var redirectUrl = $"{Request.Scheme}://{Request.Host}/api/auth/google/response";
+            Console.WriteLine($"[Google OAuth] Initiating login with redirect URL: {redirectUrl}");
+            
+            var properties = new AuthenticationProperties 
+            { 
+                RedirectUri = redirectUrl
+            };
+            
             return Challenge(properties, "Google");
         }
 
         [HttpGet("google/response")]
         public IActionResult GoogleResponse()
         {
-            var result = HttpContext.AuthenticateAsync("Google").GetAwaiter().GetResult();
-            if (!result.Succeeded) return Unauthorized();
+            try
+            {
+                Console.WriteLine($"[Google OAuth] Callback received at: {Request.Scheme}://{Request.Host}{Request.Path}{Request.QueryString}");
+                Console.WriteLine($"[Google OAuth] Query parameters: {Request.QueryString}");
+                
+                var result = HttpContext.AuthenticateAsync("Google").GetAwaiter().GetResult();
+                if (!result.Succeeded)
+                {
+                    Console.WriteLine($"[Google OAuth] Authentication failed: {result.Failure?.Message}");
+                    return Unauthorized($"Authentication failed: {result.Failure?.Message}");
+                }
 
             var claims = result.Principal.Identities.FirstOrDefault()?.Claims.ToList();
             var email = claims?.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
@@ -166,7 +182,15 @@ namespace WebAPI.Controllers
             }
 
 
-            return Redirect($"http://localhost:5173?login=success&email={user.Email}&username={user.Username}&role={user.Role}");
+                return Redirect("https://localhost:5173?login=success");
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Google OAuth] Error in callback: {ex.Message}");
+                Console.WriteLine($"[Google OAuth] Stack trace: {ex.StackTrace}");
+                return BadRequest($"OAuth callback error: {ex.Message}");
+            }
         }
 
         [HttpGet("me")]
